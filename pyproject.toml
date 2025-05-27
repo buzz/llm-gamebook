@@ -6,20 +6,25 @@ license = "AGPL-3.0-or-later"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "openai>=1.82.0",
+    "colorama>=0.4.6",
+    "pydantic-ai-slim[openai]>=0.2.9",
 ]
 
 [project.urls]
 source = "https://github.com/buzz/llm-gamebook"
 
 [dependency-groups]
-dev = ["mypy>=1.15.0", "ruff>=0.11.5"]
+dev = [
+    "mypy>=1.15.0",
+ "ruff>=0.11.5",
+ "types-colorama>=0.4.15.20240311",
+]
 
 [tool.ruff]
 line-length = 120
 output-format = "concise"
 preview = true
-exclude = ["src/dz_gui/resources.py"]
+exclude = [".venv/**"]
 
 [tool.ruff.lint]
 # https://docs.astral.sh/ruff/rules/
@@ -76,6 +81,7 @@ select = [
 ]
 ignore = [
   "PLR1702",
+  "PLR6301",
 ]
 
 [tool.mypy]

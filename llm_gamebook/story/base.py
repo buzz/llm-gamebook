@@ -2,7 +2,7 @@ import abc
 from collections.abc import Iterable
 from typing import Any
 
-from openai.types.chat import ChatCompletionToolParam
+from llm_gamebook.types import StoryTool
 
 
 class BaseNode:
@@ -40,8 +40,8 @@ class BaseGraph[T: BaseNode](abc.ABC):
         return "\n".join(f"{node.id} -> {[n.id for n in node.edges]}" for node in self.nodes.values())
 
 
-class LlmFunctionMixin(abc.ABC):
+class ToolsMixin(abc.ABC):
     @property
     @abc.abstractmethod
-    def function_params(self) -> Iterable[ChatCompletionToolParam]:
+    def tools(self) -> Iterable[StoryTool]:
         raise NotImplementedError

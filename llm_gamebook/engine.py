@@ -1,168 +1,136 @@
-import contextlib
-import json
+import logging
 import random
-from collections.abc import Iterable
+import re
+from collections.abc import Iterable, Sequence
 
-from openai import AsyncOpenAI
-from openai.types.chat import (
-    ChatCompletionAssistantMessageParam,
-    ChatCompletionFunctionMessageParam,
-    ChatCompletionMessageToolCallParam,
-    ChatCompletionToolParam,
-    ChatCompletionUserMessageParam,
+from colorama import Style
+from pydantic_ai import Agent
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelResponse,
+    SystemPromptPart,
+    TextPart,
+    ToolCallPart,
+    ToolReturnPart,
+    UserPromptPart,
 )
+from pydantic_ai.models import Model, ModelSettings
 
+from llm_gamebook.example import example_story_context
 from llm_gamebook.logger import logger
-from llm_gamebook.messages import Messages
-from llm_gamebook.story.location import LocationGraph
-from llm_gamebook.story.state import StoryState
-from llm_gamebook.story.storyline import Storyline
+from llm_gamebook.story.context import FIRST_MESSAGE, StoryContext
 
 
 class GameEngine:
-    def __init__(self, base_url: str, api_key: str | None = None) -> None:
+    def __init__(self, model: Model) -> None:
         self._log = logger.getChild("engine")
-        self.state = StoryState()
-        self._messages = Messages(self)
-        self.storyline = Storyline()
-        self.locations = LocationGraph()
-        self._user_input: str = ""
-        self._client = AsyncOpenAI(base_url=base_url, api_key=api_key or "dummy")
-        self._first_message = True
+        self._messages: list[ModelMessage] = []
+        self._story_context = example_story_context()
+        self._agent = self._setup_agent(model)
+        self._is_running = True
 
-    def example(self) -> None:
-        beginning = self.storyline.add_node(
-            "beginning",
-            description=("Start of story", "Player is depressed"),
-        )
-        hope = self.storyline.add_node(
-            "spark_of_hope",
-            description=(
-                "Player found a faint spark of hope",
-                "Can he turn fate around and improve his miserable life?",
-            ),
-        )
-        happy_end = self.storyline.add_node(
-            "happy_end",
-            description=("Player is happy", "He gained new hope and will change his life to the better"),
+    def _setup_agent(self, model: Model) -> Agent[StoryContext, str]:
+        agent = Agent[StoryContext, str](
+            model,
+            deps_type=StoryContext,
+            model_settings=ModelSettings(seed=random.randint(0, 10000)),
+            output_type=str,
+            tools=self._story_context.tools,
         )
 
-        self.storyline.add_edge(beginning, hope)
-        self.storyline.add_edge(hope, happy_end)
+        @agent.system_prompt(dynamic=True)
+        def get_system_prompt() -> str:
+            """Dynamic system prompt."""
+            return self._story_context.system_prompt
 
-        bedroom = self.locations.add_node(
-            "bedroom",
-            description=("dark, no light", "cockroaches under bed", "musky smell"),
-        )
-
-        living_room = self.locations.add_node(
-            "living_room",
-            description=(
-                "run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)",
-                "messy, scattered with empty bottles",
-                "dim light",
-                "crumpled piece of paper under the door (player may choose to pick it up)",
-            ),
-        )
-
-        bathroom = self.locations.add_node(
-            "bathroom",
-            description=("broken bulp, dark", "dripping faucet"),
-        )
-
-        in_the_street = self.locations.add_node(
-            "in_the_street",
-            description=("nighttime, rainy, gloomy", "empty save a drunkard talking to himself", "flickering neon"),
-        )
-
-        self.locations.add_edge(bedroom, living_room)
-        self.locations.add_edge(living_room, bedroom)
-
-        self.locations.add_edge(living_room, bathroom)
-        self.locations.add_edge(bathroom, living_room)
-
-        self.locations.add_edge(living_room, in_the_street)
-        self.locations.add_edge(in_the_street, living_room)
-
-        self.locations.current = bedroom
-        self.storyline.current = beginning
+        return agent
 
     async def game_loop(self) -> None:
-        while self._user_input != "quit":
-            self._log.debug("**********************************************************")
-            self._log.debug("Current messages:")
-            for msg_ in self._messages:
-                role = msg_["role"]
-                if role == "assistant":
-                    content = list(msg_["tool_calls"])
-                    self._log.debug(f"- {role}: {content}")
-                else:
-                    content = msg_["content"]
-                    self._log.debug(f"- {role}: {content}")
-
-            kwargs = {
-                "model": "openai/models/gguf/Qwen3-32B-Q4_K_M.gguf",
-                "messages": self._messages,
-                "seed": random.randint(0, 99999),
-                "max_tokens": 2048,
-                "max_completion_tokens": 512,
-            }
-
-            if not self._first_message:
-                kwargs["tools"] = None if self._first_message else self._tools
-                kwargs["tool_choice"] = "auto"
-
-            response = await self._client.chat.completions.create(**kwargs)
-            self._first_message = False
-
-            message = response.choices[0].message
-
-            with contextlib.suppress(AttributeError):
-                self._log.debug("Reasoning: %s", message.reasoning_content)
-
-            if message.tool_calls:
-                for tool_call in message.tool_calls:
-                    self._messages.append(
-                        ChatCompletionAssistantMessageParam(
-                            role="assistant",
-                            content=message.content,
-                            tool_calls=(
-                                ChatCompletionMessageToolCallParam(
-                                    id=tc.id,
-                                    function={"name": tc.function.name, "arguments": tc.function.arguments},
-                                    type=tc.type,
-                                )
-                                for tc in message.tool_calls
-                            ),
-                        ),
-                    )
-
-                    if tool_call.function.name == "change_location":
-                        self._log.debug(
-                            "Got tool call: %s args=%s",
-                            tool_call.function.name,
-                            tool_call.function.arguments,
-                        )
-                        args = json.loads(tool_call.function.arguments)
-                        location_id = args["location"]
-                        self.locations.current = self.locations.nodes[location_id]
-
-                        self._messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": json.dumps({"result": "success"}),
-                        })
-
-            elif message.content:
-                print(f"\nNARRATOR:\n{message.content.strip()}\n")
-                self._user_input = input("> ")
-                self._messages.append(ChatCompletionUserMessageParam(role="user", content=self._user_input))
-
+        while self._is_running:
+            user_prompt: str | None = None
+            if len(self._messages) == 0:
+                user_prompt = FIRST_MESSAGE
+            elif isinstance(self._messages[-1], ModelResponse):
+                user_prompt = input("> ")
             else:
-                msg = "No tool call or content message received."
-                self._log.error(f"{msg} Last message: %s", message)
-                raise RuntimeError(msg)
+                user_prompt = None
+
+            if user_prompt == "quit":
+                self._is_running = False
+                break
+
+            async with self._agent.run_stream(
+                user_prompt,
+                message_history=self._messages,
+                deps=self._story_context,
+            ) as result:
+                # Print stream
+                if self._is_debug:
+                    print(f"Streaming: {Style.DIM}", end="")
+                async for message in result.stream_text(delta=True):
+                    if self._is_debug:
+                        print(message, end="", flush=True)
+                if self._is_debug:
+                    print(Style.RESET_ALL)
+
+            if self._is_debug:
+                self._debug_log_messages(result.all_messages())
+
+            self._print_model_response(result.new_messages())
+            self._messages = list(self._strip_think_blocks(result.all_messages()))
+
+    def _print_model_response(self, messages: Iterable[ModelMessage]) -> None:
+        for msg in messages:
+            if isinstance(msg, ModelResponse) and len(msg.parts) > 0:
+                for part in msg.parts:
+                    if isinstance(part, TextPart) and part.has_content():
+                        _, response_text = self._parse_reasoning(part.content)
+                        if response_text:
+                            print(f"\n{Style.BRIGHT}{response_text}{Style.RESET_ALL}\n")
+                    elif isinstance(part, ToolCallPart):
+                        print(
+                            f"\n{Style.DIM}Tool call: {part.tool_name}({part.args_as_json_str()}){Style.RESET_ALL}\n",
+                        )
+
+    def _debug_log_messages(self, messages: Sequence[ModelMessage]) -> None:
+        self._log.debug("Messages (total=%d)", len(messages))
+        for idx, msg in enumerate(messages):
+            self._log.debug("%03d. %s", idx, type(msg).__name__)
+            for part in msg.parts:
+                if isinstance(part, SystemPromptPart):
+                    self._log.debug("  - System: %s", part.content)
+                # elif isinstance(part, UserPromptPart):
+                #     self._log.debug("  - User: %s", part.content)
+                # elif isinstance(part, TextPart):
+                #     self._log.debug("  - Assistant")
+                #     think_block, response_text = self._parse_reasoning(part.content)
+                #     self._log.debug("    - think: %s", think_block)
+                #     self._log.debug("    - response: %s", response_text)
+                # elif isinstance(part, ToolCallPart):
+                #     self._log.debug("  - Tool call: `%s` args=%s", part.tool_name, part.args)
+                # elif isinstance(part, ToolReturnPart):
+                #     self._log.debug("  - Tool return: `%s` args=%s", part.tool_name, part.content)
+                # else:
+                #     self._log.debug("  - Unknown part: %s", part)
+
+    def _strip_think_blocks(self, messages: Iterable[ModelMessage]) -> Iterable[ModelMessage]:
+        for msg in messages:
+            if isinstance(msg, ModelResponse) and len(msg.parts) > 0:
+                for part in msg.parts:
+                    if isinstance(part, TextPart):
+                        _, response_text = self._parse_reasoning(part.content)
+                        part.content = response_text or ""
+            yield msg
+
+    @staticmethod
+    def _parse_reasoning(text: str) -> tuple[str | None, str | None]:
+        match = re.search(r"<think>\s*(.*?)\s*</think>\s*(.*)", text, re.DOTALL)
+        if match:
+            think_block = match.group(1) or None
+            msg = match.group(2).strip() or None
+            return think_block, msg
+        return None, text.strip() or None
 
     @property
-    def _tools(self) -> Iterable[ChatCompletionToolParam]:
-        yield from self.locations.function_params
+    def _is_debug(self) -> bool:
+        return self._log.getEffectiveLevel() == logging.DEBUG
