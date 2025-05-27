@@ -1,53 +1,52 @@
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.location import LocationGraph
+from llm_gamebook.story.location import Locations
 from llm_gamebook.story.storyline import Storyline
 
 
 def example_story_context() -> StoryContext:
     storyline = Storyline()
-    beginning = storyline.add_node(
+    beginning = storyline.create_node(
         "beginning",
-        description=("Start of story", "Player is depressed"),
+        description="- Start of story\n- Player is depressed\n",
     )
-    hope = storyline.add_node(
+    hope = storyline.create_node(
         "spark_of_hope",
         description=(
-            "Player found a faint spark of hope",
-            "Can he turn fate around and improve his miserable life?",
+            "- Player found a faint spark of hope\n- Can he turn fate around and improve his miserable life?\n"
         ),
     )
-    happy_end = storyline.add_node(
+    happy_end = storyline.create_node(
         "happy_end",
-        description=("Player is happy", "He gained new hope and will change his life to the better"),
+        description="- Player is happy\n- He gained new hope and will change his life to the better\n",
     )
 
     storyline.add_edge(beginning, hope)
     storyline.add_edge(hope, happy_end)
 
-    locations = LocationGraph()
-    bedroom = locations.add_node(
+    locations = Locations()
+    bedroom = locations.create_node(
         "bedroom",
-        description=("dark, no light", "cockroaches under bed", "musky smell"),
+        description="- dark, dim light\n- cockroaches under bed\n- musky smell\n",
     )
 
-    living_room = locations.add_node(
+    living_room = locations.create_node(
         "living_room",
         description=(
-            "run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)",
-            "messy, scattered with empty bottles",
-            "dim light",
-            "crumpled piece of paper under the door (player may choose to pick it up)",
+            "- run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)\n"
+            "- messy, scattered with empty bottles\n"
+            "- dim light\n"
+            "- crumpled piece of paper under the front door (might have been placed there when player was sleeping)\n"
         ),
     )
 
-    bathroom = locations.add_node(
+    bathroom = locations.create_node(
         "bathroom",
-        description=("broken bulp, dark", "dripping faucet"),
+        description="-broken bulp, dark\n- dripping faucet",
     )
 
-    in_the_street = locations.add_node(
+    in_the_street = locations.create_node(
         "in_the_street",
-        description=("nighttime, rainy, gloomy", "empty save a drunkard talking to himself", "flickering neon"),
+        description="- nighttime, rainy, gloomy\n- empty save a drunkard talking to himself\n- flickering neon",
     )
 
     locations.add_edge(bedroom, living_room)

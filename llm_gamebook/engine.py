@@ -5,20 +5,12 @@ from collections.abc import Iterable, Sequence
 
 from colorama import Style
 from pydantic_ai import Agent
-from pydantic_ai.messages import (
-    ModelMessage,
-    ModelResponse,
-    SystemPromptPart,
-    TextPart,
-    ToolCallPart,
-    ToolReturnPart,
-    UserPromptPart,
-)
+from pydantic_ai.messages import ModelMessage, ModelResponse, SystemPromptPart, TextPart, ToolCallPart
 from pydantic_ai.models import Model, ModelSettings
 
 from llm_gamebook.example import example_story_context
 from llm_gamebook.logger import logger
-from llm_gamebook.story.context import FIRST_MESSAGE, StoryContext
+from llm_gamebook.story.context import StoryContext
 
 
 class GameEngine:
@@ -38,10 +30,10 @@ class GameEngine:
             tools=self._story_context.tools,
         )
 
+        # Makes the system prompt reevaluate on every run
         @agent.system_prompt(dynamic=True)
-        def get_system_prompt() -> str:
-            """Dynamic system prompt."""
-            return self._story_context.system_prompt
+        async def get_system_prompt() -> str:
+            return await self._story_context.get_system_prompt()
 
         return agent
 
@@ -49,7 +41,7 @@ class GameEngine:
         while self._is_running:
             user_prompt: str | None = None
             if len(self._messages) == 0:
-                user_prompt = FIRST_MESSAGE
+                user_prompt = await self._story_context.get_first_message()
             elif isinstance(self._messages[-1], ModelResponse):
                 user_prompt = input("> ")
             else:

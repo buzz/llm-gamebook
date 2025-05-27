@@ -1,4 +1,3 @@
-import contextlib
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
@@ -14,12 +13,15 @@ if TYPE_CHECKING:
 
 
 class Location(BaseNode):
-    def __init__(self, node_id: str, description: Iterable[str]) -> None:
+    def __init__(self, node_id: str, description: str) -> None:
         super().__init__(node_id)
         self.description = description
 
 
-class LocationGraph(BaseGraph, ToolsMixin):
+class Locations(BaseGraph[Location], ToolsMixin):
+    def create_node(self, node_id: str, description: str) -> Location:
+        return self._add_node(Location(node_id, description))
+
     @property
     def tools(self) -> Iterable[StoryTool]:
         if len(self.current.edges) > 0:
@@ -37,10 +39,11 @@ class LocationGraph(BaseGraph, ToolsMixin):
         Args:
             location_id: The location to move to.
         """
-        with contextlib.suppress(StopIteration):
+        try:
             self.current = next(loc for loc in self.current.edges if loc.id == location_id)
-            return {"result": "success"}
-        return {"result": "error", "reason": f"{location_id} is not a valid transition for this location."}
+        except StopIteration:
+            return {"result": "error", "reason": f"{location_id} is not a valid transition for this location."}
+        return {"result": "success"}
 
     async def _prepare_change_location(
         self,
@@ -54,7 +57,3 @@ class LocationGraph(BaseGraph, ToolsMixin):
         # Specify exact IDs that are valid
         tool_def.parameters_json_schema["properties"]["location_id"]["enum"] = [edge.id for edge in self.current.edges]
         return tool_def
-
-    @staticmethod
-    def _create_node(node_id: str, description: Iterable[str]) -> Location:
-        return Location(node_id, description)
