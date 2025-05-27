@@ -1,0 +1,83 @@
+[project]
+name = "llm-gamebook"
+version = "0.0.0"
+description = "An interactive storytelling framework using LLMs to generate dynamic narratives"
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=1.82.0",
+]
+
+[project.urls]
+source = "https://github.com/buzz/llm-gamebook"
+
+[dependency-groups]
+dev = ["mypy>=1.15.0", "ruff>=0.11.5"]
+
+[tool.ruff]
+line-length = 120
+output-format = "concise"
+preview = true
+exclude = ["src/dz_gui/resources.py"]
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+  "F",  # pyflakes
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "PL", # pylint
+
+  # flake8
+  "A",     #   -builtins
+  "ASYNC", #   -async
+  "B",     #   -bugbear
+  "BLE",   #   -blind-except
+  "C4",    #   -comprehensions
+  "COM",   #   -commas
+  "DTZ",   #   -datetimez
+  "EM",    #   -errmsg
+  "EXE",   #   -executable
+  "FA",    #   -future-annotations
+  "FBT",   #   -boolean-trap
+  "G",     #   -logging-format
+  "ICN",   #   -import-conventions
+  "INP",   #   -no-pep420
+  "INT",   #   -gettext
+  "ISC",   #   -implicit-str-concat
+  "LOG",   #   -logging
+  "PIE",   #   -pie
+  "PT",    #   -pytest-style
+  "PYI",   #   -pyi
+  "Q",     #   --quotes
+  "RET",   #   -return
+  "RSE",   #   -raise
+  "SIM",   #   -simplify
+  "SLOT",  #   -slots
+  "T10",   #   -debugger
+  "TCH",   #   -type-checking
+  "TD004", #   -todos
+  "TD005",
+  "TD006",
+  "TD007",
+  "TID",   #   -tidy-imports
+  "YTT",   #   -2020
+
+  "FLY",  # flynt
+  "FURB", # refurb
+  "I",    # isort
+  "N",    # pep8-naming
+  "PERF", # Perflint
+  "PGH",  # pygrep-hooks
+  "RUF",  # Ruff-specific rules
+  "TRY",  # tryceratops
+  "UP",   # pyupgrade
+]
+ignore = [
+  "PLR1702",
+]
+
+[tool.mypy]
+disallow_untyped_defs = true
+strict_optional = true
