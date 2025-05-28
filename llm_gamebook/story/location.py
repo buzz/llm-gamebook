@@ -1,9 +1,10 @@
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic_ai.tools import Tool, ToolDefinition
 
-from llm_gamebook.story.base import BaseGraph, BaseNode, ToolsMixin
+from llm_gamebook.story.base import EntityConnectionMixin, ToolsMixin
+from llm_gamebook.story.graph import BaseGraph, BaseGraphNode, InvalidTransitionError
 from llm_gamebook.types import FunctionResult, StoryTool
 
 if TYPE_CHECKING:
@@ -12,15 +13,34 @@ if TYPE_CHECKING:
     from llm_gamebook.story.context import StoryContext
 
 
-class Location(BaseNode):
-    def __init__(self, node_id: str, description: str) -> None:
-        super().__init__(node_id)
-        self.description = description
+class Location(BaseGraphNode, EntityConnectionMixin):
+    def __init__(self, name: str, description: str | None = None, slug: str | None = None) -> None:
+        super().__init__(name, description, slug)
+        self.is_visited = False
 
 
 class Locations(BaseGraph[Location], ToolsMixin):
-    def create_node(self, node_id: str, description: str) -> Location:
-        return self._add_node(Location(node_id, description))
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        slug: str | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(name, description, slug, *args, **kwargs)
+
+    def create_node(self, name: str, description: str | None = None, slug: str | None = None) -> Location:
+        return self._add_node(Location(name, description, slug))
+
+    @property
+    def current(self) -> Location:
+        return super().current
+
+    @current.setter
+    def current(self, new_current: Location) -> None:
+        self.current = new_current
+        self.current.is_visited = True
 
     @property
     def tools(self) -> Iterable[StoryTool]:
@@ -33,16 +53,16 @@ class Locations(BaseGraph[Location], ToolsMixin):
                 prepare=self._prepare_change_location,
             )
 
-    def _change_location(self, location_id: str) -> FunctionResult:
+    def _change_location(self, location_slug: str) -> FunctionResult:
         """Player moves to another location.
 
         Args:
-            location_id: The location to move to.
+            location_slug: The location to move to.
         """
         try:
-            self.current = next(loc for loc in self.current.edges if loc.id == location_id)
-        except StopIteration:
-            return {"result": "error", "reason": f"{location_id} is not a valid transition for this location."}
+            self.transition(location_slug)
+        except InvalidTransitionError as err:
+            return {"result": "error", "reason": str(err)}
         return {"result": "success"}
 
     async def _prepare_change_location(
@@ -55,5 +75,7 @@ class Locations(BaseGraph[Location], ToolsMixin):
             return None
 
         # Specify exact IDs that are valid
-        tool_def.parameters_json_schema["properties"]["location_id"]["enum"] = [edge.id for edge in self.current.edges]
+        tool_def.parameters_json_schema["properties"]["location_slug"]["enum"] = [
+            edge.slug for edge in self.current.edges
+        ]
         return tool_def

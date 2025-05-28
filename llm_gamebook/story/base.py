@@ -1,47 +1,44 @@
 import abc
 from collections.abc import Iterable
-from typing import Any, Self
+from typing import Any
 
 from llm_gamebook.types import StoryTool
+from llm_gamebook.utils import slugify
 
 
-class BaseNode:
-    def __init__(self, node_id: str) -> None:
-        self.id: str = node_id
-        self.edges: set[Self] = set()
+class BaseStoryEntity:
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        slug: str | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.name = name
+        self.description = description
+        self.slug = slug or slugify(name)
 
-    def add_edge(self, node: Self) -> None:
-        self.edges.add(node)
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.id})"
+    def is_enabled(self) -> bool:
+        return True
 
 
-class BaseGraph[T: BaseNode](abc.ABC):
-    def __init__(self) -> None:
-        self.nodes: dict[str, T] = {}
-        self.current: T
+class EntityConnectionMixin:
+    """Mixin for managing connections to related entities."""
 
-    @abc.abstractmethod
-    def create_node(self, node_id: str, *args: Any, **kwargs: Any) -> T:
-        raise NotImplementedError
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.entities: list[BaseStoryEntity]
 
-    def _add_node(self, node: T) -> T:
-        if node.id in self.nodes:
-            msg = "Node is already part of graph"
-            raise ValueError(msg)
-        self.nodes[node.id] = node
-        return node
-
-    @staticmethod
-    def add_edge(from_node: T, to_node: T) -> None:
-        from_node.add_edge(to_node)
-
-    def __repr__(self) -> str:
-        return "\n".join(f"{node.id} -> {[n.id for n in node.edges]}" for node in self.nodes.values())
+    def add_entity(self, entity: BaseStoryEntity) -> BaseStoryEntity:
+        self.entities.append(entity)
+        return entity
 
 
 class ToolsMixin(abc.ABC):
+    """Mixin for providing tools to the LLM."""
+
     @property
     @abc.abstractmethod
     def tools(self) -> Iterable[StoryTool]:

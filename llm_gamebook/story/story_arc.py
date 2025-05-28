@@ -1,24 +1,24 @@
-from collections.abc import Mapping
+from typing import Any
 
-from llm_gamebook.story.base import BaseGraph, BaseNode
-
-
-class StoryArcNode(BaseNode):
-    def __init__(self, node_id: str, description: str) -> None:
-        super().__init__(node_id)
-        self.description = description
+from llm_gamebook.story.condition import ConditionallyEnabledMixin
+from llm_gamebook.story.graph import BaseGraph, BaseGraphNode
 
 
-class StoryArc(BaseGraph[StoryArcNode]):
-    def __init__(self, name: str):
-        super().__init__()
-        self.name = name
+class StoryArcNode(BaseGraphNode):
+    def __init__(self, name: str, description: str | None = None, slug: str | None = None) -> None:
+        super().__init__(name, description, slug)
 
-    def create_node(self, node_id: str, description: str) -> StoryArcNode:
-        return self._add_node(StoryArcNode(node_id, description))
 
-    def get_template_context(self) -> Mapping[str, object]:
-        return {
-            "name": self.name,
-            "current": self.current,
-        }
+class StoryArc(ConditionallyEnabledMixin, BaseGraph[StoryArcNode]):
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        slug: str | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(name, description, slug, *args, **kwargs)
+
+    def create_node(self, name: str, description: str | None = None, slug: str | None = None) -> StoryArcNode:
+        return self._add_node(StoryArcNode(name, description, slug))
