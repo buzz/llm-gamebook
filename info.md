@@ -39,3 +39,8 @@ Author defines nodes, conditions, and entities in a JSON/YAML file.
   - https://github.com/jagenjo/litegraph.js (used by ComfyUI)
   - https://js.cytoscape.org/
   - https://visjs.org/
+
+## Interesting stuff/prior work
+
+- https://chasm.run/
+- https://github.com/neph1/LlamaTale
