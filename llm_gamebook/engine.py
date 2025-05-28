@@ -13,7 +13,7 @@ from llm_gamebook.logger import logger
 from llm_gamebook.story.context import StoryContext
 
 
-class GameEngine:
+class StoryEngine:
     def __init__(self, model: Model) -> None:
         self._log = logger.getChild("engine")
         self._messages: list[ModelMessage] = []
@@ -37,7 +37,7 @@ class GameEngine:
 
         return agent
 
-    async def game_loop(self) -> None:
+    async def story_loop(self) -> None:
         while self._is_running:
             user_prompt: str | None = None
             if len(self._messages) == 0:

@@ -1,5 +1,12 @@
 ## Story Arc: {{ arc.name }}
+{% if arc.description %}
 
-Current ID: {{ arc.current.id }}
-Description:
+{{ arc.description|trim }}
+{% endif %}
+
+Current node: {{ arc.current.name }} ({{ arc.current.slug }})
+{% if location.description %}
+
+Current node description:
 {{ arc.current.description|trim }}
+{% endif %}

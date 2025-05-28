@@ -33,10 +33,9 @@ class StoryContext:
         return {
             "setting": self.setting,
             "player_char": self.player_char,
-            "story_arcs": [arc.get_template_context() for arc in self.story_arcs],
-            "location_id": self.locations.current.id,
-            "location_description": self.locations.current.description,
-            "possible_pathways": self.locations.current.edges,
+            "story_arcs": [arc for arc in self.story_arcs if arc.is_enabled()],
+            "location": self.locations.current,
+            "reachable_locations": self.locations.current.edges,
         }
 
     async def get_first_message(self) -> str:

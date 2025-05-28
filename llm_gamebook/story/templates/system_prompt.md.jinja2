@@ -25,16 +25,16 @@ Write the next narrative fragment based on the current story state. Your goal is
 - Do **not** use headings or titles in the narration.
 {% endblock %}
 
-# Game Engine Interface
+# Story Engine Interface
 
-{% block sp_game_engine %}
-The game engine manages the story’s internal state. Interact with it only via function calls to:
+{% block sp_story_engine %}
+The story engine manages the story’s internal state. Interact with it only via function calls to:
 
 - Retrieve data about the world (locations, NPCs, items, etc.).
 - Update the story state (e.g. marking events, player actions).
 {% endblock %}
 
-# Story Arc Graph
+# Story Arcs
 
 {% block sp_story_graph %}
 Story arcs are structured as directed graphs with:
@@ -80,17 +80,17 @@ You can access structured data through functions:
 {% for arc in story_arcs %}
   {% with arc=arc %}
     {% include "_arc.md.jinja2" %}
+
   {% endwith %}
-
 {% endfor %}
+## Current location: {{ location.name }} ({{ location.slug }})
 
-## Current location: {{ location_id }}
+{% if location.description %}
+{{ location.description|trim }}
 
-Description of {{ location_id }}:
-{{ location_description|trim }}
-
-Possible pathways:
-{% for loc in possible_pathways %}
-- {{ loc.id }}
+{% endif %}
+Locations reachable from here:
+{% for loc in reachable_locations %}
+- {{ loc.name }} ({{ loc.slug }})
 {% endfor %}
 {% endblock %}
