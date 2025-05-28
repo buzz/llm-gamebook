@@ -17,8 +17,8 @@ source = "https://github.com/buzz/llm-gamebook"
 [dependency-groups]
 dev = [
     "mypy>=1.15.0",
- "ruff>=0.11.5",
- "types-colorama>=0.4.15.20240311",
+    "ruff>=0.11.5",
+    "types-colorama>=0.4.15.20240311",
 ]
 
 [tool.ruff]

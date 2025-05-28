@@ -1,27 +1,57 @@
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.location import Locations
-from llm_gamebook.story.storyline import Storyline
+from llm_gamebook.story.story_arc import StoryArc
 
 
 def example_story_context() -> StoryContext:
-    storyline = Storyline()
-    beginning = storyline.create_node(
+    main_arc = StoryArc("Main")
+    beginning = main_arc.create_node(
         "beginning",
         description="- Start of story\n- Player is depressed\n",
     )
-    hope = storyline.create_node(
+    hope = main_arc.create_node(
         "spark_of_hope",
         description=(
             "- Player found a faint spark of hope\n- Can he turn fate around and improve his miserable life?\n"
         ),
     )
-    happy_end = storyline.create_node(
+    happy_end = main_arc.create_node(
         "happy_end",
-        description="- Player is happy\n- He gained new hope and will change his life to the better\n",
+        description=("- Player is happy\n- He gained new hope and will change his life to the better\n"),
     )
 
-    storyline.add_edge(beginning, hope)
-    storyline.add_edge(hope, happy_end)
+    main_arc.add_edge(beginning, hope)
+    main_arc.add_edge(hope, happy_end)
+    main_arc.current = beginning
+
+    community_center_arc = StoryArc("The Leaflet")
+    not_found = community_center_arc.create_node(
+        "not_found",
+        description=("- A leaflet was placed under the player's front door.\n- Its content is not yet revealed."),
+    )
+    found = community_center_arc.create_node(
+        "found",
+        description=("- Player found the leaflet\n- It's an invitation to a meeting at the local community center."),
+    )
+    attending_meeting = community_center_arc.create_node(
+        "attending_meeting",
+        description=(
+            "- Player found a leaflet with an invitation to a meeting at the local community center.\n"
+            "- Player is attending the meeting."
+        ),
+    )
+    meeting_is_over = community_center_arc.create_node(
+        "meeting_is_over",
+        description=(
+            "- Player found a leaflet with an invitation to a meeting at the local community center.\n"
+            "- The player attended and the meeting is over."
+        ),
+    )
+
+    community_center_arc.add_edge(not_found, found)
+    community_center_arc.add_edge(found, attending_meeting)
+    community_center_arc.add_edge(attending_meeting, meeting_is_over)
+    community_center_arc.current = not_found
 
     locations = Locations()
     bedroom = locations.create_node(
@@ -49,6 +79,15 @@ def example_story_context() -> StoryContext:
         description="- nighttime, rainy, gloomy\n- empty save a drunkard talking to himself\n- flickering neon",
     )
 
+    community_center = locations.create_node(
+        "community_center",
+        description=(
+            "- luxurious interior\n"
+            "- grotesquely happy people that warmly invite the player inside\n"
+            "- some weird subtle vibe that's hard to place, almost an aggression can be felt despite the happy faces"
+        ),
+    )
+
     locations.add_edge(bedroom, living_room)
     locations.add_edge(living_room, bedroom)
 
@@ -58,7 +97,9 @@ def example_story_context() -> StoryContext:
     locations.add_edge(living_room, in_the_street)
     locations.add_edge(in_the_street, living_room)
 
-    locations.current = bedroom
-    storyline.current = beginning
+    locations.add_edge(in_the_street, community_center)
+    locations.add_edge(community_center, in_the_street)
 
-    return StoryContext(storyline, locations)
+    locations.current = bedroom
+
+    return StoryContext([main_arc, community_center_arc], locations)

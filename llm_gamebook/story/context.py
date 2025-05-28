@@ -1,13 +1,15 @@
+from collections.abc import Mapping, Sequence
+
 from jinja2 import Environment, PackageLoader
 
 from llm_gamebook.story.location import Locations
-from llm_gamebook.story.storyline import Storyline
+from llm_gamebook.story.story_arc import StoryArc
 from llm_gamebook.types import StoryTool
 
 
 class StoryContext:
-    def __init__(self, storyline: Storyline, locations: Locations) -> None:
-        self.storyline = storyline
+    def __init__(self, story_arcs: Sequence[StoryArc], locations: Locations) -> None:
+        self.story_arcs = story_arcs
         self.locations = locations
         self.setting = "The year is 2025. A nameless, sprawling metropolis in the Western world."
         self.player_char = (
@@ -24,20 +26,22 @@ class StoryContext:
         )
 
     async def get_system_prompt(self) -> str:
-        template_ctx = {
+        ctx = self._get_system_prompt_context()
+        return await self._jinja_env.get_template("system_prompt.md.jinja2").render_async(ctx)
+
+    def _get_system_prompt_context(self) -> Mapping[str, object]:
+        return {
             "setting": self.setting,
             "player_char": self.player_char,
-            "current_story_node_id": self.storyline.current.id,
-            "current_story_node_description": self.storyline.current.description,
-            "current_location_id": self.locations.current.id,
-            "current_location_description": self.locations.current.description,
-            "current_location_transitions": self.locations.current.edges,
+            "story_arcs": [arc.get_template_context() for arc in self.story_arcs],
+            "location_id": self.locations.current.id,
+            "location_description": self.locations.current.description,
+            "possible_pathways": self.locations.current.edges,
         }
-        return await self._jinja_env.get_template("system_prompt.md.jinja2").render_async(template_ctx)
 
     async def get_first_message(self) -> str:
         return await self._jinja_env.get_template("first_message.md").render_async()
 
     @property
     def tools(self) -> list[StoryTool]:
-        return list(self.storyline.tools) + list(self.locations.tools)
+        return list(self.locations.tools)
