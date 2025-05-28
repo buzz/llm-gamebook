@@ -20,5 +20,10 @@ class StoryArc(ConditionallyEnabledMixin, BaseGraph[StoryArcNode]):
     ) -> None:
         super().__init__(name, description, slug, *args, **kwargs)
 
-    def create_node(self, name: str, description: str | None = None, slug: str | None = None) -> StoryArcNode:
+    def create_node(
+        self,
+        name: str,
+        description: str | None = None,
+        slug: str | None = None,
+    ) -> StoryArcNode:
         return self._add_node(StoryArcNode(name, description, slug))

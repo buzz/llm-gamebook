@@ -30,7 +30,12 @@ class Locations(BaseGraph[Location], ToolsMixin):
     ) -> None:
         super().__init__(name, description, slug, *args, **kwargs)
 
-    def create_node(self, name: str, description: str | None = None, slug: str | None = None) -> Location:
+    def create_node(
+        self,
+        name: str,
+        description: str | None = None,
+        slug: str | None = None,
+    ) -> Location:
         return self._add_node(Location(name, description, slug))
 
     @property

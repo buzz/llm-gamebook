@@ -64,4 +64,6 @@ class BaseGraph[T: BaseGraphNode](BaseStoryEntity, abc.ABC):
         return node
 
     def __repr__(self) -> str:
-        return "\n".join(f"{node.slug} -> {[n.slug for n in node.edges]}" for node in self.nodes.values())
+        return "\n".join(
+            f"{node.slug} -> {[n.slug for n in node.edges]}" for node in self.nodes.values()
+        )

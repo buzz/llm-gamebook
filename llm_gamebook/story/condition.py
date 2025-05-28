@@ -31,7 +31,7 @@ class IsCurrentLocationCondition(BaseCondition):
 
 
 class ConditionallyEnabledMixin:
-    """Mixin that adds a list of conditions and the ability to enable or disable the object based on them."""
+    """Mixin that adds conditions for disabling the entity."""
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)

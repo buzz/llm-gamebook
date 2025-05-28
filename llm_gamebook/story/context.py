@@ -14,7 +14,8 @@ class StoryContext:
         self.setting = "The year is 2025. A nameless, sprawling metropolis in the Western world."
         self.player_char = (
             "Steve, 30 years old, isolated and weary. "
-            "He lives alone in the city, struggling with loneliness and often drinks to numb his thoughts."
+            "He lives alone in the city, struggling with loneliness and "
+            "often drinks to numb his thoughts."
         )
 
         self._jinja_env = Environment(

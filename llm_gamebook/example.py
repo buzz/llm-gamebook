@@ -13,12 +13,15 @@ def example_story_context() -> StoryContext:
     hope = main_arc.create_node(
         "Spark of Hope",
         description=(
-            "- Player found a faint spark of hope\n- Can he turn fate around and improve his miserable life?\n"
+            "- Player found a faint spark of hope\n"
+            "- Can he turn fate around and improve his miserable life?\n"
         ),
     )
     happy_end = main_arc.create_node(
         "Happy End",
-        description=("- Player is happy\n- He gained new hope and will change his life to the better\n"),
+        description=(
+            "- Player is happy\n- He gained new hope and will change his life to the better\n"
+        ),
     )
 
     main_arc.add_edge(beginning, hope)
@@ -28,23 +31,31 @@ def example_story_context() -> StoryContext:
     community_center_arc = StoryArc("The Leaflet")
     leaflet_not_found = community_center_arc.create_node(
         "Leaflet not found yet",
-        description=("- A leaflet was placed under the player's front door.\n- Its content is not yet revealed."),
+        description=(
+            "- A leaflet was placed under the player's front door."
+            "\n- Its content is not yet revealed."
+        ),
     )
     found = community_center_arc.create_node(
         "Leaftlet found",
-        description=("- Player found the leaflet\n- It's an invitation to a meeting at the local community center."),
+        description=(
+            "- Player found the leaflet\n"
+            "- It's an invitation to a meeting at the local community center."
+        ),
     )
     attending_meeting = community_center_arc.create_node(
         "Attending meeting",
         description=(
-            "- Player found a leaflet with an invitation to a meeting at the local community center.\n"
+            "- Player found a leaflet with an invitation to "
+            "a meeting at the local community center.\n"
             "- Player is attending the meeting."
         ),
     )
     meeting_is_over = community_center_arc.create_node(
         "Meeting is over",
         description=(
-            "- Player found a leaflet with an invitation to a meeting at the local community center.\n"
+            "- Player found a leaflet with an invitation to "
+            "a meeting at the local community center.\n"
             "- The player attended and the meeting is over."
         ),
     )
@@ -66,7 +77,8 @@ def example_story_context() -> StoryContext:
             "- run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)\n"
             "- messy, scattered with empty bottles\n"
             "- dim light\n"
-            "- crumpled piece of paper under the front door (might have been placed there when player was sleeping)\n"
+            "- crumpled piece of paper under the front door "
+            "(might have been placed there when player was sleeping)\n"
         ),
     )
 
@@ -77,7 +89,11 @@ def example_story_context() -> StoryContext:
 
     in_the_street = locations.create_node(
         "In the street",
-        description="- nighttime, rainy, gloomy\n- empty save a drunkard talking to himself\n- flickering neon",
+        description=(
+            "- nighttime, rainy, gloomy\n"
+            "- empty save a drunkard talking to himself\n"
+            "- flickering neon"
+        ),
     )
 
     community_center = locations.create_node(
@@ -85,7 +101,8 @@ def example_story_context() -> StoryContext:
         description=(
             "- luxurious interior\n"
             "- grotesquely happy people that warmly invite the player inside\n"
-            "- some weird subtle vibe that's hard to place, almost an aggression can be felt despite the happy faces"
+            "- some weird subtle vibe that's hard to place, almost an "
+            "aggression can be felt despite the happy faces"
         ),
     )
 
@@ -103,6 +120,8 @@ def example_story_context() -> StoryContext:
 
     locations.current = bedroom
 
-    community_center_arc.conditions.append(IsCurrentLocationCondition("Is in living room", living_room, locations))
+    community_center_arc.conditions.append(
+        IsCurrentLocationCondition("Is in living room", living_room, locations),
+    )
 
     return StoryContext([main_arc, community_center_arc], locations)

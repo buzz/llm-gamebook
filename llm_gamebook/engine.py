@@ -5,7 +5,13 @@ from collections.abc import Iterable, Sequence
 
 from colorama import Style
 from pydantic_ai import Agent
-from pydantic_ai.messages import ModelMessage, ModelResponse, SystemPromptPart, TextPart, ToolCallPart
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelResponse,
+    SystemPromptPart,
+    TextPart,
+    ToolCallPart,
+)
 from pydantic_ai.models import Model, ModelSettings
 
 from llm_gamebook.example import example_story_context
@@ -81,7 +87,8 @@ class StoryEngine:
                             print(f"\n{Style.BRIGHT}{response_text}{Style.RESET_ALL}\n")
                     elif isinstance(part, ToolCallPart):
                         print(
-                            f"\n{Style.DIM}Tool call: {part.tool_name}({part.args_as_json_str()}){Style.RESET_ALL}\n",
+                            f"\n{Style.DIM}Tool call: "
+                            "{part.tool_name}({part.args_as_json_str()}){Style.RESET_ALL}\n",
                         )
 
     def _debug_log_messages(self, messages: Sequence[ModelMessage]) -> None:
