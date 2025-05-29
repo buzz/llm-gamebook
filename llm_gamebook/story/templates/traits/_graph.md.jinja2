@@ -1,0 +1,7 @@
+Current node: {% if instance.current_node.name %}{{ instance.current_node.name }} {% endif %}({{ instance.current_node.slug }})
+
+{% if instance.current_node.description %}
+Description:
+{{ instance.current_node.description|trim }}
+
+{% endif %}

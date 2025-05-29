@@ -1,0 +1,139 @@
+title: Broken Bulb
+description: >
+  Steve, 30 years old, isolated and weary. He lives alone in the city, struggling with loneliness
+  and often drinks to numb his thoughts.
+
+entities:
+  - name: Story Arc
+    instructions: |
+      Story arcs are structured as directed graphs with:
+
+      - Root nodes: starting points.
+      - Intermediate nodes: narrative fragments or checkpoints.
+      - Leaf nodes: endings.
+
+      These graphs are managed entirely by the engine. Never mention or expose their structure or mechanics to the player. The story should feel natural and seamless, without spoilers or meta references.
+    traits:
+      - described
+      - name: graph
+        node_entity: story-arc-node
+    instances:
+      - name: Main
+        description: The main storyline.
+        current_node: the-beginning
+        nodes:
+          - the-beginning
+          - spark-of-hope
+          - happy-end
+      - name: The Meeting
+        description: A leaflet informs the player about a meeting a the local community center.
+        current_node: leaflet-not-found-yet
+        nodes:
+          - leaflet-not-found-yet
+          - leaflet-found
+          - attending-meeting
+          - meeting-is-over
+        # enabled: locations.current_node.slug == "in-the-living-room"
+
+  - name: Story Arc Node
+    traits:
+      - described
+      - graph-node
+    instances:
+      # Main
+      - name: The Beginning
+        description: |
+          - Start of story.
+          - Player is depressed.
+        edges: ["spark-of-hope"]
+      - name: Spark of Hope
+        description: |
+          - Player found a faint spark of hope.
+          - Can he turn fate around and improve his miserable life?
+        edges: ["happy-end"]
+      - name: Happy End
+        description: |
+          - Player is finally happy.
+          - He gained new hope and will change his life to the better.
+
+      # The Meeting
+      - name: Leaflet not found yet
+        description: |
+          - A leaflet was placed under the player's front door.
+          - Its content is not revealed yet.
+        edges: ["leaflet-found"]
+      - name: Leaflet found
+        description: |
+          - Player found the leaflet.
+          - It's an invitation to a meeting at the local community center.
+        edges: ["attending-meeting"]
+      - name: Attending meeting
+        description: |
+          - Player found a leaflet with an invitation to a meeting at the local community center.
+          - Player is attending the meeting.
+        edges: ["meeting-is-over"]
+      - name: Meeting is over
+        description: |
+          - Player found a leaflet with an invitation to a meeting at the local community center.
+          - The player attended and the meeting is over.
+
+  - name: Locations
+    slug: location-graph
+    instructions: |
+      - If a path leads elsewhere (e.g., a door), it should emerge naturally in the narrative without obvious hints. Some paths may be hidden and require the player to search for them.
+      - When the player arrives at a location, describe it before allowing any further location changes.
+      - Do not change the location unless the player explicitly initiates the action.
+    traits:
+      - name: graph
+        node_entity: location
+        transition_function:
+          name: change_location
+          description: Player moves to another location.
+          properties:
+            to: The location to move to.
+    instances:
+      - slug: locations
+        current_node: bedroom
+        nodes:
+          - bedroom
+          - bathroom
+          - living-room
+          - in-the-street
+          - community-center
+
+  - name: Location
+    traits:
+      - described
+      - graph-node
+    instances:
+      - name: Bedroom
+        description: |
+          - dark, dim light
+          - cockroaches under bed
+          - musky smell
+        edges: ["living-room"]
+      - name: Living room
+        description: |
+          - run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)
+          - messy, scattered with empty bottles
+          - dim light
+          - crumpled piece of paper under the front door (might have been placed there when player was sleeping)
+        edges: ["bedroom", "bathroom", "in-the-street"]
+      - name: Bathroom
+        description: |
+          - broken bulb, dark
+          - dripping faucet
+          - nothing of interest here
+        edges: ["living-room"]
+      - name: In the street
+        description: |
+          - nighttime, rainy, gloomy
+          - empty save a drunkard talking to himself
+          - flickering neon
+        edges: ["living-room", "community-center"]
+      - name: Community center
+        description: |
+          - clean, luxurious interior
+          - grotesquely happy people that warmly invite the player inside
+          - some weird subtle vibe that's hard to place, almost an aggression can be felt despite the happy faces
+        edges: ["in-the-street"]

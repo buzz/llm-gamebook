@@ -5,13 +5,26 @@ description = "An interactive storytelling framework using LLMs to generate dyna
 license = "AGPL-3.0-or-later"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["colorama>=0.4.6", "jinja2>=3.1.6", "pydantic-ai-slim[openai]>=0.2.9"]
+dependencies = [
+  "casefy>=1.1.0",
+  "colorama>=0.4.6",
+  "jinja2>=3.1.6",
+  "pydantic>=2.11.5",
+  "pydantic-ai-slim[openai]>=0.2.9",
+  "pyyaml>=6.0.2",
+]
 
 [project.urls]
 source = "https://github.com/buzz/llm-gamebook"
 
 [dependency-groups]
-dev = ["mypy>=1.15.0", "ruff>=0.11.5", "types-colorama>=0.4.15.20240311"]
+dev = [
+  "mypy>=1.15.0",
+  "pytest>=8.3.5",
+  "ruff>=0.11.5",
+  "types-colorama>=0.4.15.20240311",
+  "types-pyyaml>=6.0.12.20250516",
+]
 
 [tool.ruff]
 line-length = 100
@@ -72,7 +85,7 @@ select = [
   "TRY",  # tryceratops
   "UP",   # pyupgrade
 ]
-ignore = ["COM812", "PLR1702", "PLR6301"]
+ignore = ["COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
 
 [tool.mypy]
 disallow_untyped_defs = true
