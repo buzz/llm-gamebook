@@ -48,6 +48,7 @@ class AbstractBaseLoader(abc.ABC):
                 instructions=entity_def.instructions,
                 traits=traits,
                 instances=instances,
+                functions=entity_def.functions,
                 cls=entity_cls,
             )
 

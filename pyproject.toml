@@ -66,6 +66,7 @@ select = [
   "RSE",   #   -raise
   "SIM",   #   -simplify
   "SLOT",  #   -slots
+  "T201",  #   -print
   "T10",   #   -debugger
   "TCH",   #   -type-checking
   "TD004", #   -todos

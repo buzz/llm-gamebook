@@ -35,6 +35,22 @@ class TraitSpec(BaseModel):
         return value
 
 
+class FunctionSpec(BaseModel):
+    """A definition of an LLM-called function for the entity."""
+
+    target: str
+    """The target method to call on the entity."""
+
+    name: str | None = None
+    """The name for the function."""
+
+    description: str | None = None
+    """The description for the function."""
+
+    properties: dict[str, str] | None = None
+    """Maps function argument properties to description."""
+
+
 class EntityDefinition(BaseModel):
     """A definition of a story entity type."""
 
@@ -43,6 +59,7 @@ class EntityDefinition(BaseModel):
     instructions: str | None = None
     traits: list[TraitSpec] = []
     instances: list[BaseEntity]
+    functions: list[FunctionSpec] | None = None
 
     @model_validator(mode="before")
     @classmethod

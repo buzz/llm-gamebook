@@ -12,6 +12,7 @@ from llm_gamebook.types import FunctionResult, StoryTool
 
 if TYPE_CHECKING:
     from llm_gamebook.engine.context import StoryContext
+    from llm_gamebook.schema.entity import FunctionSpec
     from llm_gamebook.story.state import StoryState
 
 
@@ -38,23 +39,9 @@ class GraphNodeTrait(BaseStoryEntity):
         ]
 
 
-class TransitionFunctionInfo(BaseModel):
-    name: str | None
-    """The name for the transition function."""
-
-    description: str | None
-    """The description for the transition function."""
-
-    properties: dict[str, str] | None = None
-    """Maps function argument property to description."""
-
-
 class GraphTraitParams(BaseModel):
     node_entity: Slug
     """The graph node entity type."""
-
-    transition_function: TransitionFunctionInfo | None = None
-    """The transition function exposed to the LLM."""
 
 
 @trait("graph", GraphTraitParams)
@@ -74,49 +61,51 @@ class GraphTrait(BaseStoryEntity):
         """Return instance's tools."""
         yield from super().get_tools()
 
-        params = self._state.get_trait_params(self.entity_type_slug, "graph", GraphTraitParams)
-        if len(self.current_node.edges) > 0 and params.transition_function:
-            trans_func = params.transition_function
+        entity_type = self._state.get_entity_type(self.entity_type_slug)
+        for func_spec in entity_type.functions or ():
+            if func_spec.target == "transition":
+                yield self._make_transition_tool(func_spec)
 
-            def transition(to: str) -> FunctionResult:
-                """Transition to another graph node.
+    def _make_transition_tool(self, func_spec: "FunctionSpec") -> StoryTool:
+        def transition(to: str) -> FunctionResult:
+            """Transition to another graph node.
 
-                Args:
-                    to: The node to transition to.
-                """
-                try:
-                    self.transition(to)
-                except InvalidTransitionError as err:
-                    return {"result": "error", "reason": str(err)}
-                return {"result": "success"}
+            Args:
+                to: The node to transition to.
+            """
+            try:
+                self.transition(to)
+            except InvalidTransitionError as err:
+                return {"result": "error", "reason": str(err)}
 
-            async def prepare(
-                ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
-            ) -> ToolDefinition | None:
-                props = tool_def.parameters_json_schema["properties"]
+            return {"result": "success"}
 
-                # Give LLM list of valid IDs as enum
-                valid_slugs = [edge.slug for edge in self.current_node.edges]
-                props["to"]["enum"] = valid_slugs
+        async def prepare(
+            ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
+        ) -> ToolDefinition | None:
+            schema = tool_def.parameters_json_schema
+            edge_slugs = [edge.slug for edge in self.current_node.edges]
 
-                # Add user-defined property descriptions
-                if trans_func.properties:
-                    for key, descr in trans_func.properties.items():
-                        if key not in props:
-                            msg = f"Property {key} not in argument for function {trans_func.name}"
-                            raise ValueError(msg)
-                        props[key]["description"] = descr
+            # Don't expose transition function if there are no nodes to transition to
+            if len(edge_slugs) == 0:
+                return None
 
-                return tool_def
+            # Provide LLM with a list of valid slugs
+            schema["properties"]["to"]["enum"] = edge_slugs
 
-            yield Tool(
-                transition,
-                name=trans_func.name,
-                description=trans_func.description,
-                strict=True,
-                require_parameter_descriptions=True,
-                prepare=prepare,
-            )
+            if func_spec.properties:
+                self._update_schema_descriptions(schema, func_spec.properties)
+
+            return tool_def
+
+        return Tool(
+            transition,
+            name=func_spec.name,
+            description=func_spec.description,
+            strict=True,
+            require_parameter_descriptions=True,
+            prepare=prepare,
+        )
 
     def transition(self, to: str) -> None:
         try:

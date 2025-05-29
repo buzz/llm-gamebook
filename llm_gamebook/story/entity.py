@@ -1,6 +1,8 @@
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
+from pydantic_ai.tools import ObjectJsonSchema
+
 from llm_gamebook.schema.base import Slug
 from llm_gamebook.types import StoryTool
 
@@ -22,3 +24,13 @@ class BaseStoryEntity:
     def register_events(self, state: "StoryState") -> None:
         """Called when story state initialized."""
         self._state = state
+
+    @staticmethod
+    def _update_schema_descriptions(schema: ObjectJsonSchema, descriptions: dict[str, str]) -> None:
+        """Update tool definition with custom property descriptions."""
+        for key, descr in descriptions.items():
+            try:
+                schema["properties"][key]["description"] = descr
+            except KeyError as err:
+                msg = f"Property {key} not in argument for function {{trans_func.name}}"
+                raise ValueError(msg) from err

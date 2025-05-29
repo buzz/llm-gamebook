@@ -86,11 +86,12 @@ entities:
     traits:
       - name: graph
         node_entity: location
-        transition_function:
-          name: change_location
-          description: Player moves to another location.
-          properties:
-            to: The location to move to.
+    functions:
+      - target: transition
+        name: change_location
+        description: Player moves to another location.
+        properties:
+          to: The location to move to.
     instances:
       - slug: locations
         current_node: bedroom

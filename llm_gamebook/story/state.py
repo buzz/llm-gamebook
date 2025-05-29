@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 from pydantic import BaseModel
 
 from llm_gamebook.schema.base import Slug
+from llm_gamebook.schema.entity import FunctionSpec
 from llm_gamebook.story.entity import BaseStoryEntity
 from llm_gamebook.utils import EventBusMixin
 
@@ -41,6 +42,7 @@ class EntityType:
     instructions: str | None
     traits: list[Trait] | None
     instances: list[BaseStoryEntity]
+    functions: list[FunctionSpec] | None
     cls: type[BaseStoryEntity]
 
     def get_template_context(self) -> dict[str, object]:
