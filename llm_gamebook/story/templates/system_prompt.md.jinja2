@@ -29,10 +29,14 @@ Write the next narrative fragment based on the current story state. Your goal is
 # Story Engine Interface
 
   {% block sp_story_engine %}
-The story engine manages the story’s internal state. Interact with it only via function calls to:
+The story engine manages the story’s internal state. Interact with it only via function calls.
 
-- Retrieve data about the world (locations, NPCs, items, etc.).
-- Update the story state (e.g. marking events, player actions).
+Your task is to either
+- Continue the narration according to the current story state, or
+- call one or more query functions to retrieve more detailed data about the world (locations, NPCs, items, etc.), or
+- call one update function (e.g. marking events, player actions, etc.).
+
+When you call any functions, do not narrate
   {% endblock sp_story_engine %}
 {% endblock sp_prelude %}
 

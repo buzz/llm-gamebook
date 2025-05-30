@@ -7,11 +7,15 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from llm_gamebook.engine import StoryContext, StoryEngine
+from llm_gamebook.engine.tui import TextUserInterface
 from llm_gamebook.logger import logger
 from llm_gamebook.story.loader import YAMLLoader
 
 if __name__ == "__main__":
-    if "--debug" in sys.argv:
+    debug = "--debug" in sys.argv
+    streaming = "--no-streaming" not in sys.argv
+
+    if debug:
         logger.setLevel(logging.DEBUG)
 
     model = OpenAIModel(
@@ -20,5 +24,5 @@ if __name__ == "__main__":
     )
     state = YAMLLoader(Path(__file__).parent.parent / "examples" / "broken-bulb").load()
     context = StoryContext(state)
-    engine = StoryEngine(model, context)
+    engine = StoryEngine(model, context, TextUserInterface(debug=debug), streaming=streaming)
     asyncio.run(engine.story_loop())
