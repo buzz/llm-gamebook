@@ -1,14 +1,14 @@
 from typing import Any
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-from llm_gamebook.schema.base import BaseEntity, Slug
-from llm_gamebook.schema.validators import derive_from_name
+from llm_gamebook.schema.validators import pascal_case_from_name, snake_case_from_name
 from llm_gamebook.story.traits.registry import trait_registry
+from llm_gamebook.types import NormalizedPascalCase, NormalizedSnakeCase
 
 
 class TraitSpec(BaseModel):
-    name: Slug
+    name: NormalizedSnakeCase
     params: dict[str, Any] | None = None
 
     @model_validator(mode="before")
@@ -51,17 +51,32 @@ class FunctionSpec(BaseModel):
     """Maps function argument properties to description."""
 
 
+class BaseEntity(BaseModel):
+    """The base class to all story entities."""
+
+    # Preserve extra attributes for mixins/traits
+    model_config = ConfigDict(extra="allow")
+
+    id: NormalizedSnakeCase
+    """A unique identifier."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def snake_case_from_name(cls, data: Any) -> Any:
+        return snake_case_from_name(data)
+
+
 class EntityDefinition(BaseModel):
     """A definition of a story entity type."""
 
-    slug: Slug
+    id: NormalizedPascalCase
     name: str
     instructions: str | None = None
     traits: list[TraitSpec] = []
-    instances: list[BaseEntity]
+    entities: list[BaseEntity]
     functions: list[FunctionSpec] | None = None
 
     @model_validator(mode="before")
     @classmethod
-    def derive_slug_from_name(cls, data: Any) -> Any:
-        return derive_from_name(data)
+    def pascal_case_from_name(cls, data: Any) -> Any:
+        return pascal_case_from_name(data)

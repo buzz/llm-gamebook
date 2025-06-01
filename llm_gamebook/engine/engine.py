@@ -21,10 +21,12 @@ from pydantic_ai.result import StreamedRunResult
 from llm_gamebook.engine.context import StoryContext
 from llm_gamebook.engine.messages import MessageList
 from llm_gamebook.logger import logger
-from llm_gamebook.types import UserInterface
+
+if TYPE_CHECKING:
+    from llm_gamebook.types import UserInterface
 
 
-class StoryEngine:
+        self, model: Model, context: StoryContext, ui: "UserInterface", *, streaming: bool = True
     def __init__(
         self, model: Model, context: StoryContext, ui: UserInterface, *, streaming: bool = True
     ) -> None:

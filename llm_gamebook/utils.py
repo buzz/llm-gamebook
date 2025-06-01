@@ -1,8 +1,9 @@
-import re
 import unicodedata
 from collections import defaultdict
 from collections.abc import Callable
 from typing import Any
+
+import casefy
 
 
 class EventBusMixin:
@@ -18,11 +19,14 @@ class EventBusMixin:
             handler(*args, **kwargs)
 
 
-def slugify(text: str) -> str:
-    # Normalize and remove accents
+def normalize(text: str) -> str:
     text = unicodedata.normalize("NFKD", text)
-    text = text.encode("ascii", "ignore").decode("ascii")
+    return text.encode("ascii", "ignore").decode("ascii")
 
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9]+", "-", text)
-    return text.strip("-")
+
+def normalized_snake_case(text: str) -> str:
+    return casefy.snakecase(normalize(text))
+
+
+def normalized_pascal_case(text: str) -> str:
+    return casefy.pascalcase(normalize(text))

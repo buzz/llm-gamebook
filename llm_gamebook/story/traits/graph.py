@@ -1,14 +1,13 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
-from llm_gamebook.schema.base import Slug
 from llm_gamebook.story.entity import BaseStoryEntity
 from llm_gamebook.story.traits.registry import trait
-from llm_gamebook.types import FunctionResult, StoryTool
+from llm_gamebook.types import FunctionResult, NormalizedPascalCase, NormalizedSnakeCase, StoryTool
 
 if TYPE_CHECKING:
     from llm_gamebook.engine.context import StoryContext
@@ -20,27 +19,26 @@ class InvalidTransitionError(Exception):
     pass
 
 
-@trait("graph-node")
+@trait("graph_node")
 class GraphNodeTrait(BaseStoryEntity):
     """Adds the capability to be used as graph node to an entity."""
 
-    def __init__(self, edges: list[Slug] | None = None, *args: Any, **kwargs: Any):
+    def __init__(self, edges: list[NormalizedSnakeCase] | None = None, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.edges: list[GraphNodeTrait]
 
-        # Remember slugs for resolving them later
-        self._edge_slugs = edges or []
+        # Remember ids for resolving them later
+        self._edge_ids = edges or []
 
-    def resolve_edge_slugs(self, node_entity_slug: Slug) -> None:
-        """Resolve edge slugs to actual instances."""
+    def resolve_edge_ids(self, node_entity_id: str) -> None:
+        """Resolve edge ids to actual entities."""
         self.edges = [
-            self._state.get_instance(slug, node_entity_slug, GraphNodeTrait)
-            for slug in self._edge_slugs
+            self._state.get_entity(id_, node_entity_id, GraphNodeTrait) for id_ in self._edge_ids
         ]
 
 
 class GraphTraitParams(BaseModel):
-    node_entity: Slug
+    node_entity: NormalizedPascalCase
     """The graph node entity type."""
 
 
@@ -48,7 +46,13 @@ class GraphTraitParams(BaseModel):
 class GraphTrait(BaseStoryEntity):
     """Adds the capability to be used as graph to an entity."""
 
-    def __init__(self, nodes: list[Slug], current_node: Slug, *args: Any, **kwargs: Any):
+    def __init__(
+        self,
+        nodes: list[NormalizedSnakeCase],
+        current_node: NormalizedSnakeCase,
+        *args: Any,
+        **kwargs: Any,
+    ):
         super().__init__(*args, **kwargs)
         self.nodes: list[GraphNodeTrait]
         self.current_node: GraphNodeTrait
@@ -58,10 +62,9 @@ class GraphTrait(BaseStoryEntity):
         self._current_node_slug = current_node
 
     def get_tools(self) -> Iterable[StoryTool]:
-        """Return instance's tools."""
         yield from super().get_tools()
 
-        entity_type = self._state.get_entity_type(self.entity_type_slug)
+        entity_type = self._state.get_entity_type(self.entity_type_id)
         for func_spec in entity_type.functions or ():
             if func_spec.target == "transition":
                 yield self._make_transition_tool(func_spec)
@@ -84,14 +87,14 @@ class GraphTrait(BaseStoryEntity):
             ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
         ) -> ToolDefinition | None:
             schema = tool_def.parameters_json_schema
-            edge_slugs = [edge.slug for edge in self.current_node.edges]
+            edge_ids = [edge.id for edge in self.current_node.edges]
 
             # Don't expose transition function if there are no nodes to transition to
-            if len(edge_slugs) == 0:
+            if len(edge_ids) == 0:
                 return None
 
-            # Provide LLM with a list of valid slugs
-            schema["properties"]["to"]["enum"] = edge_slugs
+            # Provide LLM with a list of valid IDs
+            schema["properties"]["to"]["enum"] = edge_ids
 
             if func_spec.properties:
                 self._update_schema_descriptions(schema, func_spec.properties)
@@ -109,36 +112,33 @@ class GraphTrait(BaseStoryEntity):
 
     def transition(self, to: str) -> None:
         try:
-            self.current_node = next(node for node in self.current_node.edges if node.slug == to)
+            self.current_node = next(node for node in self.current_node.edges if node.id == to)
         except StopIteration as err:
-            msg = f"{to} is not a valid transition for node {self.current_node.slug}"
+            msg = f"{to} is not a valid transition for node {self.current_node.id}"
             raise InvalidTransitionError(msg) from err
 
     def register_events(self, state: "StoryState") -> None:
         super().register_events(state)
-        state.subscribe("init", self._resolve_node_slugs)
+        state.subscribe("init", self._resolve_node_ids)
 
-    def _resolve_node_slugs(self) -> None:
-        """Resolve node slugs to actual instances."""
-        # Get node entity slug
-        params = self._state.get_trait_params(self.entity_type_slug, "graph", GraphTraitParams)
-        node_entity_slug = params.node_entity
+    def _resolve_node_ids(self) -> None:
+        """Resolve node IDs to actual entities."""
+        # Get node entity ID
+        params = self._state.get_trait_params(self.entity_type_id, "graph", GraphTraitParams)
+        node_entity_id = params.node_entity
 
         # Nodes
         self.nodes = [
-            self._state.get_instance(slug, node_entity_slug, GraphNodeTrait)
-            for slug in self._node_slugs
+            self._state.get_entity(id_, node_entity_id, GraphNodeTrait) for id_ in self.node_ids
         ]
 
         # Current node
         try:
-            self.current_node = next(
-                node for node in self.nodes if node.slug == self._current_node_slug
-            )
+            self.current_node = next(node for node in self.nodes if node.id == self.current_node_id)
         except StopIteration as err:
-            msg = f"Graph {self.slug}: current_node {self._current_node_slug} not found"
+            msg = f"Graph {self.id}: current_node {self.current_node_id} not found"
             raise ValueError(msg) from err
 
-        # Resolve edge slugs for each node
+        # Resolve edge IDs for each node
         for node in self.nodes:
-            node.resolve_edge_slugs(node_entity_slug)
+            node.resolve_edge_ids(node_entity_id)

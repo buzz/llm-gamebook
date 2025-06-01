@@ -16,41 +16,40 @@ entities:
     traits:
       - described
       - name: graph
-        node_entity: story-arc-node
-    instances:
+        node_entity: StoryArcNode
+    entities:
       - name: Main
         description: The main storyline.
-        current_node: the-beginning
+        current_node: the_beginning
         nodes:
-          - the-beginning
-          - spark-of-hope
-          - happy-end
+          - the_beginning
+          - spark_of_hope
+          - happy_end
       - name: The Meeting
-        description: A leaflet informs the player about a meeting a the local community center.
-        current_node: leaflet-not-found-yet
+        description: A story arc where the player can attend a meeting at the local community center.
+        current_node: leaflet_not_found_yet
         nodes:
-          - leaflet-not-found-yet
-          - leaflet-found
-          - attending-meeting
-          - meeting-is-over
-        # enabled: locations.current_node.slug == "in-the-living-room"
+          - leaflet_not_found_yet
+          - leaflet_found
+          - attending_meeting
+          - meeting_is_over
 
   - name: Story Arc Node
     traits:
       - described
-      - graph-node
-    instances:
+      - graph_node
+    entities:
       # Main
       - name: The Beginning
         description: |
           - Start of story.
           - Player is depressed.
-        edges: ["spark-of-hope"]
+        edges: ["spark_of_hope"]
       - name: Spark of Hope
         description: |
           - Player found a faint spark of hope.
           - Can he turn fate around and improve his miserable life?
-        edges: ["happy-end"]
+        edges: ["happy_end"]
       - name: Happy End
         description: |
           - Player is finally happy.
@@ -66,75 +65,75 @@ entities:
         description: |
           - Player found the leaflet.
           - It's an invitation to a meeting at the local community center.
-        edges: ["attending-meeting"]
+        edges: ["attending_meeting"]
       - name: Attending meeting
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
           - Player is attending the meeting.
-        edges: ["meeting-is-over"]
+        edges: ["meeting_is_over"]
       - name: Meeting is over
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
           - The player attended and the meeting is over.
 
-  - name: Locations
-    slug: location-graph
+  - id: LocationGraph
+    name: Locations
     instructions: |
       - If a path leads elsewhere (e.g., a door), it should emerge naturally in the narrative without obvious hints. Some paths may be hidden and require the player to search for them.
       - When the player arrives at a location, describe it before allowing any further location changes.
       - Do not change the location unless the player explicitly initiates the action.
     traits:
       - name: graph
-        node_entity: location
+        node_entity: Location
     functions:
       - target: transition
         name: change_location
         description: Player moves to another location.
         properties:
           to: The location to move to.
-    instances:
-      - slug: locations
+    entities:
+      - id: locations
         current_node: bedroom
         nodes:
           - bedroom
           - bathroom
-          - living-room
-          - in-the-street
-          - community-center
+          - living_room
+          - in_the_street
+          - community_center
 
   - name: Location
     traits:
       - described
-      - graph-node
-    instances:
+      - graph_node
+    entities:
       - name: Bedroom
         description: |
           - dark, dim light
           - cockroaches under bed
           - musky smell
-        edges: ["living-room"]
+        edges: ["living_room"]
       - name: Living room
         description: |
           - run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)
           - messy, scattered with empty bottles
           - dim light
           - crumpled piece of paper under the front door (might have been placed there when player was sleeping)
-        edges: ["bedroom", "bathroom", "in-the-street"]
+        edges: ["bedroom", "bathroom", "in_the_street"]
       - name: Bathroom
         description: |
           - broken bulb, dark
           - dripping faucet
           - nothing of interest here
-        edges: ["living-room"]
+        edges: ["living_room"]
       - name: In the street
         description: |
           - nighttime, rainy, gloomy
           - empty save a drunkard talking to himself
           - flickering neon
-        edges: ["living-room", "community-center"]
+        edges: ["living_room", "community_center"]
       - name: Community center
         description: |
           - clean, luxurious interior
           - grotesquely happy people that warmly invite the player inside
           - some weird subtle vibe that's hard to place, almost an aggression can be felt despite the happy faces
-        edges: ["in-the-street"]
+        edges: ["in_the_street"]

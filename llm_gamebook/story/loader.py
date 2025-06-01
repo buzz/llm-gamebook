@@ -1,12 +1,11 @@
 import abc
+from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import casefy
 import yaml
 
 from llm_gamebook.schema import GamebookProject
-from llm_gamebook.schema.base import Slug
 from llm_gamebook.schema.entity import EntityDefinition
 from llm_gamebook.story.entity import BaseStoryEntity
 from llm_gamebook.story.state import EntityType, StoryState, Trait
@@ -34,22 +33,21 @@ class AbstractBaseLoader(abc.ABC):
         )
 
     @classmethod
-    def _compose_entity_types(cls, project: GamebookProject) -> dict[Slug, EntityType]:
+    def _compose_entity_types(cls, project: GamebookProject) -> dict[str, EntityType]:
         """Build entity classes from project definitions."""
-        types: dict[Slug, EntityType] = {}
+        types: dict[str, EntityType] = {}
         for entity_def in project.entities:
             traits, bases = cls._compose_traits(entity_def)
-            entity_cls = type(casefy.pascalcase(entity_def.slug), bases, {})
-            instances = cls._create_instances(entity_def, entity_cls)
+            entity_cls = type(entity_def.id, bases, {})
+            entities = {e.id: e for e in cls._create_entities(entity_def, entity_cls)}
 
-            types[entity_def.slug] = EntityType(
-                slug=entity_def.slug,
+            types[entity_def.id] = EntityType(
+                id=entity_def.id,
                 name=entity_def.name,
                 instructions=entity_def.instructions,
                 traits=traits,
-                instances=instances,
+                entities=entities,
                 functions=entity_def.functions,
-                cls=entity_cls,
             )
 
         return types
@@ -76,9 +74,9 @@ class AbstractBaseLoader(abc.ABC):
         return traits, (*bases, BaseStoryEntity)
 
     @classmethod
-    def _create_instances(
+    def _create_entities(
         cls,
-        entity_def: EntityDefinition,
+        entity_type_def: EntityDefinition,
         entity_cls: type[BaseStoryEntity],
     ) -> list[BaseStoryEntity]:
         instances: list[BaseStoryEntity] = []

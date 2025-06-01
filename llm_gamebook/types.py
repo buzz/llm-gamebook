@@ -1,13 +1,21 @@
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Literal, Protocol, TypedDict
+from typing import TYPE_CHECKING, Annotated, Literal, Protocol, TypedDict
 
+from pydantic import AfterValidator
 from pydantic_ai.tools import Tool
+
+from llm_gamebook.schema.validators import (
+    is_normalized_pascal_case,
+    is_normalized_snake_case,
+)
 
 if TYPE_CHECKING:
     from llm_gamebook.engine.context import StoryContext
 
 type StoryTool = Tool[StoryContext]
+type NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
+type NormalizedSnakeCase = Annotated[str, AfterValidator(is_normalized_snake_case)]
 
 
 class FunctionSuccessResult(TypedDict):

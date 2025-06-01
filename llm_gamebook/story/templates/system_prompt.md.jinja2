@@ -54,9 +54,9 @@ When you call any functions, do not narrate
 
 {{ entity_type.instructions|trim }}
 
-        {% for instance in entity_type.instances %}
+        {% for entity in entity_type.entities %}
           {% for trait in entity_type.traits %}
-            {% with entity_type=entity_type, instance=instance %}
+            {% with entity_type=entity_type, entity=entity %}
               {% include "traits/_" ~ trait ~ ".md.jinja2" ignore missing %}
             {% endwith %}
           {% endfor %}

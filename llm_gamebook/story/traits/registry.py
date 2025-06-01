@@ -4,7 +4,8 @@ from typing import Any, TypedDict, cast, get_type_hints
 
 from pydantic import BaseModel, create_model
 
-from llm_gamebook.schema.base import Slug
+from llm_gamebook.schema.validators import is_normalized_snake_case
+from llm_gamebook.story.entity import BaseStoryEntity, EntityProperty
 
 TraitRegistryEntry = TypedDict(
     "TraitRegistryEntry",
@@ -13,14 +14,14 @@ TraitRegistryEntry = TypedDict(
         "class": type,
         # Trait parameters model
         "param_model": type[BaseModel] | None,
-        # Instance args model
-        "arg_model": type[BaseModel] | None,
+        # Instance props model
+        "props_model": type[BaseModel] | None,
     },
 )
 
 
-trait_registry: dict[Slug, TraitRegistryEntry] = {}
-"""Maps trait slug to entry."""
+trait_registry: dict[str, TraitRegistryEntry] = {}
+"""Maps trait ID to entry."""
 
 
 def model_from_constructor_annotations(cls: type) -> type[BaseModel] | None:
@@ -38,18 +39,24 @@ def model_from_constructor_annotations(cls: type) -> type[BaseModel] | None:
         args[name] = get_type_hints(init)[name], default
 
     field_definitions = cast("dict[str, Any]", args)
-    return create_model(f"{cls.__name__}ArgsModel", **field_definitions)
+    return create_model(f"{cls.__name__}PropsModel", **field_definitions)
 
 
-def trait(name: Slug, params_model: type[BaseModel] | None = None) -> Callable[[type], type]:
+def trait(name: str, params_model: type[BaseModel] | None = None) -> Callable[[type], type]:
     """Class decorator that registers story entity traits."""
 
+    if not is_normalized_snake_case(name):
+        msg = f"Trait name must be normalized snake_case {name}"
+        raise ValueError(msg)
+
     def wrapper(cls: type) -> type:
+        # Register trait
         trait_registry[name] = {
             "class": cls,
             "param_model": params_model,
-            "arg_model": model_from_constructor_annotations(cls),
+            "props_model": model_from_constructor_annotations(cls),
         }
+
         return cls
 
     return wrapper

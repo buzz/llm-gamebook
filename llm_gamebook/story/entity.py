@@ -1,20 +1,27 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 
 from pydantic_ai.tools import ObjectJsonSchema
 
-from llm_gamebook.schema.base import Slug
-from llm_gamebook.types import StoryTool
-
 if TYPE_CHECKING:
     from llm_gamebook.story import StoryState
+    from llm_gamebook.types import StoryTool
+
+
+type EntityProperty = Sequence[BaseStoryEntity] | BaseStoryEntity | str | bool | int | float
 
 
 class BaseStoryEntity:
-    def __init__(self, slug: Slug, entity_type_slug: Slug, *args: Any, **kwargs: Any):
+    def __init__(
+        self,
+        id_: str,
+        entity_type_id: str,
+        *args: Any,
+        **kwargs: Any,
+    ):
         super().__init__(*args, **kwargs)
-        self.slug = slug
-        self.entity_type_slug = entity_type_slug
+        self.id = id_
+        self.entity_type_id = entity_type_id
         self._state: StoryState
 
     def get_tools(self) -> Iterable[StoryTool]:
