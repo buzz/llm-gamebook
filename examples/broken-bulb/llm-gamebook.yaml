@@ -3,7 +3,7 @@ description: >
   Steve, 30 years old, isolated and weary. He lives alone in the city, struggling with loneliness
   and often drinks to numb his thoughts.
 
-entities:
+entity_types:
   - name: Story Arc
     instructions: |
       Story arcs are structured as directed graphs with:
@@ -16,19 +16,19 @@ entities:
     traits:
       - described
       - name: graph
-        node_entity: StoryArcNode
+        node_type_id: StoryArcNode
     entities:
       - name: Main
         description: The main storyline.
-        current_node: the_beginning
-        nodes:
+        current_node_id: the_beginning
+        node_ids:
           - the_beginning
           - spark_of_hope
           - happy_end
       - name: The Meeting
         description: A story arc where the player can attend a meeting at the local community center.
-        current_node: leaflet_not_found_yet
-        nodes:
+        current_node_id: leaflet_not_found_yet
+        node_ids:
           - leaflet_not_found_yet
           - leaflet_found
           - attending_meeting
@@ -44,12 +44,12 @@ entities:
         description: |
           - Start of story.
           - Player is depressed.
-        edges: ["spark_of_hope"]
+        edge_ids: ["spark_of_hope"]
       - name: Spark of Hope
         description: |
           - Player found a faint spark of hope.
           - Can he turn fate around and improve his miserable life?
-        edges: ["happy_end"]
+        edge_ids: ["happy_end"]
       - name: Happy End
         description: |
           - Player is finally happy.
@@ -58,23 +58,26 @@ entities:
       # The Meeting
       - name: Leaflet not found yet
         description: |
-          - A leaflet was placed under the player's front door.
+          - A leaflet was placed under the player's appartment front door.
           - Its content is not revealed yet.
-        edges: ["leaflet_found"]
-        enabled: locations.current_node.id == "living_room"
-        # enabled:
-        #   - locations.current_node.id == "in_the_living_room"
-        #   - the_meeting.current_node.id == "leaflet_not_found_yet"
+        edge_ids: ["leaflet_found"]
+        enabled:
+          - locations.current_node.id == "living_room"
+          - the_meeting.current_node.id == "leaflet_not_found_yet"
       - name: Leaflet found
         description: |
           - Player found the leaflet.
+          - The leaflet is badly designed with hearts and flowers printed on it.
           - It's an invitation to a meeting at the local community center.
-        edges: ["attending_meeting"]
+        edge_ids: ["attending_meeting"]
+        enabled:
+          - locations.current_node.id == "in_the_living_room"
+          - the_meeting.current_node.id == "leaflet-found"
       - name: Attending meeting
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
           - Player is attending the meeting.
-        edges: ["meeting_is_over"]
+        edge_ids: ["meeting_is_over"]
       - name: Meeting is over
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
@@ -88,7 +91,7 @@ entities:
       - Do not change the location unless the player explicitly initiates the action.
     traits:
       - name: graph
-        node_entity: Location
+        node_type_id: Location
     functions:
       - target: transition
         name: change_location
@@ -97,8 +100,8 @@ entities:
           to: The location to move to.
     entities:
       - id: locations
-        current_node: bedroom
-        nodes:
+        current_node_id: bedroom
+        node_ids:
           - bedroom
           - bathroom
           - living_room
@@ -115,29 +118,28 @@ entities:
           - dark, dim light
           - cockroaches under bed
           - musky smell
-        edges: ["living_room"]
+        edge_ids: ["living_room"]
       - name: Living room
         description: |
-          - run-down, tiny appartment (living room with pantry kitchen, bedroom, bathroom)
+          - run-down living room of the tiny appartment with pantry kitchen
           - messy, scattered with empty bottles
           - dim light
-          - crumpled piece of paper under the front door (might have been placed there when player was sleeping)
-        edges: ["bedroom", "bathroom", "in_the_street"]
+        edge_ids: ["bedroom", "bathroom", "in_the_street"]
       - name: Bathroom
         description: |
           - broken bulb, dark
           - dripping faucet
           - nothing of interest here
-        edges: ["living_room"]
+        edge_ids: ["living_room"]
       - name: In the street
         description: |
           - nighttime, rainy, gloomy
           - empty save a drunkard talking to himself
           - flickering neon
-        edges: ["living_room", "community_center"]
+        edge_ids: ["living_room", "community_center"]
       - name: Community center
         description: |
           - clean, luxurious interior
           - grotesquely happy people that warmly invite the player inside
           - some weird subtle vibe that's hard to place, almost an aggression can be felt despite the happy faces
-        edges: ["in_the_street"]
+        edge_ids: ["in_the_street"]

@@ -1,35 +1,27 @@
 from collections.abc import Mapping
-from typing import Any
 
-from llm_gamebook.schema.expression import BooleanExpression
-from llm_gamebook.story.entity import BaseStoryEntity
-from llm_gamebook.story.traits.registry import trait
+from llm_gamebook.schema.expression import BoolExprDefinition
+from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.trait_registry import trait_registry
 
 
-@trait("described")
-class DescribedTrait(BaseStoryEntity):
-    """Adds LLM-facing fields to an entity."""
+@trait_registry.register("described")
+class DescribedTrait(BaseEntity):
+    """Trait adding fields for LLM-facing data to an entity."""
 
-    def __init__(
-        self,
-        name: str,
-        description: str | None = None,
-        *args: Any,
-        enabled: BooleanExpression | None = None,
-        **kwargs: Any,
-    ):
-        super().__init__(*args, **kwargs)
-        self.name = name
-        self.description = description
-        self.enabled = enabled or BooleanExpression(value=True)
+    name: str
+    """Human-readable name of the entity presented to the LLM."""
 
-    def get_template_context(
-        self, entities: "Mapping[str, BaseStoryEntity]"
-    ) -> Mapping[str, object]:
-        ctx = super().get_template_context(entities)
+    description: str
+    """Detailed description of the entity presented to the LLM."""
+
+    enabled: BoolExprDefinition = BoolExprDefinition(value=True)
+    """If the entity should be presented to the LLM."""
+
+    def get_template_context(self) -> Mapping[str, object]:
         return {
-            **ctx,
+            **super().get_template_context(),
             "name": self.name,
             "description": self.description,
-            "enabled": self.enabled.evaluate(entities),
+            "enabled": self.enabled.evaluate(self.project),
         }

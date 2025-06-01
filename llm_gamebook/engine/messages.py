@@ -7,6 +7,9 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
 think_block_re = re.compile(r"<think>\s*(.*?)\s*</think>\s*(.*)", re.DOTALL)
 
 
+# TODO: Try to put general guidelines into system message, all current story state inside the
+#       current user prompt as preamble
+# TODO: Remove initial message after shown
 class MessageList(Sequence[ModelMessage]):
     def __init__(self) -> None:
         self._messages: list[ModelMessage] = []

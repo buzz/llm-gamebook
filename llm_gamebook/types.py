@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Annotated, Literal, Protocol, TypedDict
 
 from pydantic import AfterValidator
-from pydantic_ai.tools import Tool
 
 from llm_gamebook.schema.validators import (
     is_normalized_pascal_case,
@@ -11,11 +10,18 @@ from llm_gamebook.schema.validators import (
 )
 
 if TYPE_CHECKING:
-    from llm_gamebook.engine.context import StoryContext
+    from pydantic_ai.tools import Tool
 
-type StoryTool = Tool[StoryContext]
-type NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
-type NormalizedSnakeCase = Annotated[str, AfterValidator(is_normalized_snake_case)]
+    from llm_gamebook.story.state import StoryState
+
+type StoryTool = Tool[StoryState]
+"""A LLM tool function."""
+
+NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
+"""PascalCase name with non-ASCII characters normalized."""
+
+NormalizedSnakeCase = Annotated[str, AfterValidator(is_normalized_snake_case)]
+"""snake_case name with non-ASCII characters normalized."""
 
 
 class FunctionSuccessResult(TypedDict):

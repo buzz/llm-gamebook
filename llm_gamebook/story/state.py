@@ -1,136 +1,50 @@
-from collections.abc import Mapping
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from functools import cached_property
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+import jinja2
 
-from llm_gamebook.utils import EventBusMixin
+from llm_gamebook.story.project import Project
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from llm_gamebook.schema.entity import FunctionSpec
-    from llm_gamebook.story.entity import BaseStoryEntity
     from llm_gamebook.types import StoryTool
 
 
-class StateNotFoundError(Exception):
-    pass
-
-
-class EntityTypeNotFoundError(StateNotFoundError):
-    pass
-
-
-class TraitNotFoundError(StateNotFoundError):
-    pass
-
-
-class InstanceNotFoundError(StateNotFoundError):
-    pass
-
-
-@dataclass
-class Trait:
-    id: str
-    params: BaseModel | None
-
-
-@dataclass
-class EntityType:
-    id: str
-    name: str
-    instructions: str | None
-    traits: list[Trait] | None
-    entities: "Mapping[str, BaseStoryEntity]"
-    functions: "list[FunctionSpec] | None"
-
-    def get_template_context(
-        self, entities: "Mapping[str, BaseStoryEntity]"
-    ) -> Mapping[str, object]:
-        return {
-            "id": self.id,
-            "name": self.name,
-            "instructions": self.instructions,
-            "traits": [trait.id for trait in self.traits or ()],
-            "entities": [
-                entity.get_template_context(entities) for entity in self.entities.values()
-            ],
-        }
-
-    def get_tools(self) -> "Iterable[StoryTool]":
-        for entity in self.entities.values():
-            yield from entity.get_tools()
-
-
-class StoryState(EventBusMixin):
+# TODO: prevent entity id collisions
+class StoryState:
     def __init__(
         self,
-        entity_types: Mapping[str, EntityType],
-        title: str,
-        author: str | None = None,
-        description: str | None = None,
+        project: Project,
     ) -> None:
         super().__init__()
-        self.entity_types = entity_types
-        self.title = title
-        self.author = author
-        self.description = description
+        self._project = project
 
-        # Let entities register events
-        for entity in self.all_entities().values():
-            entity.register_events(self)
+    @property
+    def project(self) -> "Project":
+        return self._project
 
-        self.emit("init")
+    def get_tools(self) -> "Iterable[StoryTool]":
+        for entity_type in self._project.entity_type_map.values():
+            yield from entity_type.get_tools()
 
-    def all_entities(self) -> "Mapping[str, BaseStoryEntity]":
-        return {
-            id_: entity
-            for entity_type in self.entity_types.values()
-            for id_, entity in entity_type.entities.items()
-        }
+    async def get_system_prompt(self) -> str:
+        """Render system prompt."""
+        # TODO: Instantiate expression evaluator and do expression result caching?
+        # Infer the context dict by looking at model fields, evaluating automatically?
+        ctx = self._project.get_template_context()
+        return await self._jinja_env.get_template("system_prompt.md.jinja2").render_async(ctx)
 
-    def get_entity_type(self, entity_type_id: str) -> EntityType:
-        try:
-            return self.entity_types[entity_type_id]
-        except KeyError as err:
-            msg = f"Entity type not found: {entity_type_id}"
-            raise EntityTypeNotFoundError(msg) from err
+    async def get_first_message(self) -> str:
+        """Render first message."""
+        return await self._jinja_env.get_template("first_message.md.jinja2").render_async()
 
-    def get_entity[T: "BaseStoryEntity"](
-        self, id_: str, entity_type_id: str, cast_type: type[T]
-    ) -> T:
-        try:
-            entity_type = self.get_entity_type(entity_type_id)
-        except EntityTypeNotFoundError as err:
-            msg = f"Invalid entity type: {entity_type_id}"
-            raise InstanceNotFoundError(msg) from err
-
-        try:
-            entity = entity_type.entities[id_]
-        except StopIteration as err:
-            msg = f"Instance not found: {id_}"
-            raise InstanceNotFoundError(msg) from err
-
-        return cast("T", entity)
-
-    def get_trait_params[T: BaseModel](
-        self, entity_type_id: str, trait_id: str, model: type[T]
-    ) -> T:
-        try:
-            entity_type = self.get_entity_type(entity_type_id)
-        except EntityTypeNotFoundError as err:
-            msg = f"Invalid entity type: {entity_type_id}"
-            raise TraitNotFoundError(msg) from err
-
-        try:
-            params = next(t for t in (entity_type.traits or ()) if t.id == trait_id).params
-        except StopIteration as err:
-            msg = f"Trait not found: {trait_id}"
-            raise TraitNotFoundError(msg) from err
-
-        if params is None:
-            msg = f"Trait {trait_id} has no parameters"
-            raise TypeError(msg)
-
-        return cast("T", params)
+    @cached_property
+    def _jinja_env(self) -> jinja2.Environment:
+        return jinja2.Environment(
+            loader=jinja2.PackageLoader(__name__, "templates"),
+            autoescape=False,
+            trim_blocks=True,
+            lstrip_blocks=True,
+            enable_async=True,
+        )

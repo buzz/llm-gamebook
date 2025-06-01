@@ -1,3 +1,3 @@
-from llm_gamebook.schema.project import GamebookProject
+from llm_gamebook.schema.project import ProjectDefinition
 
-__all__ = ["GamebookProject"]
+__all__ = ["ProjectDefinition"]

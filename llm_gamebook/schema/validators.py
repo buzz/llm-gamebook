@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any
 
 from llm_gamebook.utils import normalized_pascal_case, normalized_snake_case
@@ -17,25 +18,13 @@ def is_normalized_pascal_case(v: str) -> str:
     return v
 
 
-def pascal_case_from_name(v: Any) -> Any:
-    if isinstance(v, dict):
+def id_from_name(data: Any, generate_id: Callable[[str], str]) -> Any:
+    if isinstance(data, dict):
         try:
-            name = v["name"]
+            name = data["name"]
         except KeyError:
             pass
         else:
-            if "id" not in v:
-                v["id"] = normalized_pascal_case(name)
-    return v
-
-
-def snake_case_from_name(v: Any) -> Any:
-    if isinstance(v, dict):
-        try:
-            name = v["name"]
-        except KeyError:
-            pass
-        else:
-            if "id" not in v:
-                v["id"] = normalized_snake_case(name)
-    return v
+            if "id" not in data:
+                data["id"] = generate_id(name)
+    return data

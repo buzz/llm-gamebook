@@ -1,17 +1,16 @@
 from collections.abc import Iterable, Mapping
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, PrivateAttr
 from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
-from llm_gamebook.story.entity import BaseStoryEntity
-from llm_gamebook.story.traits.registry import trait
+from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.trait_registry import trait_registry
 from llm_gamebook.types import FunctionResult, NormalizedPascalCase, NormalizedSnakeCase, StoryTool
 
 if TYPE_CHECKING:
-    from llm_gamebook.engine.context import StoryContext
-    from llm_gamebook.schema.entity import FunctionSpec
+    from llm_gamebook.schema.entity import FunctionDefinition
     from llm_gamebook.story.state import StoryState
 
 
@@ -19,67 +18,83 @@ class InvalidTransitionError(Exception):
     pass
 
 
-@trait("graph_node")
-class GraphNodeTrait(BaseStoryEntity):
+@trait_registry.register("graph_node")
+class GraphNodeTrait(BaseEntity):
     """Adds the capability to be used as graph node to an entity."""
 
-    def __init__(self, edges: list[NormalizedSnakeCase] | None = None, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-        self.edges: list[GraphNodeTrait]
+    edge_ids: list[NormalizedSnakeCase] = Field(default=[])
+    """List of edge IDs."""
 
-        # Remember ids for resolving them later
-        self._edge_ids = edges or []
+    _edges: "list[GraphNodeTrait]" = PrivateAttr()
+    """List of resolved edge entities."""
 
-    def resolve_edge_ids(self, node_entity_id: str) -> None:
-        """Resolve edge ids to actual entities."""
-        self.edges = [
-            self._state.get_entity(id_, node_entity_id, GraphNodeTrait) for id_ in self._edge_ids
+    @property
+    def edges(self) -> "list[GraphNodeTrait]":
+        return self._edges
+
+    def get_template_context(self) -> Mapping[str, object]:
+        return {
+            **super().get_template_context(),
+            "edges": [node.id for node in self._edges],
+        }
+
+    def post_init(self) -> None:
+        self._resolve_edge_ids()
+
+    def _resolve_edge_ids(self) -> None:
+        """Resolve edge IDs to actual entities."""
+        self._edges = [
+            self.entity_type.get_entity(entity_id, GraphNodeTrait) for entity_id in self.edge_ids
         ]
 
 
-class GraphTraitParams(BaseModel):
-    node_entity: NormalizedPascalCase
-    """The graph node entity type."""
+class GraphTraitOptions(BaseModel):
+    node_type_id: NormalizedPascalCase
+    """The ID of the graph node entity type."""
 
 
-@trait("graph", GraphTraitParams)
-class GraphTrait(BaseStoryEntity):
+@trait_registry.register("graph", GraphTraitOptions)
+class GraphTrait(BaseEntity):
     """Adds the capability to be used as graph to an entity."""
 
-    def __init__(
-        self,
-        nodes: list[NormalizedSnakeCase],
-        current_node: NormalizedSnakeCase,
-        *args: Any,
-        **kwargs: Any,
-    ):
-        super().__init__(*args, **kwargs)
-        self.nodes: list[GraphNodeTrait]
-        self.current_node: GraphNodeTrait
+    node_ids: list[NormalizedSnakeCase]
+    """List of entity IDs that are part of the graph."""
 
-        # Remember ids for resolving them later
-        self.node_ids = nodes
-        self.current_node_id = current_node
+    _nodes: list[GraphNodeTrait]
+    """List of resolved entities that are part of the graph."""
 
-    def get_template_context(
-        self, entities: "Mapping[str, BaseStoryEntity]"
-    ) -> Mapping[str, object]:
-        ctx = super().get_template_context(entities)
+    current_node_id: NormalizedSnakeCase
+    """ID of current graph node."""
+
+    _current_node: GraphNodeTrait
+    """The current graph node."""
+
+    @property
+    def nodes(self) -> list[GraphNodeTrait]:
+        return self._nodes
+
+    @property
+    def current_node(self) -> GraphNodeTrait:
+        return self._current_node
+
+    def get_template_context(self) -> Mapping[str, object]:
         return {
-            **ctx,
-            "nodes": [node.get_template_context(entities) for node in self.nodes],
-            "current_node": self.current_node.get_template_context(entities),
+            **super().get_template_context(),
+            "nodes": [node.get_template_context() for node in self._nodes],
+            "current_node": self.current_node.get_template_context(),
         }
 
     def get_tools(self) -> Iterable[StoryTool]:
         yield from super().get_tools()
 
-        entity_type = self._state.get_entity_type(self.entity_type_id)
-        for func_spec in entity_type.functions or ():
+        for func_spec in self.entity_type.functions or ():
             if func_spec.target == "transition":
                 yield self._make_transition_tool(func_spec)
 
-    def _make_transition_tool(self, func_spec: "FunctionSpec") -> StoryTool:
+    def post_init(self) -> None:
+        self._resolve_node_ids()
+
+    def _make_transition_tool(self, func_spec: "FunctionDefinition") -> StoryTool:
         def transition(to: str) -> FunctionResult:
             """Transition to another graph node.
 
@@ -94,7 +109,7 @@ class GraphTrait(BaseStoryEntity):
             return {"result": "success"}
 
         async def prepare(
-            ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
+            ctx: "RunContext[StoryState]", tool_def: ToolDefinition
         ) -> ToolDefinition | None:
             schema = tool_def.parameters_json_schema
             edge_ids = [edge.id for edge in self.current_node.edges]
@@ -122,33 +137,27 @@ class GraphTrait(BaseStoryEntity):
 
     def transition(self, to: str) -> None:
         try:
-            self.current_node = next(node for node in self.current_node.edges if node.id == to)
+            self._current_node = next(node for node in self._current_node.edges if node.id == to)
         except StopIteration as err:
-            msg = f"{to} is not a valid transition for node {self.current_node.id}"
+            msg = f"{to} is not a valid transition for node {self._current_node.id}"
             raise InvalidTransitionError(msg) from err
-
-    def register_events(self, state: "StoryState") -> None:
-        super().register_events(state)
-        state.subscribe("init", self._resolve_node_ids)
 
     def _resolve_node_ids(self) -> None:
         """Resolve node IDs to actual entities."""
-        # Get node entity ID
-        params = self._state.get_trait_params(self.entity_type_id, "graph", GraphTraitParams)
-        node_entity_id = params.node_entity
+        # Get node entity type
+        options = self.entity_type.get_trait_options("graph", GraphTraitOptions)
+        node_type = self.project.get_entity_type(options.node_type_id)
 
         # Nodes
-        self.nodes = [
-            self._state.get_entity(id_, node_entity_id, GraphNodeTrait) for id_ in self.node_ids
+        self._nodes = [
+            node_type.get_entity(entity_id, GraphNodeTrait) for entity_id in self.node_ids
         ]
 
         # Current node
         try:
-            self.current_node = next(node for node in self.nodes if node.id == self.current_node_id)
+            self._current_node = next(
+                node for node in self._nodes if node.id == self.current_node_id
+            )
         except StopIteration as err:
             msg = f"Graph {self.id}: current_node {self.current_node_id} not found"
             raise ValueError(msg) from err
-
-        # Resolve edge IDs for each node
-        for node in self.nodes:
-            node.resolve_edge_ids(node_entity_id)

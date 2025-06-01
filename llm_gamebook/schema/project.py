@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
-from llm_gamebook.schema.entity import EntityDefinition
+from llm_gamebook.schema.entity import EntityTypeDefinition
 
 
-class GamebookProject(BaseModel):
-    """A gamebook project."""
+class ProjectDefinition(BaseModel):
+    """Gamebook project definition loaded from external file."""
 
     title: str
     """The project title."""
@@ -15,8 +15,8 @@ class GamebookProject(BaseModel):
     description: str | None
     """The project description."""
 
-    entities: list[EntityDefinition]
-    """List of entity types."""
+    entity_types: list[EntityTypeDefinition]
+    """Definition of entity types."""
 
     def __str__(self) -> str:
         return f'<{type(self).__name__} title="{self.title}">'

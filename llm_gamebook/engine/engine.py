@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
 from colorama import Fore
-from pydantic_ai import Agent
+from pydantic_ai import Agent, RunContext
 from pydantic_ai.agent import AgentRunResult
 from pydantic_ai.messages import (
     ModelMessage,
@@ -18,10 +18,11 @@ from pydantic_ai.messages import (
 )
 from pydantic_ai.models import Model, ModelSettings
 from pydantic_ai.result import StreamedRunResult
+from pydantic_ai.tools import ToolDefinition
 
-from llm_gamebook.engine.context import StoryContext
 from llm_gamebook.engine.messages import MessageList
 from llm_gamebook.logger import logger
+from llm_gamebook.story.state import StoryState
 
 if TYPE_CHECKING:
     from llm_gamebook.types import UserInterface
@@ -29,30 +30,30 @@ if TYPE_CHECKING:
 
 class StoryEngine:
     def __init__(
-        self, model: Model, context: StoryContext, ui: "UserInterface", *, streaming: bool = True
+        self, model: Model, state: StoryState, ui: "UserInterface", *, streaming: bool = True
     ) -> None:
         self._log = logger.getChild("engine")
-        self._context = context
+        self._state = state
         self._ui = ui
         self._streaming = streaming
         self._messages = MessageList()
         self._agent = self._setup_agent(model)
         self._is_running = True
 
-    def _setup_agent(self, model: Model) -> Agent[StoryContext, str]:
-        agent = Agent[StoryContext, str](
+    def _setup_agent(self, model: Model) -> Agent[StoryState, str]:
+        agent = Agent[StoryState, str](
             model,
-            deps_type=StoryContext,
+            deps_type=StoryState,
             model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
             output_type=str,
-            tools=list(self._context.get_tools()),
-            prepare_tools=self._context.prepare_tools,
+            tools=list(self._state.get_tools()),
+            prepare_tools=self._prepare_tools,
         )
 
         # Makes the system prompt reevaluate on every run
         @agent.system_prompt(dynamic=True)
         async def get_system_prompt() -> str:
-            return await self._context.prompt_generator.get()
+            return await self._state.get_system_prompt()
 
         return agent
 
@@ -84,7 +85,7 @@ class StoryEngine:
 
     async def _get_user_prompt(self) -> str | None:
         if len(self._messages) == 0:
-            return await self._context.prompt_generator.get_first_message()
+            return await self._state.get_first_message()
         if isinstance(self._messages[-1], ModelResponse):
             return await self._ui.get_user_input()
         return None
@@ -92,16 +93,26 @@ class StoryEngine:
     @asynccontextmanager
     async def _run_stream(
         self, user_prompt: str | None
-    ) -> AsyncIterator[StreamedRunResult[StoryContext, str]]:
+    ) -> AsyncIterator[StreamedRunResult[StoryState, str]]:
         async with self._agent.run_stream(
-            user_prompt, message_history=self._messages.get(), deps=self._context
+            user_prompt, message_history=self._messages.get(), deps=self._state
         ) as result:
             yield result
 
     async def _run(self, user_prompt: str | None) -> AgentRunResult[str]:
         return await self._agent.run(
-            user_prompt, message_history=self._messages.get(), deps=self._context
+            user_prompt, message_history=self._messages.get(), deps=self._state
         )
+
+    async def _prepare_tools(
+        self,
+        ctx: RunContext[StoryState],
+        tools: list[ToolDefinition],
+    ) -> list[ToolDefinition] | None:
+        if len(ctx.messages) <= 1:
+            # No tools for introductory message
+            return None
+        return tools
 
     def _print_tool_call(self, messages: Iterable[ModelMessage]) -> None:
         for msg in messages:

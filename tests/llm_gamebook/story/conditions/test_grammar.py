@@ -1,28 +1,7 @@
 import pyparsing as pp
 import pytest
 
-from llm_gamebook.story.conditions.expression import (
-    AndExpr,
-    BoolExpr,
-    BoolLiteral,
-    Comparison,
-    ComparisonOperator,
-    DotPath,
-    FloatLiteral,
-    IntLiteral,
-    NotExpr,
-    OrExpr,
-    SnakeCase,
-    StrLiteral,
-    bool_expr,
-    bool_literal,
-    comparison,
-    dot_path,
-    float_literal,
-    integer_literal,
-    snake_case,
-    string_literal,
-)
+from llm_gamebook.story.conditions import bool_expr_grammar as g
 
 
 def make_parser(el: pp.ParserElement) -> pp.ParserElement:
@@ -52,7 +31,7 @@ def assert_parse_exception(el: pp.ParserElement, string: str) -> None:
     ],
 )
 def test_str_literal_good(string: str, exp: str) -> None:
-    assert make_parser(string_literal).parse_string(string)[0] == StrLiteral(exp)
+    assert make_parser(g.string_literal).parse_string(string)[0] == g.StrLiteral(exp)
 
 
 @pytest.mark.parametrize(
@@ -79,7 +58,7 @@ def test_str_literal_good(string: str, exp: str) -> None:
     ],
 )
 def test_str_literal_bad(string: str) -> None:
-    assert_parse_exception(make_parser(string_literal), string)
+    assert_parse_exception(make_parser(g.string_literal), string)
 
 
 @pytest.mark.parametrize(
@@ -91,7 +70,7 @@ def test_str_literal_bad(string: str) -> None:
     ],
 )
 def test_int_literal_good(string: str, exp: int) -> None:
-    assert make_parser(integer_literal).parse_string(string)[0] == IntLiteral(exp)
+    assert make_parser(g.integer_literal).parse_string(string)[0] == g.IntLiteral(exp)
 
 
 @pytest.mark.parametrize(
@@ -106,7 +85,7 @@ def test_int_literal_good(string: str, exp: int) -> None:
     ],
 )
 def test_int_literal_bad(string: str) -> None:
-    assert_parse_exception(make_parser(integer_literal), string)
+    assert_parse_exception(make_parser(g.integer_literal), string)
 
 
 @pytest.mark.parametrize(
@@ -119,7 +98,7 @@ def test_int_literal_bad(string: str) -> None:
     ],
 )
 def test_float_literal_good(string: str, exp: float) -> None:
-    assert make_parser(float_literal).parse_string(string)[0] == FloatLiteral(exp)
+    assert make_parser(g.float_literal).parse_string(string)[0] == g.FloatLiteral(exp)
 
 
 @pytest.mark.parametrize(
@@ -138,7 +117,7 @@ def test_float_literal_good(string: str, exp: float) -> None:
     ],
 )
 def test_float_literal_bad(string: str) -> None:
-    assert_parse_exception(make_parser(float_literal), string)
+    assert_parse_exception(make_parser(g.float_literal), string)
 
 
 @pytest.mark.parametrize(
@@ -149,7 +128,7 @@ def test_float_literal_bad(string: str) -> None:
     ],
 )
 def test_bool_literal_good(string: str, *, exp: bool) -> None:
-    assert make_parser(bool_literal).parse_string(string)[0] == BoolLiteral(exp)
+    assert make_parser(g.bool_literal).parse_string(string)[0] == g.BoolLiteral(exp)
 
 
 @pytest.mark.parametrize(
@@ -160,7 +139,7 @@ def test_bool_literal_good(string: str, *, exp: bool) -> None:
     ],
 )
 def test_bool_literal_bad(string: str) -> None:
-    assert_parse_exception(make_parser(bool_literal), string)
+    assert_parse_exception(make_parser(g.bool_literal), string)
 
 
 # snake_case
@@ -176,7 +155,7 @@ def test_bool_literal_bad(string: str) -> None:
     ],
 )
 def test_snake_case_good(string: str) -> None:
-    assert make_parser(snake_case).parse_string(string)[0] == SnakeCase(string)
+    assert make_parser(g.snake_case).parse_string(string)[0] == g.SnakeCase(string)
 
 
 @pytest.mark.parametrize(
@@ -205,7 +184,7 @@ def test_snake_case_good(string: str) -> None:
     ],
 )
 def test_snake_case_bad(string: str) -> None:
-    assert_parse_exception(make_parser(snake_case), string)
+    assert_parse_exception(make_parser(g.snake_case), string)
 
 
 # Dot path
@@ -214,25 +193,27 @@ def test_snake_case_bad(string: str) -> None:
     [
         (
             "foo_bar.id",
-            SnakeCase("foo_bar"),
-            (SnakeCase("id"),),
+            g.SnakeCase("foo_bar"),
+            (g.SnakeCase("id"),),
         ),
         (
             "foo_bar.current_node.id",
-            SnakeCase("foo_bar"),
-            (SnakeCase("current_node"), SnakeCase("id")),
+            g.SnakeCase("foo_bar"),
+            (g.SnakeCase("current_node"), g.SnakeCase("id")),
         ),
         (
             "foo.bar.baz.quz",
-            SnakeCase("foo"),
-            (SnakeCase("bar"), SnakeCase("baz"), SnakeCase("quz")),
+            g.SnakeCase("foo"),
+            (g.SnakeCase("bar"), g.SnakeCase("baz"), g.SnakeCase("quz")),
         ),
     ],
 )
 def test_dot_path_good(
-    string: str, exp_entity_id: SnakeCase, exp_prop_chain: tuple[SnakeCase, ...]
+    string: str, exp_entity_id: g.SnakeCase, exp_prop_chain: tuple[g.SnakeCase, ...]
 ) -> None:
-    assert make_parser(dot_path).parse_string(string)[0] == DotPath(exp_entity_id, exp_prop_chain)
+    assert make_parser(g.dot_path).parse_string(string)[0] == g.DotPath(
+        exp_entity_id, exp_prop_chain
+    )
 
 
 @pytest.mark.parametrize(
@@ -252,7 +233,7 @@ def test_dot_path_good(
     ],
 )
 def test_dot_path_bad(string: str) -> None:
-    assert_parse_exception(make_parser(dot_path), string)
+    assert_parse_exception(make_parser(g.dot_path), string)
 
 
 # Comparison
@@ -262,50 +243,57 @@ def test_dot_path_bad(string: str) -> None:
         (
             "foo.bar <= 0.99",
             (
-                DotPath(SnakeCase("foo"), (SnakeCase("bar"),)),
-                ComparisonOperator("<="),
-                FloatLiteral(0.99),
+                g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("bar"),)),
+                g.ComparisonOperator("<="),
+                g.FloatLiteral(0.99),
             ),
         ),
         (
             "6 > 3",
             (
-                IntLiteral(6),
-                ComparisonOperator(">"),
-                IntLiteral(3),
+                g.IntLiteral(6),
+                g.ComparisonOperator(">"),
+                g.IntLiteral(3),
             ),
         ),
         (
             "'in_the_living_room' != locations.current_node.id",
             (
-                StrLiteral("in_the_living_room"),
-                ComparisonOperator("!="),
-                DotPath(SnakeCase("locations"), (SnakeCase("current_node"), SnakeCase("id"))),
+                g.StrLiteral("in_the_living_room"),
+                g.ComparisonOperator("!="),
+                g.DotPath(
+                    g.SnakeCase("locations"), (g.SnakeCase("current_node"), g.SnakeCase("id"))
+                ),
             ),
         ),
         (
             "foo.bar.baz.quz.count > 67",
             (
-                DotPath(
-                    SnakeCase("foo"),
-                    (SnakeCase("bar"), SnakeCase("baz"), SnakeCase("quz"), SnakeCase("count")),
+                g.DotPath(
+                    g.SnakeCase("foo"),
+                    (
+                        g.SnakeCase("bar"),
+                        g.SnakeCase("baz"),
+                        g.SnakeCase("quz"),
+                        g.SnakeCase("count"),
+                    ),
                 ),
-                ComparisonOperator(">"),
-                IntLiteral(67),
+                g.ComparisonOperator(">"),
+                g.IntLiteral(67),
             ),
         ),
         (
             "false != false",
             (
-                BoolLiteral(value=False),
-                ComparisonOperator("!="),
-                BoolLiteral(value=False),
+                g.BoolLiteral(value=False),
+                g.ComparisonOperator("!="),
+                g.BoolLiteral(value=False),
             ),
         ),
     ],
 )
 def test_comparison_good(string: str, exp: tuple) -> None:
-    assert comparison.parse_string(string)[0] == Comparison(*exp)
+    assert g.comparison.parse_string(string)[0] == g.Comparison(*exp)
 
 
 @pytest.mark.parametrize(
@@ -331,7 +319,7 @@ def test_comparison_good(string: str, exp: tuple) -> None:
     ],
 )
 def test_comparison_bad(string: str) -> None:
-    assert_parse_exception(comparison, string)
+    assert_parse_exception(g.comparison, string)
 
 
 # Boolean expression grammar
@@ -340,76 +328,76 @@ def test_comparison_bad(string: str) -> None:
     [
         (
             "foo.bar <= 0.99 and not foo.status == 'ok'",
-            AndExpr(
-                left=Comparison(
-                    DotPath(SnakeCase("foo"), (SnakeCase("bar"),)),
-                    ComparisonOperator("<="),
-                    FloatLiteral(0.99),
+            g.AndExpr(
+                left=g.Comparison(
+                    g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("bar"),)),
+                    g.ComparisonOperator("<="),
+                    g.FloatLiteral(0.99),
                 ),
-                right=NotExpr(
-                    expr=Comparison(
-                        DotPath(SnakeCase("foo"), (SnakeCase("status"),)),
-                        ComparisonOperator("=="),
-                        StrLiteral("ok"),
+                right=g.NotExpr(
+                    expr=g.Comparison(
+                        g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("status"),)),
+                        g.ComparisonOperator("=="),
+                        g.StrLiteral("ok"),
                     )
                 ),
             ),
         ),
         (
             "true or false and foo.bar == 10",
-            OrExpr(
-                left=BoolLiteral(value=True),
-                right=AndExpr(
-                    left=BoolLiteral(value=False),
-                    right=Comparison(
-                        DotPath(SnakeCase("foo"), (SnakeCase("bar"),)),
-                        ComparisonOperator("=="),
-                        IntLiteral(10),
+            g.OrExpr(
+                left=g.BoolLiteral(value=True),
+                right=g.AndExpr(
+                    left=g.BoolLiteral(value=False),
+                    right=g.Comparison(
+                        g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("bar"),)),
+                        g.ComparisonOperator("=="),
+                        g.IntLiteral(10),
                     ),
                 ),
             ),
         ),
         (
             "not foo.bar != 5 or baz.qux == 'yes'",
-            OrExpr(
-                left=NotExpr(
-                    expr=Comparison(
-                        DotPath(SnakeCase("foo"), (SnakeCase("bar"),)),
-                        ComparisonOperator("!="),
-                        IntLiteral(5),
+            g.OrExpr(
+                left=g.NotExpr(
+                    expr=g.Comparison(
+                        g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("bar"),)),
+                        g.ComparisonOperator("!="),
+                        g.IntLiteral(5),
                     )
                 ),
-                right=Comparison(
-                    DotPath(SnakeCase("baz"), (SnakeCase("qux"),)),
-                    ComparisonOperator("=="),
-                    StrLiteral("yes"),
+                right=g.Comparison(
+                    g.DotPath(g.SnakeCase("baz"), (g.SnakeCase("qux"),)),
+                    g.ComparisonOperator("=="),
+                    g.StrLiteral("yes"),
                 ),
             ),
         ),
         (
             "foo_bar.id",
-            DotPath(SnakeCase("foo_bar"), (SnakeCase("id"),)),
+            g.DotPath(g.SnakeCase("foo_bar"), (g.SnakeCase("id"),)),
         ),
         (
             "''",
-            StrLiteral(""),
+            g.StrLiteral(""),
         ),
         (
             "true",
-            BoolLiteral(value=True),
+            g.BoolLiteral(value=True),
         ),
         (
             "66",
-            IntLiteral(66),
+            g.IntLiteral(66),
         ),
         (
             "1.234",
-            FloatLiteral(1.234),
+            g.FloatLiteral(1.234),
         ),
     ],
 )
-def test_bool_expr_good(string: str, exp: BoolExpr) -> None:
-    assert bool_expr.parse_string(string)[0] == exp
+def test_bool_expr_good(string: str, exp: g.BoolExpr) -> None:
+    assert g.bool_expr.parse_string(string)[0] == exp
 
 
 @pytest.mark.parametrize(
@@ -432,4 +420,4 @@ def test_bool_expr_good(string: str, exp: BoolExpr) -> None:
     ],
 )
 def test_bool_expr_bad(string: str) -> None:
-    assert_parse_exception(bool_expr, string)
+    assert_parse_exception(g.bool_expr, string)

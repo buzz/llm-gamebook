@@ -1,83 +1,84 @@
 from typing import TYPE_CHECKING, assert_never
 
-from llm_gamebook.story.conditions.expression import (
-    BoolExpr,
-    BoolLiteral,
-    Comparison,
-    DotPath,
-    FloatLiteral,
-    IntLiteral,
-    Literal,
-    StrLiteral,
-)
-from llm_gamebook.story.entity import BaseStoryEntity
+from llm_gamebook.story.conditions import bool_expr_grammar as g
+from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.errors import EntityNotFoundError
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from llm_gamebook.story.entity import EntityProperty
+    from llm_gamebook.story.project import Project
 
 
 class ExpressionEvalError(Exception):
     """Raised when evaluation of an expression failed."""
 
 
-def resolve_entity_property(entity: "BaseStoryEntity", property_id: str) -> "EntityProperty":
-    # TODO: check property is in props model
-    return getattr(entity, property_id)
+class BoolExprEvaluator:
+    def __init__(self, project: "Project") -> None:
+        self._project = project
 
+    def eval(self, expr: g.BoolExpr) -> bool:
+        if isinstance(expr, g.Literal):
+            return bool(expr.value)
+        if isinstance(expr, g.DotPath):
+            return bool(self._resolve_dot_path(expr))
+        if isinstance(expr, g.Comparison):
+            return self._eval_comparison(expr)
+        if isinstance(expr, g.AndExpr):
+            return self.eval(expr.left) and self.eval(expr.right)
+        if isinstance(expr, g.OrExpr):
+            return self.eval(expr.left) or self.eval(expr.right)
+        if isinstance(expr, g.NotExpr):
+            return not self.eval(expr.expr)
 
-def resolve_entity(entity_id: str, entities: "Mapping[str, BaseStoryEntity]") -> "BaseStoryEntity":
-    try:
-        return entities[entity_id]
-    except KeyError as err:
-        msg = f"Invalid entity ID: {entity_id}"
-        raise ExpressionEvalError(msg) from err
+        assert_never(expr)
 
+    def _eval_comparison(self, comp: g.Comparison) -> bool:
+        left = self.resolve_comparison_operand(comp.left)
+        right = self.resolve_comparison_operand(comp.right)
+        op = comp.op.value
 
-def resolve_dot_path(
-    dot_path: DotPath, entities: "Mapping[str, BaseStoryEntity]"
-) -> "EntityProperty":
-    entity = resolve_entity(dot_path.entity_id.value, entities)
+        if op == "==":
+            return left == right
+        if op == "!=":
+            return left != right
+        if op == "<":
+            return left < right
+        if op == "<=":
+            return left <= right
+        if op == ">":
+            return left > right
+        if op == ">=":
+            return left >= right
+        if op == "in":
+            raise NotImplementedError
 
-    # Resolve property to entity along property chain
-    for prop_id in dot_path.property_chain[:-1]:
-        prop = resolve_entity_property(entity, prop_id.value)
-        if not isinstance(prop, BaseStoryEntity):
-            msg = f"Expected property {prop_id.value} on entity {entity.id} to be an entity"
-            raise ExpressionEvalError(msg)
-        entity = prop
+        assert_never(op)
 
-    # Last prop ID in prop chain
-    return resolve_entity_property(entity, dot_path.property_chain[-1].value)
+    def resolve_comparison_operand(self, operand: g.DotPath | g.Literal) -> "EntityProperty":
+        return self._resolve_dot_path(operand) if isinstance(operand, g.DotPath) else operand.value
 
+    def _resolve_dot_path(self, dot_path: g.DotPath) -> "EntityProperty":
+        entity = self._resolve_entity(dot_path.entity_id.value)
 
-def resolve_comparison_operand(
-    operand: DotPath | Literal, entities: "Mapping[str, BaseStoryEntity]"
-) -> "EntityProperty":
-    return resolve_dot_path(operand, entities) if isinstance(operand, DotPath) else operand.value
+        # Resolve property to entity along property chain
+        for prop_id in dot_path.property_chain[:-1]:
+            prop = self._resolve_entity_property(entity, prop_id.value)
+            if not isinstance(prop, BaseEntity):
+                msg = f"Expected property {prop_id.value} on entity {entity.id} to be an entity"
+                raise ExpressionEvalError(msg)
+            entity = prop
 
+        # Last prop ID in prop chain
+        return self._resolve_entity_property(entity, dot_path.property_chain[-1].value)
 
-def eval_comparison(comp: Comparison, entities: "Mapping[str, BaseStoryEntity]") -> bool:
-    left = resolve_comparison_operand(comp.left, entities)
-    right = resolve_comparison_operand(comp.right, entities)
-    if comp.op.value == "==":
-        return left == right
+    def _resolve_entity(self, entity_id: str) -> "BaseEntity":
+        try:
+            return self._project.get_entity(entity_id)
+        except EntityNotFoundError as err:
+            msg = f"Invalid entity ID: {entity_id}"
+            raise ExpressionEvalError(msg) from err
 
-    return False
-
-
-def eval_bool_expr(expr: BoolExpr, entities: "Mapping[str, BaseStoryEntity]") -> bool:
-    # Literal
-    if isinstance(expr, StrLiteral | IntLiteral | FloatLiteral | BoolLiteral):
-        return bool(expr.value)
-
-    if isinstance(expr, DotPath):
-        return bool(resolve_dot_path(expr, entities))
-
-    if isinstance(expr, Comparison):
-        return eval_comparison(expr, entities)
-
-    return False
-
-    assert_never(expr)
+    def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
+        # TODO: check property is in props model
+        return getattr(entity, property_id)
