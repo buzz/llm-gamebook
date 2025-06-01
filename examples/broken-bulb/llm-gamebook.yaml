@@ -60,7 +60,11 @@ entities:
         description: |
           - A leaflet was placed under the player's front door.
           - Its content is not revealed yet.
-        edges: ["leaflet-found"]
+        edges: ["leaflet_found"]
+        enabled: locations.current_node.id == "living_room"
+        # enabled:
+        #   - locations.current_node.id == "in_the_living_room"
+        #   - the_meeting.current_node.id == "leaflet_not_found_yet"
       - name: Leaflet found
         description: |
           - Player found the leaflet.

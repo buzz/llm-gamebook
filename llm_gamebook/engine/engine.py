@@ -2,6 +2,7 @@ import logging
 import random
 from collections.abc import AsyncIterator, Iterable, Sequence
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from colorama import Fore
 from pydantic_ai import Agent
@@ -26,9 +27,9 @@ if TYPE_CHECKING:
     from llm_gamebook.types import UserInterface
 
 
-        self, model: Model, context: StoryContext, ui: "UserInterface", *, streaming: bool = True
+class StoryEngine:
     def __init__(
-        self, model: Model, context: StoryContext, ui: UserInterface, *, streaming: bool = True
+        self, model: Model, context: StoryContext, ui: "UserInterface", *, streaming: bool = True
     ) -> None:
         self._log = logger.getChild("engine")
         self._context = context
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
         agent = Agent[StoryContext, str](
             model,
             deps_type=StoryContext,
-            model_settings=ModelSettings(seed=random.randint(0, 10000)),
+            model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
             output_type=str,
             tools=list(self._context.get_tools()),
             prepare_tools=self._context.prepare_tools,

@@ -1,6 +1,8 @@
-### {{ entity_type.name }}: {{ instance.name }} ({{ instance.slug }})
+{% if entity.enabled %}
+### {{ entity_type.name }}: {{ entity.name }} ({{ entity.id }})
 
   {% if entity.description %}
 {{ entity.description|trim }}
 
+  {% endif %}
 {% endif %}

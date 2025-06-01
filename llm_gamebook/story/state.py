@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
@@ -7,6 +7,10 @@ from pydantic import BaseModel
 from llm_gamebook.utils import EventBusMixin
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from llm_gamebook.schema.entity import FunctionSpec
+    from llm_gamebook.story.entity import BaseStoryEntity
     from llm_gamebook.types import StoryTool
 
 
@@ -41,7 +45,9 @@ class EntityType:
     entities: "Mapping[str, BaseStoryEntity]"
     functions: "list[FunctionSpec] | None"
 
-    def get_template_context(self) -> dict[str, object]:
+    def get_template_context(
+        self, entities: "Mapping[str, BaseStoryEntity]"
+    ) -> Mapping[str, object]:
         return {
             "id": self.id,
             "name": self.name,

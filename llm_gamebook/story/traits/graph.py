@@ -57,9 +57,19 @@ class GraphTrait(BaseStoryEntity):
         self.nodes: list[GraphNodeTrait]
         self.current_node: GraphNodeTrait
 
-        # Remember slugs for resolving them later
-        self._node_slugs = nodes
-        self._current_node_slug = current_node
+        # Remember ids for resolving them later
+        self.node_ids = nodes
+        self.current_node_id = current_node
+
+    def get_template_context(
+        self, entities: "Mapping[str, BaseStoryEntity]"
+    ) -> Mapping[str, object]:
+        ctx = super().get_template_context(entities)
+        return {
+            **ctx,
+            "nodes": [node.get_template_context(entities) for node in self.nodes],
+            "current_node": self.current_node.get_template_context(entities),
+        }
 
     def get_tools(self) -> Iterable[StoryTool]:
         yield from super().get_tools()

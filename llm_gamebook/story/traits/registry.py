@@ -5,7 +5,6 @@ from typing import Any, TypedDict, cast, get_type_hints
 from pydantic import BaseModel, create_model
 
 from llm_gamebook.schema.validators import is_normalized_snake_case
-from llm_gamebook.story.entity import BaseStoryEntity, EntityProperty
 
 TraitRegistryEntry = TypedDict(
     "TraitRegistryEntry",

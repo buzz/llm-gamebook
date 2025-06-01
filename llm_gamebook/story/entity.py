@@ -24,7 +24,15 @@ class BaseStoryEntity:
         self.entity_type_id = entity_type_id
         self._state: StoryState
 
-    def get_tools(self) -> Iterable[StoryTool]:
+    def get_template_context(
+        self, entities: "Mapping[str, BaseStoryEntity]"
+    ) -> Mapping[str, object]:
+        return {
+            "id": self.id,
+            "entity_type_id": self.entity_type_id,
+        }
+
+    def get_tools(self) -> "Iterable[StoryTool]":
         """Return instance's tools."""
         return ()
 

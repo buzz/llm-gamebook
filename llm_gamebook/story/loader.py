@@ -78,22 +78,36 @@ class AbstractBaseLoader(abc.ABC):
         cls,
         entity_type_def: EntityDefinition,
         entity_cls: type[BaseStoryEntity],
-    ) -> list[BaseStoryEntity]:
-        instances: list[BaseStoryEntity] = []
-        for instance_def in entity_def.instances:
-            # Validate instance fields against trait constructor arg types
-            for trait_spec in entity_def.traits:
-                arg_model = trait_registry[trait_spec.name]["arg_model"]
-                if arg_model:
-                    arg_model.model_validate(instance_def.model_extra, strict=True)
-
+    ) -> Iterable[BaseStoryEntity]:
+        for entity_def in entity_type_def.entities:
             kwargs = {
-                **instance_def.model_dump(),  # slug
-                "entity_type_slug": entity_def.slug,
-                **(instance_def.model_extra or {}),
+                # Rename id -> id_
+                ("id_" if k == "id" else k): v
+                for k, v in entity_def.model_dump().items()
             }
-            instances.append(entity_cls(**kwargs))
-        return instances
+            # Add entity type
+            kwargs["entity_type_id"] = entity_type_def.id
+
+            # Validate entity fields against trait constructor arg types/props model
+            for trait_spec in entity_type_def.traits:
+                props_model = trait_registry[trait_spec.name]["props_model"]
+                if props_model:
+                    props = props_model.model_validate(entity_def.model_extra, strict=True)
+
+                    # Extract field values directly (without converting nested models)
+                    for field_name in props_model.model_fields:
+                        kwargs[field_name] = getattr(props, field_name)
+
+            # Instantiate entity
+            try:
+                entity = entity_cls(**kwargs)
+            except TypeError as err:
+                if "object.__init__() takes exactly one argument" in str(err):
+                    msg = f"You may have specified unknown properties for the entity: {entity_def}"
+                    raise ValueError(msg) from err
+                raise
+            else:
+                yield entity
 
 
 class YAMLLoader(AbstractBaseLoader):

@@ -205,6 +205,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "pydantic-ai-slim", extra = ["openai"] },
+    { name = "pyparsing" },
     { name = "pyyaml" },
 ]
 
@@ -224,6 +225,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydantic", specifier = ">=2.11.5" },
     { name = "pydantic-ai-slim", extras = ["openai"], specifier = ">=0.2.9" },
+    { name = "pyparsing", specifier = ">=3.2.3" },
     { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 
@@ -430,6 +432,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3e/b5/29b70b5fd291c6e5d9d66ead152d2571165172edec27d67a03539ae527c4/pydantic_graph-0.2.9.tar.gz", hash = "sha256:52534a2011f53def4797821ad9de9e7862040ee8e3ee4b3b9a5b12d07f3e756e", size = 21838, upload-time = "2025-05-26T07:48:40.832Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a4/cc/e609261763a76f4d23a545afb462847592bc6b4d8eb412990b9b913c073e/pydantic_graph-0.2.9-py3-none-any.whl", hash = "sha256:38ad929a0ec205bd7d5875b0b408d4f13448276aa89b6ce2a1143a7552b070ce", size = 27474, upload-time = "2025-05-26T07:48:30.047Z" },
+]
+
+[[package]]
+name = "pyparsing"
+version = "3.2.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/22/f1129e69d94ffff626bdb5c835506b3a5b4f3d070f17ea295e12c2c6f60f/pyparsing-3.2.3.tar.gz", hash = "sha256:b9c13f1ab8b3b542f72e28f634bad4de758ab3ce4546e4301970ad6fa77c38be", size = 1088608, upload-time = "2025-03-25T05:01:28.114Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/05/e7/df2285f3d08fee213f2d041540fa4fc9ca6c2d44cf36d3a035bf2a8d2bcc/pyparsing-3.2.3-py3-none-any.whl", hash = "sha256:a749938e02d6fd0b59b356ca504a24982314bb090c383e3cf201c95ef7e2bfcf", size = 111120, upload-time = "2025-03-25T05:01:24.908Z" },
 ]
 
 [[package]]

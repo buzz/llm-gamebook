@@ -1,7 +1,9 @@
-Current node: {% if instance.current_node.name %}{{ instance.current_node.name }} {% endif %}({{ instance.current_node.slug }})
+{% if entity.current_node.enabled %}
+Current node: {% if entity.current_node.name %}{{ entity.current_node.name }} {% endif %}({{ entity.current_node.id }})
 
-{% if instance.current_node.description %}
+  {% if entity.current_node.description %}
 Description:
 {{ entity.current_node.description|trim }}
 
+  {% endif %}
 {% endif %}

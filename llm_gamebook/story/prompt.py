@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, PackageLoader
@@ -21,16 +22,14 @@ class PromptGenerator:
         ctx = self._get_template_context()
         return await self._jinja_env.get_template("system_prompt.md.jinja2").render_async(ctx)
 
-    def _get_template_context(self) -> dict[str, object]:
+    def _get_template_context(self) -> Mapping[str, object]:
         return {
             "title": self._state.title,
             "description": self._state.description,
-            "entity_types": [et.get_template_context() for et in self._state.entity_types.values()],
-            # "setting": self.setting,
-            # "player_char": self.player_char,
-            # "story_arcs": [arc for arc in self.story_arcs if arc.is_enabled()],
-            # "location": self.locations.current,
-            # "reachable_locations": self.locations.current.edges,
+            "entity_types": [
+                et.get_template_context(self._state.all_entities())
+                for et in self._state.entity_types.values()
+            ],
         }
 
     async def get_first_message(self) -> str:
