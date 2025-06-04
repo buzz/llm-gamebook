@@ -1,0 +1,32 @@
+{% block user_summary %}
+# Story Summary
+
+{{ description|trim }}
+
+{% endblock user_summary %}
+{% block user_story %}
+  {% block user_entity_types %}
+    {% for entity_type in entity_types %}
+      {% if entity_type.instructions %}
+## {{ entity_type.name }}
+
+{{ entity_type.instructions|trim }}
+
+        {% for entity in entity_type.entities %}
+          {% for trait in entity_type.traits %}
+            {% with entity_type=entity_type, entity=entity %}
+              {% include "traits/_" ~ trait ~ ".md.jinja2" ignore missing %}
+            {% endwith %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% endblock user_entity_types %}
+{% endblock user_story %}
+{% block user_input_part %}
+# User Message
+
+  {% block user_input %}
+{{ user_message }}
+  {% endblock user_input %}
+{% endblock user_input_part %}
