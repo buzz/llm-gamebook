@@ -1,8 +1,8 @@
-from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Annotated, Literal, Protocol, TypedDict
 
 from pydantic import AfterValidator
+from pydantic_ai.messages import ModelMessage
 
 from llm_gamebook.schema.validators import (
     is_normalized_pascal_case,
@@ -12,6 +12,7 @@ from llm_gamebook.schema.validators import (
 if TYPE_CHECKING:
     from pydantic_ai.tools import Tool
 
+    from llm_gamebook.engine.engine import StreamState
     from llm_gamebook.story.state import StoryState
 
 type StoryTool = Tool[StoryState]
@@ -37,11 +38,12 @@ FunctionResult = FunctionSuccessResult | FunctionErrorResult
 
 
 class UserInterface(Protocol):
-    def text_response(self, think_text: str | None, text: str | None) -> None: ...
+    def messages_update(self, messages: list[ModelMessage]) -> None: ...
 
-    def tool_call(self, tool_name: str, tool_args: str) -> None: ...
-
-    @contextmanager
-    def stream_printer(self) -> Iterator[Callable[[str], None]]: ...
+    def stream_state_update(self, state: "StreamState", text: str | None = None) -> None: ...
 
     async def get_user_input(self) -> str: ...
+
+    def set_shutdown_callable(self, func: Callable[[], None]) -> None: ...
+
+    def shutdown(self) -> None: ...

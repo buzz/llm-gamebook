@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Self, overload
 
-from pydantic import BaseModel, ConfigDict, PrivateAttr, PydanticUndefinedAnnotation, create_model
+from pydantic import BaseModel, PrivateAttr, PydanticUndefinedAnnotation, create_model
 from pydantic_ai.tools import ObjectJsonSchema
 
 from llm_gamebook.schema.entity import EntityDefinition, EntityTypeDefinition

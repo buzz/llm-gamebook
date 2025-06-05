@@ -1,10 +1,13 @@
+import asyncio
 import logging
 import random
-from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import contextmanager
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Final
 
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart
+from pydantic_ai.messages import ModelMessage
 from pydantic_ai.models import Model, ModelSettings
 from pydantic_ai.tools import ToolDefinition
 
@@ -16,7 +19,17 @@ if TYPE_CHECKING:
     from llm_gamebook.types import UserInterface
 
 
+class StreamState(Enum):
+    INIT = auto()
+    THINK = auto()
+    RESPONSE = auto()
+    INACTIVE = auto()
+
+
 class StoryEngine:
+    _start_tag: Final = "<think>"
+    _end_tag: Final = "</think>"
+
     def __init__(
         self, model: Model, state: StoryState, ui: "UserInterface", *, streaming: bool = True
     ) -> None:
@@ -25,7 +38,6 @@ class StoryEngine:
         self._ui = ui
         self._streaming = streaming
         self._messages = MessageList(self._state)
-        self._run_count = 0
         self._agent = Agent[StoryState, str](
             model,
             deps_type=StoryState,
@@ -34,46 +46,95 @@ class StoryEngine:
             tools=list(self._state.get_tools()),
             prepare_tools=self._prepare_tools,
         )
+        self._run_task: asyncio.Task | None = None
 
-    async def story_loop(self) -> None:
-        user_input: str | None = None
+        self._ui.set_shutdown_callable(self._ui_shutdown)
 
-        while True:
-            # Run agent
-            message_history = await self._messages.get(user_input)
+    async def run(self) -> None:
+        self._run_task = asyncio.create_task(self._run())
+        await self._run_task
 
-            if self._is_debug:
-                self._messages._debug_log_messages(message_history)
+    async def _run(self) -> None:
+        try:
+            user_input: str | None = None
 
-            new_messages, _ = await self._run(message_history)
+            while True:
+                await self._ui_messages_update()
 
-            self._messages.append(user_input, new_messages)
-            self._run_count += 1
+                # Run agent
+                new_messages = await self._agent_run()
+                self._messages.append(new_messages)
+                await self._ui_messages_update()
 
-            # Get user message
-            if not self._messages.last_message_was_tool_return:
-                user_input = await self._ui.get_user_input()
-                if user_input == "quit":
-                    break
+                # Get user message
+                if self._messages.last_message_was_tool_return:
+                    user_input = None
+                else:
+                    user_input = await self._ui.get_user_input()
+                    self._messages.append_user_prompt(user_input)
 
-    async def _run(
-        self, message_history: list[ModelMessage]
-    ) -> tuple[Sequence[ModelMessage], Sequence[ModelMessage]]:
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._ui.shutdown()
+
+    async def _agent_run(self) -> Sequence[ModelMessage]:
+        msg_hist = await self._messages.get_messages(for_llm=True)
+
         if self._streaming:
             async with self._agent.run_stream(
-                message_history=message_history, deps=self._state
+                message_history=msg_hist, deps=self._state
             ) as streamed_result:
-                with self._ui.stream_printer() as handle:
+                with self._stream_printer() as handle:
                     async for message in streamed_result.stream_text(delta=True):
                         handle(message)
-            self._print_tool_call(streamed_result.new_messages())
-            return streamed_result.new_messages(), streamed_result.all_messages()
+            return streamed_result.new_messages()
 
         # non-streaming
-        result = await self._agent.run(message_history=message_history, deps=self._state)
-        self._print_tool_call(result.new_messages())
-        self._print_model_response(result.new_messages())
-        return result.new_messages(), result.all_messages()
+        result = await self._agent.run(message_history=msg_hist, deps=self._state)
+        return result.new_messages()
+
+    @contextmanager
+    def _stream_printer(self) -> Iterator[Callable[[str], None]]:
+        buffer = ""
+        state: StreamState
+
+        def handle(chunk: str) -> None:
+            nonlocal buffer, state
+            buffer += chunk
+            while True:
+                if state == StreamState.INIT:
+                    if len(buffer) < len(self._start_tag):
+                        return
+                    if buffer.startswith(self._start_tag):
+                        buffer = buffer[len(self._start_tag) :].lstrip()
+                        state = StreamState.THINK
+                    else:
+                        state = StreamState.RESPONSE
+
+                elif state == StreamState.THINK:
+                    idx = buffer.find(self._end_tag)
+                    if idx == -1:
+                        keep = max(0, len(buffer) - len(self._end_tag))
+                        self._ui.stream_state_update(state, buffer[:keep])
+                        buffer = buffer[keep:]
+                        return
+                    self._ui.stream_state_update(state, buffer[:idx].rstrip())
+                    buffer = buffer[idx + len(self._end_tag) :].lstrip()
+                    state = StreamState.RESPONSE
+
+                elif state == StreamState.RESPONSE:
+                    self._ui.stream_state_update(state, buffer)
+                    buffer = ""
+                    return
+
+        try:
+            state = StreamState.INIT
+            self._ui.stream_state_update(state)
+            yield handle
+        finally:
+            state = StreamState.INACTIVE
+            self._ui.stream_state_update(state)
 
     async def _prepare_tools(
         self,
@@ -83,19 +144,13 @@ class StoryEngine:
         # No tools for introductory message
         return tools if len(ctx.messages) > 2 else None
 
-    def _print_tool_call(self, messages: Iterable[ModelMessage]) -> None:
-        for msg in messages:
-            if isinstance(msg, ModelResponse) and len(msg.parts) > 0:
-                for part in msg.parts:
-                    if isinstance(part, ToolCallPart):
-                        self._ui.tool_call(part.tool_name, part.args_as_json_str())
+    async def _ui_messages_update(self) -> None:
+        ui_messages = await self._messages.get_messages(for_llm=False)
+        self._ui.messages_update(ui_messages)
 
-    def _print_model_response(self, messages: Iterable[ModelMessage]) -> None:
-        for msg in messages:
-            if isinstance(msg, ModelResponse) and len(msg.parts) > 0:
-                for part in msg.parts:
-                    if isinstance(part, TextPart) and part.has_content():
-                        self._ui.text_response(*MessageList.parse_reasoning(part.content))
+    def _ui_shutdown(self) -> None:
+        if self._run_task and not self._run_task.done():
+            self._run_task.cancel()
 
     @property
     def _is_debug(self) -> bool:

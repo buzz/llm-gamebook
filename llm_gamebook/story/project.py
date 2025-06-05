@@ -5,6 +5,7 @@ from typing import Any, Self, overload
 import yaml
 from pydantic import PrivateAttr
 
+from llm_gamebook.constants import PROJECT_NAME
 from llm_gamebook.schema.project import ProjectDefinition
 from llm_gamebook.story.entity import BaseEntity, EntityType
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
@@ -60,7 +61,7 @@ class Project(ProjectDefinition):
 
     @classmethod
     def from_dir(cls, project_path: Path) -> Self:
-        project_filepath = project_path / "llm-gamebook.yaml"
+        project_filepath = project_path / f"{PROJECT_NAME}.yaml"
 
         try:
             data = yaml.safe_load(project_filepath.read_text())

@@ -1,0 +1,29 @@
+Screen {
+  overflow-y: hidden;
+  height: 100vh;
+}
+
+Markdown {
+  padding: 0;
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+Header {
+  dock: top;
+  width: 100%;
+  height: 1;
+  background: $panel;
+}
+
+UserInput {
+  border-top: solid $border;
+  height: 2;
+  overflow: hidden hidden;
+
+  Label, UserInputTextArea, .text-area--cursor-line {
+    background: $background;
+  }
+}

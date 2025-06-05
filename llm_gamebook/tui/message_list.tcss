@@ -1,0 +1,61 @@
+MessageList {
+  background: $background;
+  height: 1fr;
+
+  &:focus {
+    background-tint: $foreground 0%;
+  }
+
+  MessageItem, StreamDisplay {
+    margin-bottom: 1;
+    padding-left: 1;
+    margin-right: 1;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  Markdown {
+    background: $background;
+    padding: 0;
+
+    &.system {
+      color: $text-warning;
+    }
+
+    &.think {
+      color: $text-muted;
+      padding-left: 1;
+    }
+
+    &.assistant {
+      color: $foreground;
+    }
+
+    &.user {
+      color: $text-secondary;
+    }
+  }
+
+  Label {
+    background: $background;
+
+    &.tool {
+      color: $text-warning;
+    }
+
+    &.unknown {
+      color: $text-error;
+    }
+
+    &.dim {
+      color: $text-muted;
+    }
+  }
+
+  .user_prompt {
+    color: $text-muted;
+    padding-right: 1;
+  }
+}
