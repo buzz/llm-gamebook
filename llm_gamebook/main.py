@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -19,10 +20,15 @@ async def main() -> int:
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    model = OpenAIModel(
-        "models/gguf/Qwen3-32B-Q4_K_M.gguf",
-        provider=OpenAIProvider(base_url="http://localhost:5001/v1/", api_key="123"),
-    )
+    model_name = os.getenv("MODEL_NAME", "GLM-4.5-Air")
+    base_url = os.getenv("BASE_URL", "http://localhost:5001/v1/")
+    api_key = os.getenv("API_KEY", "123")
+
+    if not base_url.endswith("/"):
+        base_url = f"{base_url}/"
+
+    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
+    model = OpenAIModel(model_name, provider=provider)
     project_path = Path(__file__).parent.parent / "examples" / "broken-bulb"
     project = Project.from_dir(project_path)
     state = StoryState(project)
