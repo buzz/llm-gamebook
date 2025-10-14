@@ -1,6 +1,6 @@
 # LLM Gamebook
 
-> LLM narration along pre-defined story arc paths
+LLM narration along pre-defined story arc paths
 
 ## Ideas
 
@@ -36,6 +36,7 @@ Author defines nodes, conditions, and entities in a JSON/YAML file.
 ### Graph-based node editor
 
 - Graph library
+  - https://github.com/retejs/rete
   - https://github.com/jagenjo/litegraph.js (used by ComfyUI)
   - https://js.cytoscape.org/
   - https://visjs.org/
