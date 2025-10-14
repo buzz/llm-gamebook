@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from llm_gamebook.engine import StoryEngine
@@ -28,7 +28,7 @@ async def main() -> int:
         base_url = f"{base_url}/"
 
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
-    model = OpenAIModel(model_name, provider=provider)
+    model = OpenAIChatModel(model_name, provider=provider)
     project_path = Path(__file__).parent.parent / "examples" / "broken-bulb"
     project = Project.from_dir(project_path)
     state = StoryState(project)
