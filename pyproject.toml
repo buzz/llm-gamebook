@@ -20,7 +20,13 @@ dependencies = [
 source = "https://github.com/buzz/llm-gamebook"
 
 [dependency-groups]
-dev = ["mypy>=1.18.2", "pytest>=8.4.2", "ruff>=0.14.0", "types-pyyaml>=6.0.12.20250915"]
+dev = [
+  "mypy>=1.18.2",
+  "pytest>=8.4.2",
+  "python-semantic-release>=10.4.1",
+  "ruff>=0.14.0",
+  "types-pyyaml>=6.0.12.20250915",
+]
 
 [tool.ruff]
 line-length = 100
@@ -87,3 +93,19 @@ ignore = ["B010", "COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
 [tool.mypy]
 disallow_untyped_defs = true
 strict_optional = true
+
+[tool.semantic_release]
+build_command = """
+    uv lock --upgrade-package "$PACKAGE_NAME"
+    git add uv.lock
+    uv build
+"""
+commit_message = "Version {version}"
+tag_format = "v{version}"
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.remote]
+type = "github"
+ignore_token_for_push = true
