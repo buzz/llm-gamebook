@@ -48,7 +48,10 @@ class MessageList:
     async def _generate_initial_request(self) -> ModelRequest:
         system_prompt = await self._state.get_system_prompt()
         message = ModelRequest([SystemPromptPart(content=system_prompt)])
-        message.parts.append(UserPromptPart(content=await self._state.get_intro_message()))
+        message.parts = [
+            *message.parts,
+            UserPromptPart(content=await self._state.get_intro_message()),
+        ]
         return message
 
     def append(self, new_messages: Sequence[ModelMessage]) -> None:

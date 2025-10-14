@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, assert_never
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
@@ -42,6 +43,14 @@ class BoolExprEvaluator:
             return left == right
         if op == "!=":
             return left != right
+
+        if isinstance(left, BaseEntity | Sequence):
+            msg = f"Left operand '{left}' not supported for comparison '{op}'"
+            raise TypeError(msg)
+        if isinstance(right, BaseEntity | Sequence):
+            msg = f"Right operand '{right}' not supported for comparison '{op}'"
+            raise TypeError(msg)
+
         if op == "<":
             return left < right
         if op == "<=":
