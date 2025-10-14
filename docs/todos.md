@@ -5,3 +5,4 @@
 - Web Frontend using React, Rete (?)
   - Player frontend
   - Graph-based editor
+- better README
