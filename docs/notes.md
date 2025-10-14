@@ -45,3 +45,7 @@ Author defines nodes, conditions, and entities in a JSON/YAML file.
 
 - https://chasm.run/
 - https://github.com/neph1/LlamaTale
+
+## Open Gamebook Content
+
+- [Lone Wolf](https://www.projectaon.org/en/Main/Books)
