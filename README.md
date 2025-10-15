@@ -33,3 +33,11 @@ This project represents an innovative approach to interactive storytelling, comb
 - **Textual** for the terminal user interface
 - **Jinja2** for templating prompts and narrative elements
 - **YAML** for story definitions
+
+## Development
+
+Run FastAPI web server.
+
+```
+uv run fastapi dev llm_gamebook/webui/app.py
+```
