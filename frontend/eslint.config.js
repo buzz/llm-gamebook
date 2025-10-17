@@ -1,27 +1,31 @@
 import js from '@eslint/js'
-import pluginImport from 'eslint-plugin-import'
-import pluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-import pluginReactDom from 'eslint-plugin-react-dom'
-import pluginReactHooks from 'eslint-plugin-react-hooks'
-import pluginReactRefresh from 'eslint-plugin-react-refresh'
-import pluginReactX from 'eslint-plugin-react-x'
-import pluginSimpleImportSort from 'eslint-plugin-simple-import-sort'
+import tsParser from '@typescript-eslint/parser'
+import importX from 'eslint-plugin-import-x'
+import prettierRecommended from 'eslint-plugin-prettier/recommended'
+import reactDom from 'eslint-plugin-react-dom'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import reactX from 'eslint-plugin-react-x'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 const importRules = {
   // TypeScript provides the same checks
-  // https://typescript-eslint.io/linting/troubleshooting/performance-troubleshooting#eslint-plugin-import
-  'import/named': 'off',
-  'import/namespace': 'off',
-  'import/default': 'off',
-  'import/no-named-as-default-member': 'off',
+  // https://typescript-eslint.io/troubleshooting/typed-linting/performance#eslint-plugin-import
+  'import-x/named': 'off',
+  'import-x/namespace': 'off',
+  'import-x/default': 'off',
+  'import-x/no-named-as-default-member': 'off',
 
-  // Import order setup
-  'import/first': 'error',
-  'import/newline-after-import': 'error',
-  'import/no-duplicates': 'error',
+  'import-x/first': 'error',
+  'import-x/newline-after-import': 'error',
+  'import-x/no-duplicates': 'error',
+  'import-x/no-unresolved': 'error',
+  'import-x/exports-last': 'error',
+  'import-x/newline-after-import': 'error',
+
   'simple-import-sort/imports': [
     'error',
     {
@@ -38,40 +42,62 @@ const importRules = {
     },
   ],
   'simple-import-sort/exports': 'error',
+}
 
-  // Turn on errors for missing imports
-  'import/no-unresolved': 'error',
+const reactRefreshRules = {
+  // https://reactrouter.com/explanation/hot-module-replacement#supported-exports
+  'react-refresh/only-export-components': [
+    'warn',
+    {
+      allowExportNames: [
+        'loader',
+        'clientLoader',
+        'action',
+        'clientAction',
+        'ErrorBoundary',
+        'HydrateFallback',
+        'headers',
+        'handle',
+        'links',
+        'meta',
+        'shouldRevalidate',
+      ],
+    },
+  ],
 }
 
 export default defineConfig([
   globalIgnores(['dist']),
-  pluginPrettierRecommended,
+  prettierRecommended,
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
       tseslint.configs.stylisticTypeChecked,
-      pluginReactX.configs['recommended-typescript'],
-      pluginReactDom.configs.recommended,
-      pluginReactHooks.configs['recommended-latest'],
-      pluginReactRefresh.configs.vite,
-      pluginImport.flatConfigs.recommended,
-      pluginImport.flatConfigs.typescript,
+      reactX.configs['recommended-typescript'],
+      reactDom.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+      importX.flatConfigs.recommended,
+      importX.flatConfigs.typescript,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parser: tsParser,
       parserOptions: {
         project: ['./tsconfig.node.json', './tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
-      'simple-import-sort': pluginSimpleImportSort,
+      'import-x': importX,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
       ...importRules,
+      ...reactRefreshRules,
     },
   },
 ])

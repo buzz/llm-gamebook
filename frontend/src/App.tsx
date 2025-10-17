@@ -3,12 +3,13 @@ import '@mantine/core/styles.css'
 import { AppShell, Burger, MantineProvider } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 
+import Routes from './Routes'
+
 function App() {
   const [opened, { toggle }] = useDisclosure()
 
   return (
     <MantineProvider defaultColorScheme="dark">
-      {' '}
       <AppShell
         padding="md"
         header={{ height: 60 }}
@@ -26,7 +27,9 @@ function App() {
 
         <AppShell.Navbar>Navbar</AppShell.Navbar>
 
-        <AppShell.Main>Main</AppShell.Main>
+        <AppShell.Main>
+          <Routes />
+        </AppShell.Main>
       </AppShell>
     </MantineProvider>
   )
