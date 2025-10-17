@@ -1,0 +1,8 @@
+.navLink {
+  padding: 4px var(--mantine-spacing-sm);
+  height: rem(41);
+
+  .label {
+    font-size: var(--mantine-font-size-md);
+  }
+}

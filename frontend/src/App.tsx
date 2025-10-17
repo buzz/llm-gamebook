@@ -1,35 +1,15 @@
 import '@mantine/core/styles.css'
 
-import { AppShell, Burger, MantineProvider } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
+import { MantineProvider } from '@mantine/core'
 
+import AppShell from './components/layout/AppShell'
 import Routes from './Routes'
 
 function App() {
-  const [opened, { toggle }] = useDisclosure()
-
   return (
     <MantineProvider defaultColorScheme="dark">
-      <AppShell
-        padding="md"
-        header={{ height: 60 }}
-        navbar={{
-          width: 300,
-          breakpoint: 'sm',
-          collapsed: { mobile: !opened },
-        }}
-      >
-        <AppShell.Header>
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-
-          <div>Logo</div>
-        </AppShell.Header>
-
-        <AppShell.Navbar>Navbar</AppShell.Navbar>
-
-        <AppShell.Main>
-          <Routes />
-        </AppShell.Main>
+      <AppShell>
+        <Routes />
       </AppShell>
     </MantineProvider>
   )

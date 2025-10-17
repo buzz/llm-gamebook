@@ -1,0 +1,64 @@
+.messages {
+  flex-grow: 1;
+
+  .text {
+    > p:first-of-type {
+      margin-top: 0;
+    }
+
+    > p:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  .thinking {
+    margin-bottom: var(--mantine-spacing-xs);
+
+    .toggleBtn {
+      border: none;
+      color: var(--mantine-color-dimmed);
+      font-size: var(--mantine-font-size-md);
+      padding: 0;
+
+      &:hover {
+        color: var(--mantine-color-text);
+      }
+
+      .chevron {
+        transition-property: transform;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 0.15s;
+
+        &.rot-0 {
+          transform: rotate(0deg);
+        }
+
+        &.rot-180 {
+          transform: rotate(180deg);
+        }
+      }
+
+      .toggleBtnInner {
+        justify-content: flex-start;
+      }
+    }
+
+    .thinkingText {
+      color: var(--mantine-color-dimmed);
+      font-size: var(--mantine-font-size-md);
+      margin-top: var(--mantine-spacing-xs);
+    }
+  }
+
+  .llmText {
+    font-size: var(--mantine-font-size-lg);
+  }
+}
+
+.textArea {
+  flex-grow: 1;
+}
+
+.sendButton {
+  height: auto;
+}

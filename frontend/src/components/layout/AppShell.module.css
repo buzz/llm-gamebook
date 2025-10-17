@@ -1,0 +1,19 @@
+.titleWrapper {
+  flex-grow: 1;
+  text-align: center;
+
+  .title {
+    display: inline-block;
+    line-height: rem(18px);
+    text-align: left;
+    vertical-align: middle;
+  }
+}
+
+.actionIcons {
+  display: none;
+
+  .storyLink:hover & {
+    display: inherit;
+  }
+}
