@@ -61,7 +61,7 @@ def tui(  # noqa: PLR0913
 
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
     model = OpenAIChatModel(model_name, provider=provider)
-    project = Project.from_dir(Path(project_dir))
+    project = Project.from_path(Path(project_dir))
     state = StoryState(project)
 
     asyncio.run(run_tui(model, state, debug=debug, streaming=streaming))

@@ -60,7 +60,7 @@ class Project(ProjectDefinition):
         return entity
 
     @classmethod
-    def from_dir(cls, project_path: Path) -> Self:
+    def from_path(cls, project_path: Path) -> Self:
         project_filepath = project_path / f"{PROJECT_NAME}.yaml"
 
         try:

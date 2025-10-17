@@ -6,7 +6,7 @@ from llm_gamebook.story.traits.graph import GraphTrait
 
 
 def test_evaluator(examples_path: Path) -> None:
-    project = Project.from_dir(examples_path / "broken-bulb")
+    project = Project.from_path(examples_path / "broken-bulb")
     leaflet_not_found_yet = project.get_entity("leaflet_not_found_yet", DescribedTrait)
     locations = project.get_entity("locations", GraphTrait)
 

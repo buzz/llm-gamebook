@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
@@ -19,14 +19,14 @@ async def read_chats(session: SessionDep, skip: int = 0, limit: int = 100) -> Ch
 
 
 @router.get("/{chat_id}", response_model=ChatPublic)
-async def read_chat(session: SessionDep, chat_id: uuid.UUID) -> Chat:
+async def read_chat(session: SessionDep, chat_id: UUID) -> Chat:
     chat = session.get(Chat, chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Item not found")
     return chat
 
 
-@router.post("/{chat_id}", response_model=ChatPublic)
+@router.post("/new", response_model=ChatPublic)
 async def create_chat(session: SessionDep, chat_in: ChatCreate) -> Chat:
     chat = Chat.model_validate(chat_in)
     session.add(chat)
