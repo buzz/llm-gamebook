@@ -67,7 +67,7 @@ const reactRefreshRules = {
 }
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'src/types/openapi.d.ts']),
   prettierRecommended,
   {
     files: ['**/*.{ts,tsx}'],
