@@ -3,8 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
-from llm_gamebook.db.chat import Chat, ChatCreate, ChatPublic, ChatsPublic
-from llm_gamebook.webui.api.deps import SessionDep
+from llm_gamebook.db.chat import Chat
+
+from .deps import SessionDep
+from .models import ChatCreate, ChatPublic, ChatsPublic, ServerMessage
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -26,10 +28,18 @@ async def read_chat(session: SessionDep, chat_id: UUID) -> Chat:
     return chat
 
 
-@router.post("/new", response_model=ChatPublic)
+@router.post("/", response_model=ChatPublic)
 async def create_chat(session: SessionDep, chat_in: ChatCreate) -> Chat:
     chat = Chat.model_validate(chat_in)
     session.add(chat)
     session.commit()
     session.refresh(chat)
     return chat
+
+
+@router.delete("/{chat_id}")
+async def delete_chat(session: SessionDep, chat_id: UUID) -> ServerMessage:
+    chat = session.get(Chat, chat_id)
+    session.delete(chat)
+    session.commit()
+    return ServerMessage(message="Story chat deleted successfully.")
