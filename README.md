@@ -39,5 +39,5 @@ This project represents an innovative approach to interactive storytelling, comb
 Run FastAPI web server.
 
 ```
-uv run fastapi dev llm_gamebook/webui/app.py
+uv run fastapi dev llm_gamebook/web/app.py
 ```

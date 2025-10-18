@@ -10,7 +10,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from llm_gamebook.engine import StoryEngine
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.state import StoryState
-from llm_gamebook.webui.api.websocket.models import ServerLLMMessage
+from llm_gamebook.web.api.websocket.models import ServerLLMMessage
 
 router = APIRouter(prefix="/ws")
 

@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 
 from llm_gamebook.constants import PROJECT_NAME
 from llm_gamebook.db import create_db_and_tables
-from llm_gamebook.webui.api import api_router
+from llm_gamebook.web.api import api_router
 
 
 @asynccontextmanager

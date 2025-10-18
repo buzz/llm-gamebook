@@ -5,4 +5,4 @@ import pytest
 
 @pytest.fixture
 def examples_path() -> Path:
-    return Path(__file__).parent.parent / "examples"
+    return Path(__file__).parent.parent.parent / "examples"

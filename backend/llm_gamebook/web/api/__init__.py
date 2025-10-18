@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from llm_gamebook.webui.api import chat, websocket
+from llm_gamebook.web.api import chat, websocket
 
 api_router = APIRouter()
 api_router.include_router(chat.router)

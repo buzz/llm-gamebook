@@ -102,8 +102,12 @@ build_command = """
     git add uv.lock
     uv build
 """
+commit_author = "buzz <buzz@users.noreply.github.com>"
 commit_message = "Version {version}"
 tag_format = "v{version}"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "../CHANGELOG.md"
 
 [tool.semantic_release.branches.main]
 match = "main"

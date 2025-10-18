@@ -4,10 +4,12 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
+  "python.analysis.extraPaths": ["./backend"],
   "[typescript][typescriptreact]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": "never",
       "source.fixAll.eslint": "always"
     }
-  }
+  },
+  "mypy.configFile": "backend/pyproject.toml"
 }
