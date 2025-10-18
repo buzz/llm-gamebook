@@ -8,18 +8,22 @@
     "build": "tsc -b && vite build",
     "generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o ./src/types/openapi.d.ts && prettier --write ./src/types/openapi.d.ts",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --project ."
   },
   "dependencies": {
     "@mantine/core": "^8.3.5",
     "@mantine/form": "^8.3.5",
     "@mantine/hooks": "^8.3.5",
+    "@mantine/modals": "^8.3.5",
+    "@mantine/notifications": "^8.3.5",
+    "@reduxjs/toolkit": "^2.9.1",
     "@tabler/icons-react": "^3.35.0",
     "clsx": "^2.1.1",
-    "ky": "^1.12.0",
-    "react-dom": "^19.1.1",
-    "react-use-websocket": "^4.13.0",
     "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
+    "react-use-websocket": "^4.13.0",
     "streamdown": "^1.4.0",
     "wouter": "^3.7.1"
   },

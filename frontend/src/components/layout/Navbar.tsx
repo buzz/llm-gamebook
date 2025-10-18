@@ -2,15 +2,15 @@ import { AppShell, ScrollArea } from '@mantine/core'
 import { IconBooks, IconHome, IconSettings, IconTextPlus } from '@tabler/icons-react'
 
 import { BasicNavLink, RouterNavLink } from '@/components/common/NavLink'
-import type { ChatListPublic } from '@/types/api'
+import chatApi from '@/services/chat'
 
 import StoryLink from './StoryLink'
 
 const OFFSET = 8
 
 function Navbar() {
-  //const data = useRouteLoaderData<ClientLoaderReturn>('root')
-  const chats: ChatListPublic[] = []
+  const { data } = chatApi.useGetChatsQuery()
+  const chats = data?.data ?? []
   const storyLinks = chats.map((chat) => <StoryLink chat={chat} key={chat.id} />)
 
   return (

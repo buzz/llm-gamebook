@@ -14,7 +14,8 @@ export interface paths {
     /** Read Chats */
     get: operations['read_chats_api_chats__get']
     put?: never
-    post?: never
+    /** Create Chat */
+    post: operations['create_chat_api_chats__post']
     delete?: never
     options?: never
     head?: never
@@ -32,24 +33,8 @@ export interface paths {
     get: operations['read_chat_api_chats__chat_id__get']
     put?: never
     post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/chats/new': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Create Chat */
-    post: operations['create_chat_api_chats_new_post']
-    delete?: never
+    /** Delete Chat */
+    delete: operations['delete_chat_api_chats__chat_id__delete']
     options?: never
     head?: never
     patch?: never
@@ -130,6 +115,11 @@ export interface components {
      * @enum {string}
      */
     Sender: 'human' | 'llm'
+    /** ServerMessage */
+    ServerMessage: {
+      /** Message */
+      message: string
+    }
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -180,6 +170,39 @@ export interface operations {
       }
     }
   }
+  create_chat_api_chats__post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ChatPublic']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   read_chat_api_chats__chat_id__get: {
     parameters: {
       query?: never
@@ -211,18 +234,16 @@ export interface operations {
       }
     }
   }
-  create_chat_api_chats_new_post: {
+  delete_chat_api_chats__chat_id__delete: {
     parameters: {
       query?: never
       header?: never
-      path?: never
+      path: {
+        chat_id: string
+      }
       cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ChatCreate']
-      }
-    }
+    requestBody?: never
     responses: {
       /** @description Successful Response */
       200: {
@@ -230,7 +251,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ChatPublic']
+          'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */

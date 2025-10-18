@@ -2,6 +2,8 @@ import { ActionIcon, AppShell as MantineAppShell, Group, Title } from '@mantine/
 import { useDisclosure } from '@mantine/hooks'
 import { IconMenu2 } from '@tabler/icons-react'
 
+import { iconSizeProps } from '@/utils'
+
 import classes from './AppShell.module.css'
 import Navbar from './Navbar'
 
@@ -26,7 +28,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             size="lg"
             variant={opened ? 'filled' : 'default'}
           >
-            <IconMenu2 stroke={1.5} />
+            <IconMenu2 {...iconSizeProps('md')} />
           </ActionIcon>
           <div className={classes.titleWrapper}>
             <Title className={classes.title} lineClamp={2} order={1} size="xl">

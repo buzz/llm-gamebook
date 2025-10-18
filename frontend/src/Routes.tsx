@@ -1,19 +1,25 @@
 import { Route, Switch } from 'wouter'
 
+import NotFound from './components/common/NotFound'
 import Player from './components/Player'
 import NewStory from './components/Player/NewStory'
+
+const uuidPattern =
+  '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
 
 function Routes() {
   return (
     <Switch>
       <Route path="/" component={() => 'Home'} />
       <Route path="/editor" component={() => 'Editor'} />
-      <Route path="/player" nest>
-        <Route path="/new" component={NewStory} />
-        <Route path="/story/:id" component={Player} />
-      </Route>
+      <Route
+        path={new RegExp(`^/editor/story/(?<chatId>${uuidPattern})$`)}
+        component={() => 'Editor'}
+      />
+      <Route path="/player/new" component={NewStory} />
+      <Route path={new RegExp(`^/player/story/(?<chatId>${uuidPattern})$`)} component={Player} />
       <Route path="/settings" component={() => 'Settings'} />
-      <Route path="/*" component={() => '404 - Not Found'} />
+      <Route component={NotFound} />
     </Switch>
   )
 }

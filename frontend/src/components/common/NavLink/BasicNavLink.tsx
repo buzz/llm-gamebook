@@ -2,6 +2,8 @@ import { createPolymorphicComponent, NavLink } from '@mantine/core'
 import type { NavLinkProps } from '@mantine/core'
 import type { Icon } from '@tabler/icons-react'
 
+import { iconSizeProps } from '@/utils'
+
 import classes from './BasicNavLink.module.css'
 
 interface BasicNavLinkProps extends Omit<NavLinkProps, 'leftSection'> {
@@ -17,7 +19,7 @@ const BasicNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(function
   return (
     <NavLink
       classNames={{ label: classes.label, root: classes.navLink }}
-      leftSection={Icon ? <Icon size={24} stroke={1.5} /> : null}
+      leftSection={Icon ? <Icon {...iconSizeProps('md')} /> : null}
       noWrap
       {...otherProps}
       ref={ref}

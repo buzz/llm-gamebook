@@ -1,7 +1,10 @@
-import { ActionIcon } from '@mantine/core'
+import { ActionIcon, Group } from '@mantine/core'
 import { IconBook, IconPencil, IconTrash } from '@tabler/icons-react'
+import { Link } from 'wouter'
 
 import { RouterNavLink } from '@/components/common/NavLink'
+import { useDeleteChat } from '@/hooks/chats'
+import { iconSizeProps } from '@/utils'
 import type { ChatListPublic } from '@/types/api'
 
 import classes from './AppShell.module.css'
@@ -11,13 +14,25 @@ interface ActionIconsProps {
 }
 
 function ActionIcons({ chatId }: ActionIconsProps) {
+  const { deleteChat, isLoading } = useDeleteChat()
+
   return (
     <ActionIcon.Group className={classes.actionIcons}>
-      <ActionIcon aria-label="Edit" variant="default">
-        <IconPencil size={20} stroke={1.0} />
+      <ActionIcon
+        component={Link}
+        aria-label="Edit"
+        to={`/editor/story/${chatId}`}
+        variant="default"
+      >
+        <IconPencil {...iconSizeProps('sm')} />
       </ActionIcon>
-      <ActionIcon aria-label="Delete" variant="default">
-        <IconTrash size={20} stroke={1.0} />
+      <ActionIcon
+        aria-label="Delete"
+        loading={isLoading}
+        onClick={() => void deleteChat(chatId)}
+        variant="default"
+      >
+        <IconTrash {...iconSizeProps('sm')} />
       </ActionIcon>
     </ActionIcon.Group>
   )
@@ -29,13 +44,15 @@ interface StoryLinkProps {
 
 function StoryLink({ chat }: StoryLinkProps) {
   return (
-    <RouterNavLink
-      className={classes.storyLink}
-      icon={IconBook}
-      rightSection={<ActionIcons chatId={chat.id} />}
-      label={chat.id}
-      to={`/player/story/${chat.id}`}
-    />
+    <Group className={classes.storyLinkWrapper}>
+      <RouterNavLink
+        className={classes.storyLink}
+        icon={IconBook}
+        label={chat.id}
+        to={`/player/story/${chat.id}`}
+      />
+      <ActionIcons chatId={chat.id} />
+    </Group>
   )
 }
 

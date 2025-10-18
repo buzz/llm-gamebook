@@ -10,10 +10,27 @@
   }
 }
 
+.storyLinkWrapper {
+  align-items: center;
+  column-gap: var(--mantine-spacing-xs);
+  width: 100%;
+  flex-wrap: nowrap;
+
+  .storyLink {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .actionIcons {
+    flex-grow: 0;
+    padding-right: var(--mantine-spacing-xs);
+  }
+}
+
 .actionIcons {
   display: none;
 
-  .storyLink:hover & {
+  .storyLinkWrapper:hover & {
     display: inherit;
   }
 }

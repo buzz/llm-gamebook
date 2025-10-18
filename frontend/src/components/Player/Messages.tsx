@@ -4,6 +4,8 @@ import { IconBrain, IconChevronDown } from '@tabler/icons-react'
 import { clsx } from 'clsx'
 import { Streamdown } from 'streamdown'
 
+import { iconSizeProps } from '@/utils'
+
 import classes from './Player.module.css'
 import type { Message } from './useMessages'
 
@@ -20,11 +22,11 @@ function MessagePaper({ message }: MessagePaperProps) {
         <Button
           classNames={{ root: classes.toggleBtn, inner: classes.toggleBtnInner }}
           fullWidth
-          leftSection={<IconBrain size={20} stroke={1.5} />}
+          leftSection={<IconBrain {...iconSizeProps('sm')} />}
           rightSection={
             <IconChevronDown
               className={clsx(classes.chevron, classes[thinkingOpened ? 'rot-180' : 'rot-0'])}
-              stroke={1.5}
+              {...iconSizeProps('sm')}
             />
           }
           onClick={toggleThinking}
