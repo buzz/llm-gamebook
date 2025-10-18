@@ -14,7 +14,7 @@ function NewStory() {
   const start = async () => {
     try {
       const { id } = await createChat({}).unwrap()
-      navigate(`/story/${id}`)
+      navigate(`/player/story/${id}`)
     } catch (err) {
       showError('Failed to create story chat!', err)
     }

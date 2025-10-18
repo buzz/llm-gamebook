@@ -3,16 +3,19 @@ import useWebSocket from 'react-use-websocket'
 
 import type { Message } from './useMessages'
 
-interface ServerMessage {
+interface MessageUpdate {
   event: 'llm_message'
-  id: string
-  created_at: string
-  thinking: string | null
-  text: string | null
+  finish_reason: 'stop' | null
+  message: {
+    id: string
+    created_at: string
+    thinking: string | null
+    text: string | null
+  }
 }
 
 function useStreaming(chatId: string) {
-  const { lastJsonMessage } = useWebSocket<ServerMessage | null>(
+  const { lastJsonMessage } = useWebSocket<MessageUpdate | null>(
     `ws://localhost:8000/api/ws/${chatId}`
   )
   const [lastServerMessage, setLastServerMessage] = useState<Message | null>(null)
@@ -20,11 +23,11 @@ function useStreaming(chatId: string) {
   useEffect(() => {
     if (lastJsonMessage !== null) {
       setLastServerMessage({
-        id: lastJsonMessage.id,
-        createdAt: new Date(lastJsonMessage.created_at),
+        id: lastJsonMessage.message.id,
+        createdAt: new Date(lastJsonMessage.message.created_at),
         sender: 'llm',
-        thinking: lastJsonMessage.thinking,
-        text: lastJsonMessage.text ?? '',
+        thinking: lastJsonMessage.message.thinking,
+        text: lastJsonMessage.message.text ?? '',
       })
     }
   }, [lastJsonMessage, setLastServerMessage])

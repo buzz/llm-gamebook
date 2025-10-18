@@ -19,7 +19,9 @@ function Routes() {
       <Route path="/player/new" component={NewStory} />
       <Route path={new RegExp(`^/player/story/(?<chatId>${uuidPattern})$`)} component={Player} />
       <Route path="/settings" component={() => 'Settings'} />
-      <Route component={NotFound} />
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   )
 }
