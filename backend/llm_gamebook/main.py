@@ -16,12 +16,6 @@ from llm_gamebook.tui import TuiApp
 app = typer.Typer()
 
 
-@app.command()
-def web(project_dir: Annotated[str, typer.Argument(help="Project directory")]) -> None:
-    """Run the web interface."""
-    raise NotImplementedError
-
-
 async def run_tui(model: Model, state: StoryState, *, debug: bool, streaming: bool) -> None:
     tui_app = TuiApp(debug=debug)
     tui_task = tui_app.run_async()

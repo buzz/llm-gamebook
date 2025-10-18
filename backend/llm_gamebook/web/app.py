@@ -7,12 +7,15 @@ from fastapi.responses import HTMLResponse
 from llm_gamebook.constants import PROJECT_NAME
 from llm_gamebook.db import create_db_and_tables
 from llm_gamebook.web.api import api_router
+from llm_gamebook.web.engine_manager import EngineManager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator:
-    create_db_and_tables()
+    await create_db_and_tables()
+    app.state.engine_mgr = EngineManager()
     yield
+    await app.state.engine_mgr.close()
 
 
 app = FastAPI(title=PROJECT_NAME, lifespan=lifespan)
