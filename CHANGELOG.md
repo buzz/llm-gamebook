@@ -2,6 +2,57 @@
 
 <!-- version list -->
 
+## v0.2.0 (2025-10-23)
+
+### Chores
+
+- Move Python code to `backend` folder
+  ([`c25b47d`](https://github.com/buzz/llm-gamebook/commit/c25b47d83dc86137441283f534ce886c0b0cc09d))
+
+- Prevent vscode from sorting imports
+  ([`754d5e2`](https://github.com/buzz/llm-gamebook/commit/754d5e290496e37ab152e3fb889bf76f5cbe01f4))
+
+- **frontend**: Minor renamings and refactoring
+  ([`28e5ec5`](https://github.com/buzz/llm-gamebook/commit/28e5ec5c41e72cfe42b8b6f8d40a1ecf086314b4))
+
+### Documentation
+
+- Update todos
+  ([`87a41b5`](https://github.com/buzz/llm-gamebook/commit/87a41b5c6dbf388733c38c3b57a2f3b8c3ac4939))
+
+### Features
+
+- **backend**: Add basic websocket endpoint
+  ([`a76bff4`](https://github.com/buzz/llm-gamebook/commit/a76bff42d90984ec907fa095f7b45cc8f16cffcc))
+
+- **backend**: Add delete chat route
+  ([`56b06ff`](https://github.com/buzz/llm-gamebook/commit/56b06ff2902e952120e3c32fc0c65b6305be6963))
+
+- **backend**: Add FastAPI, SQLModel
+  ([`a076e16`](https://github.com/buzz/llm-gamebook/commit/a076e169beeb84bf123bcd15e9e48dc7d238512e))
+
+- **backend**: Redesign DB models to be closer to Pydantic AI data stuctures
+  ([`4e56ab0`](https://github.com/buzz/llm-gamebook/commit/4e56ab02e96b5ac56d5f0b081521bed10921d59b))
+
+- **backend**: Use sync sqlite driver, add `EngineManager`
+  ([`3b1531d`](https://github.com/buzz/llm-gamebook/commit/3b1531da4761b030f0822e7b7956a629db5c06ea))
+
+- **frontend**: Add frontend project scaffold
+  ([`9bb5c2c`](https://github.com/buzz/llm-gamebook/commit/9bb5c2c0607607bb20e511c0bbc67339a2fb9284))
+
+- **frontend**: Add Redux Toolkit
+  ([`105b2ac`](https://github.com/buzz/llm-gamebook/commit/105b2ac9982159161625a3c13c0de6d83f5309f2))
+
+- **frontend**: Add wouter
+  ([`345ea15`](https://github.com/buzz/llm-gamebook/commit/345ea153035295ec53297636d1a009b8a1b8dfd0))
+
+- **frontend**: Generate types from OpenAPI
+  ([`f39e532`](https://github.com/buzz/llm-gamebook/commit/f39e5328fdd86f6f3720df88df53e534340973de))
+
+- **frontend**: Message streaming
+  ([`8eeb030`](https://github.com/buzz/llm-gamebook/commit/8eeb030f4defef2ccc85bc29a8752ae46ed4c525))
+
+
 ## v0.1.0 (2025-10-23)
 
 ### Chores
