@@ -1,0 +1,7 @@
+.textArea {
+  flex-grow: 1;
+}
+
+.sendButton {
+  height: auto;
+}

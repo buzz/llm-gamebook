@@ -3,25 +3,25 @@ import { IconBook, IconPencil, IconTrash } from '@tabler/icons-react'
 import { Link } from 'wouter'
 
 import { RouterNavLink } from '@/components/common/NavLink'
-import { useDeleteChat } from '@/hooks/chats'
+import { useDeleteSession } from '@/hooks/session'
 import { iconSizeProps } from '@/utils'
-import type { ChatListPublic } from '@/types/api'
+import type { Session } from '@/types/api'
 
 import classes from './AppShell.module.css'
 
 interface ActionIconsProps {
-  chatId: string
+  sessionId: string
 }
 
-function ActionIcons({ chatId }: ActionIconsProps) {
-  const { deleteChat, isLoading } = useDeleteChat()
+function ActionIcons({ sessionId }: ActionIconsProps) {
+  const { deleteSession, isLoading } = useDeleteSession()
 
   return (
     <ActionIcon.Group className={classes.actionIcons}>
       <ActionIcon
         component={Link}
         aria-label="Edit"
-        to={`/editor/story/${chatId}`}
+        to={`/editor/story/${sessionId}`}
         variant="default"
       >
         <IconPencil {...iconSizeProps('sm')} />
@@ -29,7 +29,7 @@ function ActionIcons({ chatId }: ActionIconsProps) {
       <ActionIcon
         aria-label="Delete"
         loading={isLoading}
-        onClick={() => void deleteChat(chatId)}
+        onClick={() => void deleteSession(sessionId)}
         variant="default"
       >
         <IconTrash {...iconSizeProps('sm')} />
@@ -39,19 +39,19 @@ function ActionIcons({ chatId }: ActionIconsProps) {
 }
 
 interface StoryLinkProps {
-  chat: ChatListPublic
+  session: Session
 }
 
-function StoryLink({ chat }: StoryLinkProps) {
+function StoryLink({ session }: StoryLinkProps) {
   return (
     <Group className={classes.storyLinkWrapper}>
       <RouterNavLink
         className={classes.storyLink}
         icon={IconBook}
-        label={chat.id}
-        to={`/player/story/${chat.id}`}
+        label={session.id}
+        to={`/player/${session.id}`}
       />
-      <ActionIcons chatId={chat.id} />
+      <ActionIcons sessionId={session.id} />
     </Group>
   )
 }

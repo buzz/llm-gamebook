@@ -4,6 +4,7 @@ import { IconX } from '@tabler/icons-react'
 import { useCallback } from 'react'
 
 import { isApiQueryError } from '@/types/api'
+import { isWebsocketError } from '@/types/websocket'
 import { iconSizeProps } from '@/utils'
 
 function useShowError() {
@@ -15,7 +16,7 @@ function useShowError() {
       if (typeof error.data.detail === 'string') {
         errorMsg += ` - ${error.data.detail}`
       }
-    } else if (error instanceof Error) {
+    } else if (error instanceof Error || isWebsocketError(error)) {
       errorMsg = error.message
     }
 
@@ -23,12 +24,15 @@ function useShowError() {
       title: 'Error',
       message: (
         <>
-          {msg}
-          <br />
-          <Text fz="sm">{errorMsg}</Text>
+          <Text fz="sm" fw="bold">
+            {msg}
+          </Text>
+          <Text fz="sm" lineClamp={5}>
+            {errorMsg}
+          </Text>
         </>
       ),
-      autoClose: false,
+      autoClose: 30_000,
       color: 'red',
       icon: <IconX {...iconSizeProps('lg')} />,
     })

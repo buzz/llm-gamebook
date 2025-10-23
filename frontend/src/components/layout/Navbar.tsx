@@ -2,16 +2,16 @@ import { AppShell, ScrollArea } from '@mantine/core'
 import { IconBooks, IconHome, IconSettings, IconTextPlus } from '@tabler/icons-react'
 
 import { BasicNavLink, RouterNavLink } from '@/components/common/NavLink'
-import chatApi from '@/services/chat'
+import sessionApi from '@/services/session'
 
 import StoryLink from './StoryLink'
 
 const OFFSET = 8
 
 function Navbar() {
-  const { data } = chatApi.useGetChatsQuery()
-  const chats = data?.data ?? []
-  const storyLinks = chats.map((chat) => <StoryLink chat={chat} key={chat.id} />)
+  const { data } = sessionApi.useGetSessionsQuery()
+  const sessions = data?.data ?? []
+  const storyLinks = sessions.map((session) => <StoryLink session={session} key={session.id} />)
 
   return (
     <>

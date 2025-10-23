@@ -1,40 +1,79 @@
 import { useEffect, useState } from 'react'
 
-import type { ChatPublic } from '@/types/api'
+import { useShowError } from '@/hooks/notifications'
+import useWebSocketConnection from '@/hooks/useWebSocketConnection'
+import sessionApi from '@/services/session'
+import { assertNever } from '@/types/common'
+import type { ModelMessage, SessionFull } from '@/types/api'
+import type { WebSocketStatusMessage, WebSocketStreamMessage } from '@/types/websocket'
 
-import useStreaming from './useStreaming'
+function useMessages(session: SessionFull) {
+  const { refetch } = sessionApi.useGetSessionByIdQuery(session.id)
+  const [messages, setMessages] = useState<ModelMessage[]>([])
+  const [currentStreamingPartId, setCurrentStreamingPartId] = useState<string | null>(null)
+  const { error, lastMessage } = useWebSocketConnection(session.id)
+  const showError = useShowError()
+  const [lastStreamMessage, setLastStreamMessage] = useState<WebSocketStreamMessage | null>(null)
+  const [streamStatus, setStreamStatus] = useState<WebSocketStatusMessage['status']>('stopped')
 
-interface Message {
-  id: string
-  createdAt: Date
-  sender: 'human' | 'llm'
-  thinking: string | null
-  text: string
-}
-
-function createMessages(loadedMessages: ChatPublic['messages']) {
-  return loadedMessages.map<Message>((msg) => ({
-    ...msg,
-    createdAt: new Date(msg.created_at),
-  }))
-}
-
-function useMessages(chat: ChatPublic) {
-  const [messages, setMessages] = useState<Message[]>([])
-  const lastStreamingMessage = useStreaming(chat.id)
-
+  // Copy REST API messages into current state
   useEffect(() => {
-    setMessages(createMessages(chat.messages))
-  }, [chat.messages])
+    setMessages([...session.messages])
+  }, [session.messages])
 
+  // Merge streaming message into current state
   useEffect(() => {
-    if (lastStreamingMessage !== null) {
-      setMessages((prev) => prev.concat(lastStreamingMessage))
+    if (lastStreamMessage) {
+      setMessages((prev) => {
+        const last = prev.at(-1)
+        if (last?.id === lastStreamMessage.response.id) {
+          // Replace the last message
+          return [...prev.slice(0, -1), lastStreamMessage.response]
+        }
+        // Append new message
+        return [...prev, lastStreamMessage.response]
+      })
+
+      // Set current streaming part ID
+      const currentPart = lastStreamMessage.response.parts.at(-1)
+      setCurrentStreamingPartId(currentPart?.id ?? null)
+    } else {
+      setCurrentStreamingPartId(null)
     }
-  }, [lastStreamingMessage, setMessages])
+  }, [lastStreamMessage])
 
-  return messages
+  // Handle stream error
+  useEffect(() => {
+    if (error !== null) {
+      showError(error.name, error)
+    }
+  }, [error, showError])
+
+  // Handle stream messages
+  useEffect(() => {
+    if (lastMessage) {
+      switch (lastMessage.kind) {
+        case 'status':
+          setStreamStatus(lastMessage.status)
+          if (streamStatus === 'stopped') {
+            setCurrentStreamingPartId(null)
+            void refetch()
+          }
+          break
+        case 'stream':
+          setLastStreamMessage(lastMessage)
+          break
+        default:
+          assertNever(lastMessage)
+      }
+    }
+  }, [lastMessage, refetch, streamStatus])
+
+  return {
+    currentStreamingPartId,
+    messages,
+    streamStatus,
+  }
 }
 
-export type { Message }
 export default useMessages

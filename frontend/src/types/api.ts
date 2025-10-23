@@ -1,11 +1,17 @@
 import { isObject } from './common'
 import type { components } from './openapi'
 
-type ChatCreate = components['schemas']['ChatCreate']
-type ChatListPublic = components['schemas']['ChatListPublic']
-type ChatPublic = components['schemas']['ChatPublic']
-type ChatsPublic = components['schemas']['ChatsPublic']
+type ModelRequest = components['schemas']['ModelRequest']
+type ModelRequestCreate = components['schemas']['ModelRequestCreate']
 type ServerMessage = components['schemas']['ServerMessage']
+type Session = components['schemas']['Session']
+type SessionCreate = components['schemas']['SessionCreate']
+type SessionFull = components['schemas']['SessionFull']
+type Sessions = components['schemas']['Sessions']
+
+type ModelMessage = components['schemas']['ModelMessage']
+
+type ThinkingPart = components['schemas']['ThinkingPart']
 
 interface ApiQueryError {
   data: {
@@ -38,10 +44,14 @@ function isApiValidationError(thing: unknown): thing is ApiValidationError {
 export type {
   ApiQueryError,
   ApiValidationError,
-  ChatCreate,
-  ChatListPublic,
-  ChatPublic,
-  ChatsPublic,
+  ModelMessage,
+  ModelRequest,
+  ModelRequestCreate,
   ServerMessage,
+  Session,
+  SessionCreate,
+  SessionFull,
+  Sessions,
+  ThinkingPart,
 }
 export { isApiQueryError, isApiValidationError }

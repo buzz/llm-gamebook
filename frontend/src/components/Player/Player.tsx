@@ -1,58 +1,41 @@
-import { Button, Flex, Group, Textarea } from '@mantine/core'
+import { Flex } from '@mantine/core'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { IconSend } from '@tabler/icons-react'
 import { useParams } from 'wouter'
 
 import QueryHandler from '@/components/common/QueryHandler'
-import chatApi from '@/services/chat'
-import { iconSizeProps } from '@/utils'
-import type { ChatPublic } from '@/types/api'
+import sessionApi from '@/services/session'
+import type { SessionFull } from '@/types/api'
 
-import Messages from './Messages'
-import classes from './Player.module.css'
+import Controls from './Controls'
+import Messages from './Messages/Messages'
 import useMessages from './useMessages'
 
 interface PlayerLoadedProps {
-  chat: ChatPublic
+  session: SessionFull
 }
 
-function PlayerLoaded({ chat }: PlayerLoadedProps) {
-  const messages = useMessages(chat)
+function PlayerLoaded({ session }: PlayerLoadedProps) {
+  const { currentStreamingPartId, messages, streamStatus } = useMessages(session)
 
   return (
     <Flex direction="column" gap={{ base: 'sm', sm: 'lg' }} justify="center" h="100%">
-      <Messages messages={messages} />
-      <Group align="stretch" gap="sm">
-        <Textarea
-          aria-label="Text input"
-          autosize
-          className={classes.textArea}
-          minRows={1}
-          maxRows={4}
-        />
-        <Button
-          className={classes.sendButton}
-          leftSection={<IconSend {...iconSizeProps('md')} />}
-          variant="filled"
-        >
-          Send
-        </Button>
-      </Group>
+      <Messages currentStreamingPartId={currentStreamingPartId} messages={messages} />
+      <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
     </Flex>
   )
 }
 
 function Player() {
-  const { chatId } = useParams()
-  const result = chatApi.useGetChatByIdQuery(chatId ?? skipToken)
+  const { sessionId } = useParams()
+  const result = sessionApi.useGetSessionByIdQuery(sessionId ?? skipToken)
 
   return (
     <QueryHandler
-      notFoundTitle="Story chat not found"
-      notFoundMessage="The story chat does not exist."
+      notFoundTitle="Story session not found"
+      notFoundMessage="The story session does not exist."
       result={result}
     >
-      {(chat) => <PlayerLoaded chat={chat} />}
+      {(data) => <PlayerLoaded session={data} />}
     </QueryHandler>
   )
 }

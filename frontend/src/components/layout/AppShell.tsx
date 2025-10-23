@@ -1,14 +1,25 @@
 import { ActionIcon, AppShell as MantineAppShell, Group, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconMenu2 } from '@tabler/icons-react'
+import { use, useEffect } from 'react'
 
+import WebSocketContext from '@/contexts/WebSocketContext'
+import { useShowError } from '@/hooks/notifications'
 import { iconSizeProps } from '@/utils'
 
 import classes from './AppShell.module.css'
 import Navbar from './Navbar'
 
 function AppShell({ children }: { children: React.ReactNode }) {
+  const context = use(WebSocketContext)
   const [opened, { toggle }] = useDisclosure(true)
+  const showError = useShowError()
+
+  useEffect(() => {
+    if (context?.error) {
+      showError(`WebSocket Error: ${context.error.name}`, context.error)
+    }
+  }, [context?.error, showError])
 
   return (
     <MantineAppShell

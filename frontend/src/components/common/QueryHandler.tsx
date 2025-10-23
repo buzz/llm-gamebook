@@ -18,9 +18,9 @@ function QueryHandler<R, Q, B extends BaseQueryFn>({
   children,
   notFoundTitle,
   notFoundMessage,
-  result: { data, error, isFetching },
+  result: { data, error, isLoading },
 }: QueryHandlerProps<R, Q, B>) {
-  if (isFetching) {
+  if (isLoading) {
     return (
       <Center h="100%">
         <Loader size="xl" />

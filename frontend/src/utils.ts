@@ -18,4 +18,8 @@ function iconSizeProps(size: 'lg' | 'md' | 'sm'): IconProps {
   }
 }
 
-export { iconSizeProps }
+function truncate(str: string, maxLength = 200) {
+  return str.length > maxLength ? str.slice(0, maxLength) + '…' : str
+}
+
+export { iconSizeProps, truncate }

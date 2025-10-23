@@ -4,37 +4,54 @@
  */
 
 export interface paths {
-  '/api/chats/': {
+  '/api/sessions/': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    /** Read Chats */
-    get: operations['read_chats_api_chats__get']
+    /** Read Sessions */
+    get: operations['read_sessions_api_sessions__get']
     put?: never
-    /** Create Chat */
-    post: operations['create_chat_api_chats__post']
+    /** Create Session */
+    post: operations['create_session_api_sessions__post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/chats/{chat_id}': {
+  '/api/sessions/{session_id}': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    /** Read Chat */
-    get: operations['read_chat_api_chats__chat_id__get']
+    /** Read Session */
+    get: operations['read_session_api_sessions__session_id__get']
     put?: never
     post?: never
-    /** Delete Chat */
-    delete: operations['delete_chat_api_chats__chat_id__delete']
+    /** Delete Session */
+    delete: operations['delete_session_api_sessions__session_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/sessions/{session_id}/request': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Model Request */
+    post: operations['create_model_request_api_sessions__session_id__request_post']
+    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -44,81 +61,358 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    /** ChatCreate */
-    ChatCreate: {
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at?: string
+    /** ErrorDetails */
+    ErrorDetails: {
+      /** Type */
+      type: string
+      /** Loc */
+      loc: (number | string)[]
+      /** Msg */
+      msg: string
+      /** Input */
+      input: unknown
+      /** Ctx */
+      ctx?: {
+        [key: string]: unknown
+      }
+      /** Url */
+      url?: string
     }
-    /** ChatListPublic */
-    ChatListPublic: {
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string
-    }
-    /** ChatPublic */
-    ChatPublic: {
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string
-      /** Messages */
-      messages: components['schemas']['MessageListPublic'][]
-    }
-    /** ChatsPublic */
-    ChatsPublic: {
-      /** Data */
-      data: components['schemas']['ChatListPublic'][]
-      /** Count */
-      count: number
-    }
+    /**
+     * FinishReason
+     * @enum {string}
+     */
+    FinishReason: 'stop' | 'length' | 'content_length' | 'tool_call' | 'error'
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
       detail?: components['schemas']['ValidationError'][]
     }
-    /** MessageListPublic */
-    MessageListPublic: {
+    ModelMessage: components['schemas']['ModelRequest'] | components['schemas']['ModelResponse']
+    /**
+     * ModelRequest
+     * @description A request sent to an LLM.
+     */
+    ModelRequest: {
       /**
-       * Created At
-       * Format: date-time
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
        */
-      created_at: string
+      kind: 'request'
       /**
        * Id
        * Format: uuid
        */
       id: string
-      sender: components['schemas']['Sender']
-      /** Thinking */
-      thinking: string | null
-      /** Text */
-      text: string
+      /** Parts */
+      parts: components['schemas']['ModelRequestPart'][]
+      /** Instructions */
+      instructions?: string | null
     }
+    /** ModelRequestCreate */
+    ModelRequestCreate: {
+      /**
+       * Kind
+       * @default request
+       * @constant
+       */
+      kind: 'request'
+      /** Parts */
+      parts: components['schemas']['UserPromptPartCreate'][]
+    }
+    ModelRequestPart:
+      | components['schemas']['SystemPromptPart']
+      | components['schemas']['UserPromptPart']
+      | components['schemas']['ToolReturnPart']
+      | components['schemas']['RetryPromptPart']
     /**
-     * Sender
-     * @enum {string}
+     * ModelResponse
+     * @description A response from an LLM.
      */
-    Sender: 'human' | 'llm'
+    ModelResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'response'
+      /** Parts */
+      parts: components['schemas']['ModelResponsePart'][]
+      usage: components['schemas']['Usage']
+      /**
+       * Model Name
+       * @default null
+       */
+      model_name: string | null
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp: string
+      /**
+       * Provider Name
+       * @default null
+       */
+      provider_name: string | null
+      /** @default null */
+      finish_reason: components['schemas']['FinishReason'] | null
+    }
+    ModelResponsePart:
+      | components['schemas']['TextPart']
+      | components['schemas']['ToolCallPart']
+      | components['schemas']['ThinkingPart']
+    /**
+     * RetryPromptPart
+     * @description A message sent back to an LLM asking it to try again.
+     */
+    RetryPromptPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'retry-prompt'
+      /** Content */
+      content: components['schemas']['ErrorDetails'][] | string
+      /** Tool Name */
+      tool_name?: string | null
+      /** Tool Call Id */
+      tool_call_id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp: string
+    }
     /** ServerMessage */
     ServerMessage: {
       /** Message */
       message: string
+    }
+    /**
+     * Session
+     * @description A chat session with an LLM.
+     */
+    Session: {
+      /** Title */
+      title?: string | null
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp?: string
+    }
+    /** SessionCreate */
+    SessionCreate: {
+      /** Title */
+      title?: string | null
+      /** Timestamp */
+      timestamp?: string | null
+    }
+    /**
+     * SessionFull
+     * @description A chat session with an LLM including the message history.
+     */
+    SessionFull: {
+      /** Title */
+      title?: string | null
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp?: string
+      /** Messages */
+      messages: components['schemas']['ModelMessage'][]
+    }
+    /**
+     * Sessions
+     * @description A list of sessions.
+     */
+    Sessions: {
+      /** Data */
+      data: components['schemas']['Session'][]
+      /** Count */
+      count: number
+    }
+    /**
+     * SystemPromptPart
+     * @description A system prompt, generally written by the application developer.
+     *
+     *     This gives the model context and guidance on how to respond.
+     */
+    SystemPromptPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'system-prompt'
+      /** Content */
+      content: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp: string
+    }
+    /**
+     * TextPart
+     * @description A plain text response from an LLM.
+     */
+    TextPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'text'
+      /** Content */
+      content: string
+    }
+    /**
+     * ThinkingPart
+     * @description A thinking response from an LLM.
+     */
+    ThinkingPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'thinking'
+      /** Content */
+      content: string
+      /**
+       * Provider Name
+       * @default null
+       */
+      provider_name: string | null
+    }
+    /**
+     * ToolCallPart
+     * @description A tool call from an LLM.
+     */
+    ToolCallPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'tool-call'
+      /** Tool Name */
+      tool_name: string
+      /**
+       * Args
+       * @default null
+       */
+      args: string | null
+      /** Tool Call Id */
+      tool_call_id: string
+    }
+    /**
+     * ToolReturnPart
+     * @description A tool return message, this encodes the result of running a tool.
+     */
+    ToolReturnPart: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'tool-return'
+      /** Tool Name */
+      tool_name: string | null
+      /** Content */
+      content: string
+      /** Tool Call Id */
+      tool_call_id: string | null
+      /** Timestamp */
+      timestamp: string | null
+    }
+    /** Usage */
+    Usage: {
+      /** Input Tokens */
+      input_tokens: number
+      /** Output Tokens */
+      output_tokens: number
+      /** Cache Write Tokens */
+      cache_write_tokens: number
+      /** Cache Read Tokens */
+      cache_read_tokens: number
+    }
+    /**
+     * UserPromptPart
+     * @description A user prompt, generally written by the user.
+     */
+    UserPromptPart: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      part_kind: 'user-prompt'
+      /** Content */
+      content: string
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      timestamp: string
+    }
+    /** UserPromptPartCreate */
+    UserPromptPartCreate: {
+      /**
+       * Part Kind
+       * @default user-prompt
+       * @constant
+       */
+      part_kind: 'user-prompt'
+      /** Content */
+      content: string
+      /** Timestamp */
+      timestamp?: string | null
     }
     /** ValidationError */
     ValidationError: {
@@ -129,6 +423,102 @@ export interface components {
       /** Error Type */
       type: string
     }
+    /**
+     * WebSocketErrorMessage
+     * @description An error notification.
+     */
+    WebSocketErrorMessage: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'error'
+      /**
+       * Session Id
+       * @default null
+       */
+      session_id: string | null
+      /** Name */
+      name: string
+      /** Message */
+      message: string
+    }
+    /**
+     * WebSocketPongMessage
+     * @description An answer to a client ping.
+     */
+    WebSocketPongMessage: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'pong'
+    }
+    /**
+     * WebSocketStatusMessage
+     * @description A status update.
+     */
+    WebSocketStatusMessage: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      session_id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'status'
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'started' | 'stopped'
+    }
+    /**
+     * WebSocketStreamMessage
+     * @description A streaming update.
+     */
+    WebSocketStreamMessage: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      session_id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'stream'
+      response: components['schemas']['ModelResponse']
+    }
+    WebSocketServerMessage:
+      | components['schemas']['WebSocketPongMessage']
+      | components['schemas']['WebSocketErrorMessage']
+      | components['schemas']['WebSocketStatusMessage']
+      | components['schemas']['WebSocketStreamMessage']
+    /** WebSocketDummyMessage */
+    WebSocketDummyMessage: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'dummy'
+    }
+    /**
+     * WebSocketPingMessage
+     * @description A ping message.
+     */
+    WebSocketPingMessage: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'ping'
+    }
+    WebSocketClientMessage:
+      | components['schemas']['WebSocketPingMessage']
+      | components['schemas']['WebSocketDummyMessage']
   }
   responses: never
   parameters: never
@@ -138,7 +528,7 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  read_chats_api_chats__get: {
+  read_sessions_api_sessions__get: {
     parameters: {
       query?: {
         skip?: number
@@ -156,7 +546,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ChatsPublic']
+          'application/json': components['schemas']['Sessions']
         }
       }
       /** @description Validation Error */
@@ -170,7 +560,7 @@ export interface operations {
       }
     }
   }
-  create_chat_api_chats__post: {
+  create_session_api_sessions__post: {
     parameters: {
       query?: never
       header?: never
@@ -179,7 +569,7 @@ export interface operations {
     }
     requestBody: {
       content: {
-        'application/json': components['schemas']['ChatCreate']
+        'application/json': components['schemas']['SessionCreate']
       }
     }
     responses: {
@@ -189,7 +579,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ChatPublic']
+          'application/json': components['schemas']['Session']
         }
       }
       /** @description Validation Error */
@@ -203,12 +593,12 @@ export interface operations {
       }
     }
   }
-  read_chat_api_chats__chat_id__get: {
+  read_session_api_sessions__session_id__get: {
     parameters: {
       query?: never
       header?: never
       path: {
-        chat_id: string
+        session_id: string
       }
       cookie?: never
     }
@@ -220,7 +610,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ChatPublic']
+          'application/json': components['schemas']['SessionFull']
         }
       }
       /** @description Validation Error */
@@ -234,12 +624,12 @@ export interface operations {
       }
     }
   }
-  delete_chat_api_chats__chat_id__delete: {
+  delete_session_api_sessions__session_id__delete: {
     parameters: {
       query?: never
       header?: never
       path: {
-        chat_id: string
+        session_id: string
       }
       cookie?: never
     }
@@ -252,6 +642,41 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_model_request_api_sessions__session_id__request_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModelRequestCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ModelRequest']
         }
       }
       /** @description Validation Error */

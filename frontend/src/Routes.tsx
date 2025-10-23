@@ -13,11 +13,11 @@ function Routes() {
       <Route path="/" component={() => 'Home'} />
       <Route path="/editor" component={() => 'Editor'} />
       <Route
-        path={new RegExp(`^/editor/story/(?<chatId>${uuidPattern})$`)}
+        path={new RegExp(`^/editor/story/(?<sessionId>${uuidPattern})$`)}
         component={() => 'Editor'}
       />
       <Route path="/player/new" component={NewStory} />
-      <Route path={new RegExp(`^/player/story/(?<chatId>${uuidPattern})$`)} component={Player} />
+      <Route path={new RegExp(`^/player/(?<sessionId>${uuidPattern})$`)} component={Player} />
       <Route path="/settings" component={() => 'Settings'} />
       <Route>
         <NotFound />

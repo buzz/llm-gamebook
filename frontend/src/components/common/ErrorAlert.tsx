@@ -1,10 +1,9 @@
 import { Alert, Center } from '@mantine/core'
 import { IconBug } from '@tabler/icons-react'
 import type { SerializedError } from '@reduxjs/toolkit'
-import type { ReactNode } from 'react'
 
 import { isApiQueryError, isApiValidationError } from '@/types/api'
-import { iconSizeProps } from '@/utils'
+import { iconSizeProps, truncate } from '@/utils'
 import type { ApiQueryError } from '@/types/api'
 
 interface ErrorAlertProps {
@@ -13,8 +12,8 @@ interface ErrorAlertProps {
 
 function ErrorAlert({ error }: ErrorAlertProps) {
   let title = 'Unknown Error'
-  let message: ReactNode = null
-  let code: ReactNode = null
+  let message: string | null = null
+  let code: string | null = null
 
   if (isApiQueryError(error)) {
     if (isApiValidationError(error)) {
@@ -34,6 +33,8 @@ function ErrorAlert({ error }: ErrorAlertProps) {
       code = error.stack
     }
   }
+
+  code = typeof code === 'string' ? truncate(code, 200) : code
 
   return (
     <Center h="100%">

@@ -1,24 +1,11 @@
 import { Button, Center, Stack } from '@mantine/core'
 import { IconPlayerPlay } from '@tabler/icons-react'
-import { useLocation } from 'wouter'
 
-import { useShowError } from '@/hooks/notifications'
-import chatApi from '@/services/chat'
+import { useCreateSession } from '@/hooks/session'
 import { iconSizeProps } from '@/utils'
 
 function NewStory() {
-  const [_location, navigate] = useLocation()
-  const [createChat, { isLoading }] = chatApi.useCreateChatMutation()
-  const showError = useShowError()
-
-  const start = async () => {
-    try {
-      const { id } = await createChat({}).unwrap()
-      navigate(`/player/story/${id}`)
-    } catch (err) {
-      showError('Failed to create story chat!', err)
-    }
-  }
+  const { createSession, isLoading } = useCreateSession()
 
   return (
     <Center h="100%">
@@ -26,7 +13,7 @@ function NewStory() {
         <Button
           leftSection={<IconPlayerPlay {...iconSizeProps('lg')} />}
           loading={isLoading}
-          onClick={() => void start()}
+          onClick={() => void createSession()}
           size="xl"
           type="submit"
           variant="filled"
