@@ -39,5 +39,13 @@ This project represents an innovative approach to interactive storytelling, comb
 Run FastAPI web server.
 
 ```
-uv run fastapi dev llm_gamebook/web/app.py
+$ cd backend
+$ uv run uvicorn llm_gamebook.web.app:create_app --reload --factory --log-level debug
+```
+
+Run Vite dev server.
+
+```
+$ cd frontend
+$ pnpm dev
 ```

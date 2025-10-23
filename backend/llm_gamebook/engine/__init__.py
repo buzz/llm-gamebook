@@ -1,3 +1,4 @@
-from llm_gamebook.engine.engine import StoryEngine
+from .engine import StoryEngine
+from .manager import EngineManager
 
-__all__ = ["StoryEngine"]
+__all__ = ["EngineManager", "StoryEngine"]
