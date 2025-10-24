@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import AsyncIterable, Iterable, Sequence
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -7,7 +7,9 @@ from pydantic_ai import (
     ModelMessage,
     ModelMessagesTypeAdapter,
     ModelRequest,
+    ModelResponse,
     SystemPromptPart,
+    TextPart,
     UserPromptPart,
 )
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
@@ -46,14 +48,29 @@ class SessionAdapter:
     async def get_message_count(self, db_session: AsyncDbSession) -> int:
         return await get_message_count(db_session, self._session_id)
 
-    async def get_message_history(self, db_session: AsyncDbSession) -> Sequence[ModelMessage]:
+    async def get_message_history(self, db_session: AsyncDbSession) -> AsyncIterable[ModelMessage]:
+        yield await self._generate_initial_request()
         messages = await get_messages(db_session, self._session_id)
         as_dicts = [msg.to_dict() for msg in messages]
         model_messages = ModelMessagesTypeAdapter.validate_python(as_dicts)
-        return [
-            await self._generate_initial_request(),
-            *model_messages,
-        ]
+        for msg in model_messages:
+            # Skip system prompt/first request as we generate it dynamically
+            if isinstance(msg, ModelRequest) and any(
+                isinstance(p, SystemPromptPart) for p in msg.parts
+            ):
+                continue
+
+            # Keep only relevant parts
+            if isinstance(msg, ModelResponse):
+                msg.parts = [p for p in msg.parts if isinstance(p, TextPart)]
+            else:  # ModelRequest
+                msg.parts = [p for p in msg.parts if isinstance(p, UserPromptPart)]
+
+            # Skip empty messages
+            if len(msg.parts) == 0:
+                continue
+
+            yield msg
 
     async def _generate_initial_request(self) -> ModelRequest:
         return ModelRequest([

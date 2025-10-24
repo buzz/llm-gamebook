@@ -1,8 +1,7 @@
 from functools import cached_property
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 
 import jinja2
-from pydantic_ai import RunContext
 
 from llm_gamebook.story.project import Project
 

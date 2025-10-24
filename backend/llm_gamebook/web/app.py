@@ -24,7 +24,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator:
         app.state.bus = bus
         app.state.engine_mgr = engine_mgr
         yield
-        await engine_mgr.close()
 
 
 def create_app(log_file: Path | None = None, *, debug: bool = False) -> FastAPI:

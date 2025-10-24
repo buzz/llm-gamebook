@@ -1,5 +1,7 @@
+import logging
 import random
 from collections.abc import Sequence
+from contextlib import suppress
 from time import time
 from typing import Final, TypedDict
 from uuid import UUID, uuid4
@@ -13,6 +15,7 @@ from pydantic_ai import (
     CallToolsNode,
     FunctionToolCallEvent,
     FunctionToolResultEvent,
+    ModelHTTPError,
     ModelMessage,
     ModelRequestNode,
     ModelResponse,
@@ -59,19 +62,34 @@ class StoryEngine:
         self._log.info("Generating new response")
         self._bus.publish("engine.response.started", self._session_adapter.session_id)
         try:
-            msg_history = await self._session_adapter.get_message_history(db_session)
+            msg_history = [
+                msg async for msg in self._session_adapter.get_message_history(db_session)
+            ]
+
+            if self._log.level <= logging.DEBUG:
+                self._log_messages(msg_history)
+
+            # Streaming run
             if streaming:
                 runner = _StreamRunner(self._agent, self._session_adapter.session_id, self._bus)
                 new_messages, message_ids, parts_ids = await runner.run(msg_history, self._state)
                 await self._session_adapter.append_messages(
                     db_session, new_messages, message_ids, parts_ids
                 )
+
+            # Non-streaming run
             else:
                 result = await self._agent.run(message_history=msg_history, deps=self._state)
                 new_messages = result.new_messages()
                 await self._session_adapter.append_messages(db_session, new_messages)
+
         except (httpx.RequestError, OpenAIError, AgentRunError) as err:
             self._log.exception("Request failed. The exception was:")
+            if isinstance(err, ModelHTTPError):
+                if isinstance(err.body, dict):
+                    with suppress(KeyError):
+                        message = err.body["message"]
+                self._log.error("The error message:\n%s", message)
             self._bus.publish(
                 "engine.response.error",
                 ResponseErrorBusMessage(session_id=self._session_adapter.session_id, error=err),
@@ -90,6 +108,13 @@ class StoryEngine:
     @property
     def session_adapter(self) -> SessionAdapter:
         return self._session_adapter
+
+    def _log_messages(self, messages: Sequence[ModelMessage]) -> None:
+        for idx, msg in enumerate(messages):
+            self._log.debug("%03d: %s", idx, type(msg).__name__)
+            for pidx, part in enumerate(msg.parts):
+                content = part.content if hasattr(part, "content") else "- NO CONTENT -"
+                self._log.debug("   %03d: %-20s %.250s", pidx, type(part).__name__, content)
 
 
 class _StreamRunner:

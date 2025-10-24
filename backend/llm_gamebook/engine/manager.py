@@ -35,9 +35,6 @@ class EngineManager(BusSubscriber):
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
-        await self.close()
-
-    async def close(self) -> None:
         if self._evict_task and not self._evict_task.done():
             self._evict_task.cancel()
             with suppress(asyncio.CancelledError):

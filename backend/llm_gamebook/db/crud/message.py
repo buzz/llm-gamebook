@@ -22,7 +22,9 @@ async def get_message_count(db_session: AsyncDbSession, session_id: UUID) -> int
 
 
 async def get_messages(db_session: AsyncDbSession, session_id: UUID) -> Sequence[Message]:
-    result = await db_session.exec(_get_select_by_session_id(session_id))
+    result = await db_session.exec(
+        _get_select_by_session_id(session_id).order_by(desc(Message.timestamp).nulls_last())
+    )
     return result.all()
 
 
