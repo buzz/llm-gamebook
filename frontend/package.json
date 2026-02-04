@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/",
     "generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o ./src/types/openapi.d.ts && prettier --write ./src/types/openapi.d.ts",
     "lint": "eslint .",
     "preview": "vite preview",
