@@ -53,10 +53,11 @@ class Message(MessageBase, table=True):
         session_id: UUID,
         msg_id: UUID | None,
         part_ids: Sequence[UUID] | None,
+        durations: dict[UUID, int] | None = None,
     ) -> Self:
         kwargs = {
             "kind": message.kind,
-            "parts": list(Part.from_model_parts(message.parts, part_ids)),
+            "parts": list(Part.from_model_parts(message.parts, part_ids, durations)),
             "session_id": session_id,
         }
         if msg_id:

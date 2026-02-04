@@ -3,7 +3,7 @@ import json
 from collections.abc import Iterable, Sequence
 from contextlib import suppress
 from datetime import datetime
-from typing import TYPE_CHECKING, Final, KeysView, Self
+from typing import TYPE_CHECKING, Final, Self
 from uuid import UUID, uuid4
 
 from pydantic_ai.messages import (
@@ -48,6 +48,7 @@ class PartBase(SQLModel):
     tool_name: str | None
     tool_call_id: str | None
     args: str | None
+    duration_seconds: int | None = None
 
 
 class Part(PartBase, table=True):
@@ -60,6 +61,7 @@ class Part(PartBase, table=True):
         cls,
         parts: Sequence[ModelResponsePart | ModelRequestPart],
         part_ids: Sequence[UUID] | None = None,
+        durations: dict[UUID, int] | None = None,
     ) -> Iterable[Self]:
         for idx, part in enumerate(parts):
             if not isinstance(part, SUPPORTED_PARTS):
@@ -74,9 +76,13 @@ class Part(PartBase, table=True):
 
             if isinstance(part, ToolReturnPart):
                 if isinstance(part.content, dict | list):
-                    # content might be the parsed tool result
                     kwargs = {"content": json.dumps(part.content)}
                 elif isinstance(part.content, str):
                     kwargs = {"content": part.content}
+            elif isinstance(part, ThinkingPart) and durations is not None and part_ids is not None:
+                with suppress(IndexError):
+                    part_id = part_ids[idx]
+                    if part_id in durations:
+                        kwargs["duration_seconds"] = durations[part_id]
 
             yield cls(part_kind=part.part_kind, **kwargs)

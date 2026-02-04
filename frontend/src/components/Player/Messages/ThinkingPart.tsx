@@ -55,9 +55,13 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
   }, [close, isStreaming, open])
 
   const label =
-    isStreaming && deltaSecs !== null
-      ? `Thinking for ${deltaSecs.toString()} seconds…`
-      : 'Thought for TODO'
+    deltaSecs !== null
+      ? isStreaming
+        ? `Thinking for ${deltaSecs.toString()} seconds…`
+        : `Thought for ${deltaSecs.toString()} seconds`
+      : part.duration_seconds !== null
+        ? `Thought for ${part.duration_seconds.toString()} seconds`
+        : 'Thoughts'
 
   return (
     <div className={classes.thinkingPart}>

@@ -155,6 +155,9 @@ class ThinkingPart(BaseModel):
     provider_name: str | None = None
     """The name of the provider that generated the response."""
 
+    duration_seconds: int | None = None
+    """Duration of the thinking in seconds."""
+
 
 type ModelResponsePart = Annotated[
     TextPart | ToolCallPart | ThinkingPart,

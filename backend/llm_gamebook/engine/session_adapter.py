@@ -84,6 +84,7 @@ class SessionAdapter:
         model_messages: Iterable[ModelMessage],
         message_ids: Sequence[UUID] | None = None,
         part_ids: Sequence[Sequence[UUID]] | None = None,
+        durations: dict[UUID, int] | None = None,
     ) -> None:
         messages: list[Message] = []
 
@@ -99,7 +100,7 @@ class SessionAdapter:
                 except IndexError:
                     model_part_ids = None
             msg = Message.from_model_message(
-                model_message, self._session_id, model_msg_id, model_part_ids
+                model_message, self._session_id, model_msg_id, model_part_ids, durations
             )
             messages.append(msg)
 

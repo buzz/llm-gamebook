@@ -72,9 +72,11 @@ class StoryEngine:
             # Streaming run
             if streaming:
                 runner = _StreamRunner(self._agent, self._session_adapter.session_id, self._bus)
-                new_messages, message_ids, parts_ids = await runner.run(msg_history, self._state)
+                new_messages, message_ids, parts_ids, durations = await runner.run(
+                    msg_history, self._state
+                )
                 await self._session_adapter.append_messages(
-                    db_session, new_messages, message_ids, parts_ids
+                    db_session, new_messages, message_ids, parts_ids, durations
                 )
 
             # Non-streaming run
@@ -138,10 +140,12 @@ class _StreamRunner:
         self._part_ids: list[list[UUID]] = []
 
         self._last_stream_update: float = 0.0
+        self._thinking_start_time: float | None = None
+        self._thinking_durations: dict[UUID, int] = {}
 
     async def run(
         self, msg_history: Sequence[ModelMessage], state: StoryState
-    ) -> tuple[Sequence[ModelMessage], list[UUID], list[list[UUID]]]:
+    ) -> tuple[Sequence[ModelMessage], list[UUID], list[list[UUID]], dict[UUID, int]]:
         messages: list[ModelMessage] = []
 
         async with self._agent.iter(
@@ -155,13 +159,20 @@ class _StreamRunner:
                 elif Agent.is_call_tools_node(node):
                     await self._handle_call_tools_node(node, run)
                 elif Agent.is_end_node(node):
-                    # Once an End node is reached, the agent run is complete
                     if run.result is None:
                         msg = "Expected result"
                         raise TypeError(msg)
                     messages = run.result.new_messages()
+                    if self._thinking_start_time is not None:
+                        duration = int(time() - self._thinking_start_time)
+                        self._thinking_start_time = None
+                        if self._part_ids and self._response_index < len(self._part_ids):
+                            response_parts = self._part_ids[self._response_index]
+                            if response_parts:
+                                last_part_id = response_parts[-1]
+                                self._thinking_durations[last_part_id] = duration
 
-        return messages, self._response_ids, self._part_ids
+        return messages, self._response_ids, self._part_ids, self._thinking_durations
 
     async def _handle_model_request_node(
         self, node: ModelRequestNode[StoryState, str], run: AgentRun[StoryState, str]
@@ -203,6 +214,16 @@ class _StreamRunner:
         self, response: ModelResponse, event: PartStartEvent
     ) -> None:
         if isinstance(event.part, TextPart | ThinkingPart | ToolCallPart):
+            if isinstance(event.part, ThinkingPart):
+                self._thinking_start_time = time()
+            elif self._thinking_start_time is not None:
+                duration = int(time() - self._thinking_start_time)
+                self._thinking_start_time = None
+                if self._part_ids and self._response_index < len(self._part_ids):
+                    response_parts = self._part_ids[self._response_index]
+                    if response_parts:
+                        last_part_id = response_parts[-1]
+                        self._thinking_durations[last_part_id] = duration
             self._log.debug(f"Starting part {event.index}: {event.part!r}")
             self._part_ids[self._response_index].append(uuid4())
             await self._send_stream_update(response)

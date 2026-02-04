@@ -317,6 +317,11 @@ export interface components {
        * @default null
        */
       provider_name: string | null
+      /**
+       * Duration Seconds
+       * @default null
+       */
+      duration_seconds: number | null
     }
     /**
      * ToolCallPart
