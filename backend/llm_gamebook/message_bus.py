@@ -83,7 +83,7 @@ class BusSubscriber:
         if not hasattr(self, "_subs"):
             # list of (topic, ref, wrapper)
             self._subs: list[tuple[str, weakref.ReferenceType, Handler]] = []
-            # register automatic cleanup when this object is GC’d
+            # register automatic cleanup when this object is GC'd
             weakref.finalize(self, self._finalizer, weakref.ref(self))
 
         # create weakref to handler

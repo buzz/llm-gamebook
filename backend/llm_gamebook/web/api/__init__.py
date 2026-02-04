@@ -1,7 +1,3 @@
-from fastapi import APIRouter
+from .api_router import api_router
 
-from llm_gamebook.web.api import session, websocket
-
-api_router = APIRouter()
-api_router.include_router(session.router)
-api_router.include_router(websocket.router)
+__all__ = ["api_router"]
