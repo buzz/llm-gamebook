@@ -96,8 +96,14 @@ select = [
 ignore = ["B010", "COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
 
 [tool.mypy]
-disallow_untyped_defs = true
-strict_optional = true
+plugins = ["pydantic.mypy"]
+strict = true
+disallow_any_explicit = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.semantic_release]
 build_command = """
