@@ -1,0 +1,8 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Python, FastAPI, Pydantic AI, TypeScript, React, Mantine
+  API style: RESTful, WebSocket (JSON)
+  Testing: Pytest, Vitest + React Testing Library
+  Git: Conventional commits
+  Domain: LLM-based creative writing game
