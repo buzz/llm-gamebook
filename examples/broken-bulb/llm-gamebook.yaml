@@ -62,8 +62,8 @@ entity_types:
           - Its content is not revealed yet.
         edge_ids: ["leaflet_found"]
         enabled:
-          - locations.current_node.id == "living_room"
-          - the_meeting.current_node.id == "leaflet_not_found_yet"
+          - locations.current_node_id == "living_room"
+          - the_meeting.current_node_id == "leaflet_not_found_yet"
       - name: Leaflet found
         description: |
           - Player found the leaflet.
@@ -71,8 +71,8 @@ entity_types:
           - It's an invitation to a meeting at the local community center.
         edge_ids: ["attending_meeting"]
         enabled:
-          - locations.current_node.id == "in_the_living_room"
-          - the_meeting.current_node.id == "leaflet-found"
+          - locations.current_node_id == "in_the_living_room"
+          - the_meeting.current_node_id == "leaflet-found"
       - name: Attending meeting
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
