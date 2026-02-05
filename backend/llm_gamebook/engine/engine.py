@@ -3,7 +3,7 @@ import random
 from collections.abc import Sequence
 from contextlib import suppress
 from time import time
-from typing import Final, TypedDict
+from typing import Final
 from uuid import UUID, uuid4
 
 import httpx
@@ -30,7 +30,8 @@ from pydantic_ai import (
     ToolCallPartDelta,
     UsageLimits,
 )
-from pydantic_ai.models import Model, ModelSettings
+from pydantic_ai.models import Model
+from pydantic_ai.settings import ModelSettings
 from pydantic_ai.tools import ToolDefinition
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -38,6 +39,7 @@ from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.state import StoryState
 
+from .message import ResponseErrorBusMessage, StreamUpdateBusMessage
 from .session_adapter import SessionAdapter
 
 
@@ -94,7 +96,7 @@ class StoryEngine:
                 self._log.error("The error message:\n%s", message)
             self._bus.publish(
                 "engine.response.error",
-                ResponseErrorBusMessage(session_id=self._session_adapter.session_id, error=err),
+                ResponseErrorBusMessage(self._session_adapter.session_id, err),
             )
         finally:
             self._bus.publish("engine.response.stopped", self._session_adapter.session_id)
@@ -239,22 +241,10 @@ class _StreamRunner:
             self._bus.publish(
                 "engine.response.stream",
                 StreamUpdateBusMessage(
-                    session_id=self._session_id,
-                    response=response,
-                    response_id=self._response_ids[self._response_index],
-                    part_ids=self._part_ids[self._response_index],
+                    self._session_id,
+                    response,
+                    self._response_ids[self._response_index],
+                    self._part_ids[self._response_index],
                 ),
             )
             self._last_stream_update = time()
-
-
-class StreamUpdateBusMessage(TypedDict):
-    session_id: UUID
-    response: ModelResponse
-    response_id: UUID
-    part_ids: list[UUID]
-
-
-class ResponseErrorBusMessage(TypedDict):
-    session_id: UUID
-    error: Exception

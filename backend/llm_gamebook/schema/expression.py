@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, assert_never
+from typing import TYPE_CHECKING, assert_never
 
 from pydantic import BaseModel, model_validator
 from pyparsing import ParseException
@@ -21,7 +21,7 @@ class BoolExprDefinition(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def parse_condition(cls, data: Any) -> Any:
+    def parse_condition(cls, data: object) -> object:
         try:
             if isinstance(data, str):
                 return {"value": g.bool_expr.parse_string(data)[0]}

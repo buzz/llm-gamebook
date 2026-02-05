@@ -75,7 +75,11 @@ class EngineManager(BusSubscriber):
             for sid in to_drop:
                 self._drop_engine(sid)
 
-    def _drop_engine(self, session_id: UUID) -> None:
+    def _drop_engine(self, session_id: object) -> None:
+        if not isinstance(session_id, UUID):
+            msg = f"Invalid message type for engine.session.deleted: {type(session_id)}"
+            raise TypeError(msg)
+
         self._log.debug(f"Dropping engine for session {session_id}")
         with suppress(KeyError):
             self._engines.pop(session_id)

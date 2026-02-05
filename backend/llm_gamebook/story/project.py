@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Self, overload
+from typing import Self, overload
 
 import yaml
 from pydantic import PrivateAttr
@@ -72,7 +72,7 @@ class Project(ProjectDefinition):
         return cls.from_data(data)
 
     @classmethod
-    def from_data(cls, data: Any) -> Self:
+    def from_data(cls, data: object) -> Self:
         project_def = ProjectDefinition.model_validate(data, strict=True)
         return cls.from_definition(project_def)
 

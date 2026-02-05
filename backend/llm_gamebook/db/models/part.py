@@ -85,4 +85,4 @@ class Part(PartBase, table=True):
                     if part_id in durations:
                         kwargs["duration_seconds"] = durations[part_id]
 
-            yield cls(part_kind=part.part_kind, **kwargs)
+            yield cls(part_kind=PartKind(part.part_kind), **kwargs)

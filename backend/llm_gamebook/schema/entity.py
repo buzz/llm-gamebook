@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from llm_gamebook.schema.validators import id_from_name
@@ -12,23 +10,28 @@ class TraitDefinition(BaseModel):
     name: NormalizedSnakeCase
     """The name for the trait."""
 
-    options: dict[str, Any] | None = None
+    options: dict[str, object] | None = None
     """The trait's options."""
 
     @model_validator(mode="before")
     @classmethod
-    def normalize(cls, data: Any) -> dict[str, Any]:
+    def normalize(cls, data: object) -> dict[str, object]:
         """Transform both variants (`str`, `dict`) into `dict` with `options` field."""
         if isinstance(data, str):
             return {"name": data}
         if isinstance(data, dict):
             # Lift additional fields into options
             known = {"name"}
-            return {
-                "name": data["name"],
-                "options": {k: v for k, v in data.items() if k not in known},
-            }
-        return data
+            name = data["name"]
+            if isinstance(name, str):
+                return {
+                    "name": data["name"],
+                    "options": {k: v for k, v in data.items() if k not in known},
+                }
+            msg = "Expecting name to be str"
+            raise ValueError(msg)
+        msg = "Expecting data to be str or dict"
+        raise ValueError(msg)
 
     @field_validator("name")
     @classmethod
@@ -66,7 +69,7 @@ class EntityDefinition(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def id_from_name(cls, data: Any) -> Any:
+    def id_from_name(cls, data: object) -> object:
         return id_from_name(data, normalized_snake_case)
 
 
@@ -93,5 +96,5 @@ class EntityTypeDefinition(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def id_from_name(cls, data: Any) -> Any:
+    def id_from_name(cls, data: object) -> object:
         return id_from_name(data, normalized_pascal_case)

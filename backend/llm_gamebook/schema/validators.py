@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Any
 
 from llm_gamebook.utils import normalized_pascal_case, normalized_snake_case
 
@@ -18,13 +17,13 @@ def is_normalized_pascal_case(v: str) -> str:
     return v
 
 
-def id_from_name(data: Any, generate_id: Callable[[str], str]) -> Any:
+def id_from_name(data: object, generate_id: Callable[[str], str]) -> object:
     if isinstance(data, dict):
         try:
             name = data["name"]
         except KeyError:
             pass
         else:
-            if "id" not in data:
+            if isinstance(name, str) and "id" not in data:
                 data["id"] = generate_id(name)
     return data

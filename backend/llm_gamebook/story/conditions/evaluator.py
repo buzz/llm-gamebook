@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING, assert_never, cast
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.entity import BaseEntity
@@ -89,5 +89,8 @@ class BoolExprEvaluator:
             raise ExpressionEvalError(msg) from err
 
     def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
-        # TODO: check property is in props model
-        return getattr(entity, property_id)
+        if property_id not in entity.__class__.model_fields:
+            msg = f"Property '{property_id}' not found on entity '{entity.id}'"
+            raise ExpressionEvalError(msg)
+
+        return cast("EntityProperty", getattr(entity, property_id))

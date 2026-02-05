@@ -5,18 +5,18 @@ from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from fnmatch import fnmatch
 from types import TracebackType
-from typing import Any, Self
+from typing import Self
 
 from llm_gamebook.logger import logger
 
-type Handler = Callable[[Any], Awaitable[None]] | Callable[[Any], None]
+type MessageHandler = Callable[[object], Awaitable[None]] | Callable[[object], None]
 
 
 class MessageBus:
     def __init__(self) -> None:
         self._log = logger.getChild("message-bus")
-        self._subs: dict[str, list[Handler]] = defaultdict(list)
-        self._tasks: set[asyncio.Task] = set()
+        self._subs: dict[str, list[MessageHandler]] = defaultdict(list)
+        self._tasks: set[asyncio.Task[None]] = set()
         self._lock = asyncio.Lock()
 
     async def __aenter__(self) -> Self:
@@ -31,10 +31,10 @@ class MessageBus:
         self.unsubscribe_all()
         await self.wait_all()
 
-    def subscribe(self, topic: str, handler: Handler) -> None:
+    def subscribe(self, topic: str, handler: MessageHandler) -> None:
         self._subs[topic].append(handler)
 
-    def unsubscribe(self, topic: str, handler: Handler) -> None:
+    def unsubscribe(self, topic: str, handler: MessageHandler) -> None:
         if topic in self._subs:
             with suppress(ValueError):
                 self._subs[topic].remove(handler)
@@ -45,7 +45,7 @@ class MessageBus:
         """Remove all subscriptions."""
         self._subs.clear()
 
-    def publish(self, topic: str, message: Any = None) -> None:
+    def publish(self, topic: str, message: object = None) -> None:
         self._log.debug("Publish %s", topic)
         for pat, handlers in list(self._subs.items()):
             if fnmatch(topic, pat):
@@ -61,7 +61,7 @@ class MessageBus:
                             self._log.error("Sync handler failed:")
                             raise
 
-    def _handler_done_callback(self, task: asyncio.Task) -> None:
+    def _handler_done_callback(self, task: asyncio.Task[None]) -> None:
         self._tasks.discard(task)
         if (exc := task.exception()) is not None:
             tb = exc.__traceback__
@@ -79,15 +79,15 @@ class BusSubscriber:
 
     _bus: "MessageBus"  # must be set in subclass
 
-    def _subscribe(self, topic: str, handler: Handler) -> None:
+    def _subscribe(self, topic: str, handler: MessageHandler) -> None:
         if not hasattr(self, "_subs"):
             # list of (topic, ref, wrapper)
-            self._subs: list[tuple[str, weakref.ReferenceType, Handler]] = []
+            self._subs: list[tuple[str, weakref.ReferenceType[MessageHandler], MessageHandler]] = []
             # register automatic cleanup when this object is GC'd
             weakref.finalize(self, self._finalizer, weakref.ref(self))
 
         # create weakref to handler
-        ref: weakref.WeakMethod[Handler] | weakref.ReferenceType[Handler]
+        ref: weakref.WeakMethod[MessageHandler] | weakref.ReferenceType[MessageHandler]
         if hasattr(handler, "__self__") and hasattr(handler, "__func__"):
             # bound method
             ref = weakref.WeakMethod(handler)
@@ -105,12 +105,12 @@ class BusSubscriber:
     def _make_weak_wrapper(
         self,
         topic: str,
-        ref: weakref.ReferenceType,
+        ref: weakref.ReferenceType[MessageHandler],
         bus: "MessageBus",
-    ) -> Handler:
+    ) -> MessageHandler:
         # Note: do NOT capture `self` here.
         # The wrapper captures only ref, topic, and bus (bus is fine: it's a long-lived object).
-        async def wrapper(message: Any) -> None:
+        async def wrapper(message: object) -> None:
             target = ref()
             if target is None:
                 # target gone → unsubscribe this wrapper from the bus only

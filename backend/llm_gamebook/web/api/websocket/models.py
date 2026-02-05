@@ -1,6 +1,6 @@
 import json
 from functools import singledispatch
-from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, TypeAliasType
+from typing import TYPE_CHECKING, Annotated, Literal, Self, TypeAliasType
 from uuid import UUID
 
 import pydantic_ai
@@ -15,7 +15,7 @@ from llm_gamebook.web.api.models import (
 )
 
 if TYPE_CHECKING:
-    from llm_gamebook.engine.engine import StreamUpdateBusMessage
+    from llm_gamebook.engine.message import StreamUpdateBusMessage
 
 
 class BaseWebSocketMessage(BaseModel):
@@ -64,18 +64,17 @@ class WebSocketStreamMessage(BaseSessionWebSocketMessage):
     @classmethod
     def from_stream_update(cls, msg: "StreamUpdateBusMessage") -> Self:
         api_response = ModelResponse.model_validate({
-            "id": msg["response_id"],
+            "id": msg.response_id,
             "parts": [
-                convert_part(part, msg["part_ids"][idx])
-                for idx, part in enumerate(msg["response"].parts)
+                convert_part(part, msg.part_ids[idx]) for idx, part in enumerate(msg.response.parts)
             ],
-            "usage": msg["response"].usage,
-            "model_name": msg["response"].model_name,
-            "timestamp": msg["response"].timestamp,
-            "provider_name": msg["response"].provider_name,
-            "finish_reason": msg["response"].finish_reason,
+            "usage": msg.response.usage,
+            "model_name": msg.response.model_name,
+            "timestamp": msg.response.timestamp,
+            "provider_name": msg.response.provider_name,
+            "finish_reason": msg.response.finish_reason,
         })
-        return cls(session_id=msg["session_id"], response=api_response)
+        return cls(session_id=msg.session_id, response=api_response)
 
 
 type WebSocketServerMessage = Annotated[
@@ -106,7 +105,7 @@ type WebSocketClientMessage = Annotated[
 # --- OpenAPI schema patching ----------------------------------------------------------------------
 
 
-def _fix_refs(obj: list | dict[str, Any]) -> None:
+def _fix_refs(obj: list[object] | dict[str, object] | object) -> None:
     if isinstance(obj, dict):
         for k, v in obj.items():
             if isinstance(v, str) and v.startswith("#/$defs/"):
@@ -118,7 +117,7 @@ def _fix_refs(obj: list | dict[str, Any]) -> None:
             _fix_refs(v)
 
 
-def _get_schema(type_alias: TypeAliasType, components: dict[str, Any]) -> dict[str, Any]:
+def _get_schema(type_alias: TypeAliasType, components: dict[str, object]) -> dict[str, object]:
     schema = TypeAdapter(type_alias).json_schema()
 
     # Extract and merge defs at top level
@@ -128,16 +127,29 @@ def _get_schema(type_alias: TypeAliasType, components: dict[str, Any]) -> dict[s
     return schema
 
 
-def add_websocket_schema(schema: dict[str, Any]) -> None:
-    components = schema["components"]["schemas"]
+def add_websocket_schema(schema: dict[str, object]) -> None:
+    components = schema["components"]
+    if not isinstance(components, dict):
+        msg = "Expected 'components' to be dict"
+        raise TypeError(msg)
 
-    server_msg_schema = _get_schema(WebSocketServerMessage, components)
-    components[WebSocketServerMessage.__name__] = server_msg_schema
+    component_schemas = components["schemas"]
+    if not isinstance(component_schemas, dict):
+        msg = "Expected 'schemas' to be dict"
+        raise TypeError(msg)
 
-    client_msg_schema = _get_schema(WebSocketClientMessage, components)
-    components[WebSocketClientMessage.__name__] = client_msg_schema
+    info = schema["info"]
+    if not isinstance(info, dict):
+        msg = "Expected 'info' to be dict"
+        raise TypeError(msg)
 
-    schema["info"]["x-websockets"] = [
+    server_msg_schema = _get_schema(WebSocketServerMessage, component_schemas)
+    component_schemas[WebSocketServerMessage.__name__] = server_msg_schema
+
+    client_msg_schema = _get_schema(WebSocketClientMessage, component_schemas)
+    component_schemas[WebSocketClientMessage.__name__] = client_msg_schema
+
+    info["x-websockets"] = [
         {
             "name": "Session",
             "path": "/api/ws/{session_id}",
@@ -155,7 +167,7 @@ def add_websocket_schema(schema: dict[str, Any]) -> None:
 
 
 @singledispatch
-def convert_part(part: Any, part_id: UUID) -> ModelResponsePart:
+def convert_part(part: object, part_id: UUID) -> ModelResponsePart:
     msg = f"Unknown part type: {type(part)}"
     raise TypeError(msg)
 

@@ -17,7 +17,7 @@ from .api.websocket.models import add_websocket_schema
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator:
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     add_websocket_schema(app.openapi())
     await create_db_and_tables()
     async with MessageBus() as bus, EngineManager(bus) as engine_mgr:
