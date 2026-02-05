@@ -4,6 +4,60 @@
  */
 
 export interface paths {
+  '/api/model-configs/': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Model Configs */
+    get: operations['read_model_configs_api_model_configs__get']
+    put?: never
+    /** Create Model Config */
+    post: operations['create_model_config_api_model_configs__post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/model-configs/{config_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Model Config */
+    get: operations['read_model_config_api_model_configs__config_id__get']
+    /** Update Model Config */
+    put: operations['update_model_config_api_model_configs__config_id__put']
+    post?: never
+    /** Delete Model Config */
+    delete: operations['delete_model_config_api_model_configs__config_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/model-configs/providers/': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Providers */
+    get: operations['list_providers_api_model_configs_providers__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/sessions/': {
     parameters: {
       query?: never
@@ -37,7 +91,8 @@ export interface paths {
     delete: operations['delete_session_api_sessions__session_id__delete']
     options?: never
     head?: never
-    patch?: never
+    /** Update Session */
+    patch: operations['update_session_api_sessions__session_id__patch']
     trace?: never
   }
   '/api/sessions/{session_id}/request': {
@@ -88,7 +143,147 @@ export interface components {
       /** Detail */
       detail?: components['schemas']['ValidationError'][]
     }
+    /**
+     * ModelConfig
+     * @description A model configuration.
+     */
+    ModelConfig: {
+      /** Name */
+      name: string
+      provider: components['schemas']['ModelProvider']
+      /** Model Name */
+      model_name: string
+      /** Base Url */
+      base_url?: string | null
+      /** Api Key */
+      api_key?: string | null
+      /** Context Window */
+      context_window: number
+      /** Max Tokens */
+      max_tokens: number
+      /** Temperature */
+      temperature: number
+      /** Top P */
+      top_p: number
+      /** Presence Penalty */
+      presence_penalty: number
+      /** Frequency Penalty */
+      frequency_penalty: number
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+    }
+    /** ModelConfigCreate */
+    ModelConfigCreate: {
+      /** Name */
+      name: string
+      provider: components['schemas']['ModelProvider']
+      /** Model Name */
+      model_name: string
+      /** Base Url */
+      base_url?: string | null
+      /** Api Key */
+      api_key?: string | null
+      /** Context Window */
+      context_window: number
+      /** Max Tokens */
+      max_tokens: number
+      /** Temperature */
+      temperature: number
+      /** Top P */
+      top_p: number
+      /** Presence Penalty */
+      presence_penalty: number
+      /** Frequency Penalty */
+      frequency_penalty: number
+    }
+    /**
+     * ModelConfigUpdate
+     * @description Update fields for a model config.
+     */
+    ModelConfigUpdate: {
+      /** Name */
+      name: string
+      provider: components['schemas']['ModelProvider']
+      /** Model Name */
+      model_name: string
+      /** Base Url */
+      base_url?: string | null
+      /** Api Key */
+      api_key?: string | null
+      /** Context Window */
+      context_window: number
+      /** Max Tokens */
+      max_tokens: number
+      /** Temperature */
+      temperature: number
+      /** Top P */
+      top_p: number
+      /** Presence Penalty */
+      presence_penalty: number
+      /** Frequency Penalty */
+      frequency_penalty: number
+    }
+    /**
+     * ModelConfigs
+     * @description A list of LLM models.
+     */
+    ModelConfigs: {
+      /** Data */
+      data: components['schemas']['ModelConfig'][]
+      /** Count */
+      count: number
+    }
     ModelMessage: components['schemas']['ModelRequest'] | components['schemas']['ModelResponse']
+    /**
+     * ModelProvider
+     * @enum {string}
+     */
+    ModelProvider:
+      | 'anthropic'
+      | 'deepseek'
+      | 'google'
+      | 'mistral'
+      | 'ollama'
+      | 'openai'
+      | 'openai-compatible'
+      | 'openrouter'
+      | 'xai'
+    /** ModelProviderInfo */
+    ModelProviderInfo: {
+      /** Label */
+      label: string
+      /** Supports Base Url */
+      supports_base_url: boolean
+      /** Supports Max Tokens */
+      supports_max_tokens: boolean
+      /** Supports Temperature */
+      supports_temperature: boolean
+      /** Supports Top P */
+      supports_top_p: boolean
+      /** Supports Presence Penalty */
+      supports_presence_penalty: boolean
+      /** Supports Frequency Penalty */
+      supports_frequency_penalty: boolean
+      /** Supports Logit Bias */
+      supports_logit_bias: boolean
+      /** Supports Extra Headers */
+      supports_extra_headers: boolean
+      /** Supports Extra Body */
+      supports_extra_body: boolean
+      /** Default Base Url */
+      default_base_url?: string | null
+    }
+    ModelProviderList: {
+      [key: string]: components['schemas']['ModelProviderInfo']
+    }
+    /**
+     * ModelProviders
+     * @description A list of model providers.
+     */
+    ModelProviders: components['schemas']['ModelProviderList']
     /**
      * ModelRequest
      * @description A request sent to an LLM.
@@ -209,18 +404,26 @@ export interface components {
        * Format: uuid
        */
       id: string
+      /** Config Id */
+      config_id?: string | null
       /**
        * Timestamp
        * Format: date-time
        */
       timestamp?: string
     }
-    /** SessionCreate */
+    /**
+     * SessionCreate
+     * @description Create fields for a session.
+     */
     SessionCreate: {
       /** Title */
       title?: string | null
-      /** Timestamp */
-      timestamp?: string | null
+      /**
+       * Config Id
+       * Format: uuid
+       */
+      config_id: string
     }
     /**
      * SessionFull
@@ -234,6 +437,8 @@ export interface components {
        * Format: uuid
        */
       id: string
+      /** Config Id */
+      config_id?: string | null
       /**
        * Timestamp
        * Format: date-time
@@ -241,6 +446,21 @@ export interface components {
       timestamp?: string
       /** Messages */
       messages: components['schemas']['ModelMessage'][]
+    }
+    /**
+     * SessionUpdate
+     * @description Update fields for a session.
+     */
+    SessionUpdate: {
+      /** Title */
+      title?: string | null
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Config Id */
+      config_id?: string | null
     }
     /**
      * Sessions
@@ -427,6 +647,10 @@ export interface components {
       msg: string
       /** Error Type */
       type: string
+      /** Input */
+      input?: unknown
+      /** Context */
+      ctx?: Record<string, never>
     }
     /**
      * WebSocketErrorMessage
@@ -533,6 +757,188 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
+  read_model_configs_api_model_configs__get: {
+    parameters: {
+      query?: {
+        skip?: number
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ModelConfigs']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_model_config_api_model_configs__post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModelConfigCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ModelConfig']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  read_model_config_api_model_configs__config_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        config_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ModelConfig']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_model_config_api_model_configs__config_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        config_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModelConfigUpdate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_model_config_api_model_configs__config_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        config_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_providers_api_model_configs_providers__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ModelProviders']
+        }
+      }
+    }
+  }
   read_sessions_api_sessions__get: {
     parameters: {
       query?: {
@@ -639,6 +1045,41 @@ export interface operations {
       cookie?: never
     }
     requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_session_api_sessions__session_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionUpdate']
+      }
+    }
     responses: {
       /** @description Successful Response */
       200: {

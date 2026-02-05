@@ -10,13 +10,13 @@
   }
 }
 
-.storyLinkWrapper {
+.navLinkWrapper {
   align-items: center;
   column-gap: var(--mantine-spacing-xs);
   width: 100%;
   flex-wrap: nowrap;
 
-  .storyLink {
+  .navLink {
     flex-grow: 1;
     min-width: 0;
   }
@@ -30,7 +30,7 @@
 .actionIcons {
   display: none;
 
-  .storyLinkWrapper:hover & {
+  .navLinkWrapper:hover & {
     display: inherit;
   }
 }

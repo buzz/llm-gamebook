@@ -8,7 +8,7 @@ import { iconSizeProps } from '@/utils'
 
 import classes from './Controls.module.css'
 
-interface ControlsProperties {
+interface ControlsProps {
   isGenerating: boolean
   sessionId: string
 }
@@ -17,7 +17,7 @@ interface FormValues {
   content: string
 }
 
-function Controls({ isGenerating, sessionId }: ControlsProperties) {
+function Controls({ isGenerating, sessionId }: ControlsProps) {
   const form = useForm<FormValues>({
     mode: 'controlled',
     initialValues: { content: '' },

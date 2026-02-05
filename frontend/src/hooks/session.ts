@@ -2,23 +2,26 @@ import { useCallback } from 'react'
 import { useLocation } from 'wouter'
 
 import { useShowConfirmationModal } from '@/hooks/modals'
-import { useShowError } from '@/hooks/notifications'
+import { useShowError, useShowSuccess } from '@/hooks/notifications'
 import sessionApi from '@/services/session'
 
 function useCreateSession() {
-  const [_location, navigate] = useLocation()
+  const [, navigate] = useLocation()
   const [createSession, { isLoading }] = sessionApi.useCreateSessionMutation()
   const showError = useShowError()
 
   return {
-    createSession: useCallback(async () => {
-      try {
-        const { id } = await createSession().unwrap()
-        navigate(`/player/${id}`)
-      } catch (error) {
-        showError('Failed to create story session!', error)
-      }
-    }, [createSession, navigate, showError]),
+    createSession: useCallback(
+      async (modelConfigId: string) => {
+        try {
+          const { id } = await createSession({ config_id: modelConfigId }).unwrap()
+          navigate(`/player/${id}`)
+        } catch (error) {
+          showError('Failed to create story session!', error)
+        }
+      },
+      [createSession, navigate, showError]
+    ),
     isLoading,
   }
 }
@@ -28,6 +31,7 @@ function useDeleteSession() {
   const [deleteSession, { isLoading }] = sessionApi.useDeleteSessionMutation()
   const showConfirmationModal = useShowConfirmationModal()
   const showError = useShowError()
+  const showSuccess = useShowSuccess()
 
   return {
     deleteSession: useCallback(
@@ -42,13 +46,14 @@ function useDeleteSession() {
             await deleteSession(sessionId).unwrap()
             if (location === `/player/${sessionId}`) {
               navigate('/')
+              showSuccess('Story session was deleted.')
             }
           }
         } catch (error) {
           showError('Failed to delete story session!', error)
         }
       },
-      [deleteSession, location, navigate, showConfirmationModal, showError]
+      [deleteSession, location, navigate, showConfirmationModal, showError, showSuccess]
     ),
     isLoading,
   }

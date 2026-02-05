@@ -23,7 +23,7 @@ function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const subscribersReference = useRef<Map<string, Set<EventCallback>>>(new Map())
 
   const { lastJsonMessage: lastMessage } = useWebSocket<WebSocketServerMessage | null>(
-    'ws://localhost:8000/api/ws',
+    'ws://localhost:8000/ws',
     {
       heartbeat: {
         message: pingMessage,

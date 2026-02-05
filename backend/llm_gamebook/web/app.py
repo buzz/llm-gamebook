@@ -13,7 +13,8 @@ from llm_gamebook.logger import setup_logger
 from llm_gamebook.message_bus import MessageBus
 
 from .api import api_router
-from .api.websocket.models import add_websocket_schema
+from .schemas.websocket.openapi import add_websocket_schema
+from .websocket import websocket_router
 
 
 @asynccontextmanager
@@ -38,5 +39,6 @@ def create_app(log_file: Path | None = None, *, debug: bool = False) -> FastAPI:
         return HTMLResponse("")
 
     app.include_router(api_router, prefix="/api")
+    app.include_router(websocket_router, prefix="/ws")
 
     return app

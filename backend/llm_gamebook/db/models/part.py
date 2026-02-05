@@ -54,7 +54,7 @@ class PartBase(SQLModel):
 class Part(PartBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     message: "Message" = Relationship(back_populates="parts")
-    message_id: UUID | None = Field(foreign_key="message.id", ondelete="CASCADE")
+    message_id: UUID | None = Field(default=None, foreign_key="message.id", ondelete="CASCADE")
 
     @classmethod
     def from_model_parts(

@@ -1,0 +1,11 @@
+.title {
+  font-size: var(--mantine-font-size-lg);
+}
+
+.body {
+  overflow-y: auto;
+}
+
+.message {
+  font-size: var(--mantine-font-size-md);
+}

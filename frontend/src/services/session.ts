@@ -8,6 +8,7 @@ import type {
   SessionCreate,
   SessionFull,
   Sessions,
+  SessionUpdate,
 } from '@/types/api'
 
 const sessionApi = createApi({
@@ -19,6 +20,7 @@ const sessionApi = createApi({
       query: (id) => id,
       providesTags: (_result, _error, id) => [{ type: 'Session', id }],
     }),
+
     getSessions: build.query<Sessions, void>({
       query: () => '',
       providesTags: (result) =>
@@ -29,7 +31,8 @@ const sessionApi = createApi({
             ]
           : [{ type: 'Session', id: 'LIST' }],
     }),
-    createSession: build.mutation<Session, SessionCreate | void>({
+
+    createSession: build.mutation<Session, SessionCreate>({
       query: (session) => ({
         url: '',
         method: 'POST',
@@ -37,6 +40,16 @@ const sessionApi = createApi({
       }),
       invalidatesTags: [{ type: 'Session', id: 'LIST' }],
     }),
+
+    updateSession: build.mutation<ServerMessage, SessionUpdate>({
+      query: ({ id, config_id }) => ({
+        url: id,
+        method: 'PATCH',
+        body: { config_id },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Session', id }],
+    }),
+
     deleteSession: build.mutation<ServerMessage, string>({
       query: (id) => ({
         url: id,
@@ -47,6 +60,7 @@ const sessionApi = createApi({
         { type: 'Session', id: 'LIST' },
       ],
     }),
+
     createRequest: build.mutation<ModelRequest, { sessionId: string; request: ModelRequestCreate }>(
       {
         query: ({ sessionId, request }) => ({

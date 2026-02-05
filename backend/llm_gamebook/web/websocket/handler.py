@@ -10,9 +10,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from llm_gamebook.engine.message import ResponseErrorBusMessage, StreamUpdateBusMessage
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
-from llm_gamebook.web.get_model_tmp import get_model_state
-
-from .models import (
+from llm_gamebook.web.get_model import get_model_state
+from llm_gamebook.web.schemas.websocket.message import (
     WebSocketClientMessage,
     WebSocketErrorMessage,
     WebSocketPingMessage,
@@ -59,10 +58,7 @@ class WebSocketHandler(BusSubscriber):
         except WebSocketDisconnect:
             pass
         except Exception as exc:
-            error_message = WebSocketErrorMessage(
-                name=type(exc).__name__,
-                message=str(exc),
-            )
+            error_message = WebSocketErrorMessage(name=type(exc).__name__, message=str(exc))
             await self._send_message(error_message)
             raise
         finally:
@@ -99,7 +95,7 @@ class WebSocketHandler(BusSubscriber):
             await self._send_message(msg)
 
     async def _get_engine(self, session_id: UUID) -> "StoryEngine":
-        model, state = get_model_state()
+        model, state = await get_model_state(self._db_session, session_id)
         return await self._engine_mgr.get_or_create(session_id, model, state)
 
     async def _send_message(self, message: WebSocketServerMessage) -> None:

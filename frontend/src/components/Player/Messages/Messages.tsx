@@ -9,12 +9,12 @@ import classes from './Messages.module.css'
 import ThinkingPart from './ThinkingPart'
 import ToolPart from './ToolPart'
 
-interface MessageProperties {
+interface MessageProps {
   currentStreamingPartId: string | null
   message: ModelMessage
 }
 
-function Message({ currentStreamingPartId, message }: MessageProperties) {
+function Message({ currentStreamingPartId, message }: MessageProps) {
   const parts = message.parts.map((part) => {
     switch (part.part_kind) {
       case 'thinking': {
@@ -74,12 +74,12 @@ function Message({ currentStreamingPartId, message }: MessageProperties) {
   return <Box className={className}>{parts}</Box>
 }
 
-interface MessagesProperties {
+interface MessagesProps {
   currentStreamingPartId: string | null
   messages: ModelMessage[]
 }
 
-function Messages({ currentStreamingPartId, messages }: MessagesProperties) {
+function Messages({ currentStreamingPartId, messages }: MessagesProps) {
   const content = messages.map((message) => (
     <Message key={message.id} currentStreamingPartId={currentStreamingPartId} message={message} />
   ))

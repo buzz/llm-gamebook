@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel, text
 
 # Import so sqlmodel know about them
-from .models import Message, Part, Session, Usage  # noqa: F401
+from .models import Message, ModelConfig, Part, Session, Usage  # noqa: F401
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite+aiosqlite:///{sqlite_file_name}"

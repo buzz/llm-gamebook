@@ -15,6 +15,7 @@ from pydantic_ai import (
     CallToolsNode,
     FunctionToolCallEvent,
     FunctionToolResultEvent,
+    ModelAPIError,
     ModelHTTPError,
     ModelMessage,
     ModelRequestNode,
@@ -87,7 +88,7 @@ class StoryEngine:
                 new_messages = result.new_messages()
                 await self._session_adapter.append_messages(db_session, new_messages)
 
-        except (httpx.RequestError, OpenAIError, AgentRunError) as err:
+        except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
             self._log.exception("Request failed. The exception was:")
             if isinstance(err, ModelHTTPError):
                 if isinstance(err.body, dict):

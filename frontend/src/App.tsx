@@ -4,12 +4,14 @@ import '@mantine/notifications/styles.css'
 import { MantineProvider } from '@mantine/core'
 import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
+import { ErrorBoundary } from 'react-error-boundary'
 import { Provider as ReactReduxProvider } from 'react-redux'
 
+import ErrorAlert from './components/common/ErrorAlert'
 import AppShell from './components/layout/AppShell'
 import { WebSocketProvider } from './contexts/WebSocketContext'
 import Routes from './Routes'
-import { store } from './store'
+import store from './store'
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
           <ModalsProvider>
             <Notifications />
             <AppShell>
-              <Routes />
+              <ErrorBoundary FallbackComponent={ErrorAlert}>
+                <Routes />
+              </ErrorBoundary>
             </AppShell>
           </ModalsProvider>
         </MantineProvider>

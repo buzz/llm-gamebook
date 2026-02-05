@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { useShowError } from '@/hooks/notifications'
+import { useShowErrorModal } from '@/hooks/modals'
 import useWebSocketConnection from '@/hooks/useWebSocketConnection'
 import sessionApi from '@/services/session'
 import { assertNever } from '@/types/common'
@@ -12,7 +12,7 @@ type WebSocketMessage = WebSocketStatusMessage | WebSocketStreamMessage
 function useMessages(session: SessionFull) {
   const { refetch } = sessionApi.useGetSessionByIdQuery(session.id)
   const { error, lastMessage } = useWebSocketConnection(session.id)
-  const showError = useShowError()
+  const showErrorModal = useShowErrorModal()
 
   const [streamingResponse, setStreamingResponse] = useState<ModelMessage | null>(null)
   const [streamStatus, setStreamStatus] = useState<WebSocketStatusMessage['status']>('stopped')
@@ -58,9 +58,9 @@ function useMessages(session: SessionFull) {
   // Handle errors
   useEffect(() => {
     if (error) {
-      showError(error.name, error)
+      showErrorModal(error)
     }
-  }, [error, showError])
+  }, [error, showErrorModal])
 
   const { messages, currentStreamingPartId } = useMemo(() => {
     if (streamingResponse) {

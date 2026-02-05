@@ -10,12 +10,12 @@ import type { ThinkingPart as ThinkingPartType } from '@/types/api'
 
 import classes from './Messages.module.css'
 
-interface ThinkingPartProperties {
+interface ThinkingPartProps {
   isStreaming: boolean
   part: ThinkingPartType
 }
 
-function ThinkingPart({ isStreaming, part }: ThinkingPartProperties) {
+function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
   const [thinkingOpened, { toggle, close, open }] = useDisclosure(false)
   const mountTime = useRef<number | null>(null)
   const [deltaSecs, setDeltaSecs] = useState<number | null>(null)

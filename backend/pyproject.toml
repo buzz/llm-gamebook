@@ -12,7 +12,7 @@ dependencies = [
   "greenlet>=3.3.1",
   "jinja2>=3.1.6",
   "pydantic>=2.12.5",
-  "pydantic-ai-slim[openai]>=1.54.0",
+  "pydantic-ai-slim[anthropic,openai,google,mistral,xai]>=1.54.0",
   "pyparsing>=3.3.2",
   "pyyaml>=6.0.3",
   "sqlmodel>=0.0.32",
@@ -94,6 +94,9 @@ select = [
   "UP",   # pyupgrade
 ]
 ignore = ["B010", "COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
+
+[tool.ruff.lint.pylint]
+max-args = 6
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

@@ -4,10 +4,10 @@ from llm_gamebook.web.api.deps import DbSessionDep, EngineMgrDepWs, MessageBusDe
 
 from .handler import WebSocketHandler
 
-router = APIRouter(prefix="/ws")
+websocket_router = APIRouter()
 
 
-@router.websocket("")
+@websocket_router.websocket("")
 async def websocket_endpoint(
     websocket: WebSocket, mgr: EngineMgrDepWs, db_session: DbSessionDep, bus: MessageBusDepWs
 ) -> None:

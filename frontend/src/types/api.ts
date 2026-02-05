@@ -1,17 +1,26 @@
 import { isObject } from './common'
 import type { components } from './openapi'
 
+type ServerMessage = components['schemas']['ServerMessage']
+
 type ModelRequest = components['schemas']['ModelRequest']
 type ModelRequestCreate = components['schemas']['ModelRequestCreate']
-type ServerMessage = components['schemas']['ServerMessage']
+
 type Session = components['schemas']['Session']
 type SessionCreate = components['schemas']['SessionCreate']
 type SessionFull = components['schemas']['SessionFull']
 type Sessions = components['schemas']['Sessions']
+type SessionUpdate = components['schemas']['SessionUpdate']
 
 type ModelMessage = components['schemas']['ModelMessage']
-
 type ThinkingPart = components['schemas']['ThinkingPart']
+
+type ModelConfigCreate = components['schemas']['ModelConfigCreate']
+type ModelConfigUpdate = components['schemas']['ModelConfigUpdate']
+type ModelConfig = components['schemas']['ModelConfig']
+type ModelConfigs = components['schemas']['ModelConfigs']
+type ModelProvider = components['schemas']['ModelProvider']
+type ModelProviders = components['schemas']['ModelProviders']
 
 interface ApiQueryError {
   data: {
@@ -44,7 +53,13 @@ function isApiValidationError(thing: unknown): thing is ApiValidationError {
 export type {
   ApiQueryError,
   ApiValidationError,
+  ModelConfig,
+  ModelConfigCreate,
+  ModelConfigs,
+  ModelConfigUpdate,
   ModelMessage,
+  ModelProvider,
+  ModelProviders,
   ModelRequest,
   ModelRequestCreate,
   ServerMessage,
@@ -52,6 +67,7 @@ export type {
   SessionCreate,
   SessionFull,
   Sessions,
+  SessionUpdate,
   ThinkingPart,
 }
 export { isApiQueryError, isApiValidationError }

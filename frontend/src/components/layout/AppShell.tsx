@@ -4,7 +4,7 @@ import { IconMenu2 } from '@tabler/icons-react'
 import { use, useEffect } from 'react'
 
 import WebSocketContext from '@/contexts/WebSocketContext'
-import { useShowError } from '@/hooks/notifications'
+import { useShowErrorModal } from '@/hooks/modals'
 import { iconSizeProps } from '@/utils'
 
 import classes from './AppShell.module.css'
@@ -13,13 +13,13 @@ import Navbar from './Navbar'
 function AppShell({ children }: { children: React.ReactNode }) {
   const context = use(WebSocketContext)
   const [opened, { toggle }] = useDisclosure(true)
-  const showError = useShowError()
+  const showErrorModal = useShowErrorModal()
 
   useEffect(() => {
     if (context?.error) {
-      showError(`WebSocket Error: ${context.error.name}`, context.error)
+      showErrorModal(context.error)
     }
-  }, [context?.error, showError])
+  }, [context?.error, showErrorModal])
 
   return (
     <MantineAppShell

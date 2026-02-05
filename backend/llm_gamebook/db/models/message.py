@@ -37,8 +37,8 @@ class MessageBase(SQLModel):
 
 class Message(MessageBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    session: "Session" = Relationship(back_populates="messages")
-    session_id: UUID | None = Field(foreign_key="session.id", ondelete="CASCADE")
+    session: "Session | None" = Relationship(back_populates="messages")
+    session_id: UUID | None = Field(default=None, foreign_key="session.id", ondelete="CASCADE")
     parts: list[Part] = Relationship(
         back_populates="message", passive_deletes="all", sa_relationship_kwargs={"lazy": "selectin"}
     )

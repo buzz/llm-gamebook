@@ -9,11 +9,11 @@ import type { Session } from '@/types/api'
 
 import classes from './AppShell.module.css'
 
-interface ActionIconsProperties {
+interface ActionIconsProps {
   sessionId: string
 }
 
-function ActionIcons({ sessionId }: ActionIconsProperties) {
+function ActionIcons({ sessionId }: ActionIconsProps) {
   const { deleteSession, isLoading } = useDeleteSession()
 
   return (
@@ -38,15 +38,15 @@ function ActionIcons({ sessionId }: ActionIconsProperties) {
   )
 }
 
-interface StoryLinkProperties {
+interface StoryLinkProps {
   session: Session
 }
 
-function StoryLink({ session }: StoryLinkProperties) {
+function StoryLink({ session }: StoryLinkProps) {
   return (
-    <Group className={classes.storyLinkWrapper}>
+    <Group className={classes.navLinkWrapper}>
       <RouterNavLink
-        className={classes.storyLink}
+        className={classes.navLink}
         icon={IconBook}
         label={session.id}
         to={`/player/${session.id}`}

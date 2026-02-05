@@ -68,7 +68,7 @@ const reactRefreshRules = {
 }
 
 export default defineConfig([
-  globalIgnores(['dist', 'src/types/openapi.d.ts']),
+  globalIgnores(['dist', 'src/types/openapi.d.ts', 'vitest.config.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

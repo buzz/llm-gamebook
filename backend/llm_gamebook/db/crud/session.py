@@ -5,9 +5,13 @@ from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
+from llm_gamebook.db.models.model_config import ModelConfig
 
 
-async def create_session(db_session: AsyncDbSession, session: Session) -> Session:
+async def create_session(
+    db_session: AsyncDbSession, model_config: ModelConfig, title: str | None = None
+) -> Session:
+    session = Session(title=title, config=model_config)
     db_session.add(session)
     await db_session.commit()
     await db_session.refresh(session)
@@ -28,6 +32,15 @@ async def get_session_count(db_session: AsyncDbSession) -> int:
 
 async def get_session(db_session: AsyncDbSession, session_id: UUID) -> Session | None:
     return await db_session.get(Session, session_id)
+
+
+async def update_session_model_config(
+    db_session: AsyncDbSession, session_id: str, config_id: UUID | None
+) -> None:
+    session = await db_session.get(Session, UUID(session_id))
+    if session:
+        session.config_id = config_id
+        await db_session.commit()
 
 
 async def delete_session(db_session: AsyncDbSession, session_id: UUID) -> None:

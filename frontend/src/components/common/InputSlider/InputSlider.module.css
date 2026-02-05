@@ -1,0 +1,12 @@
+.input {
+  flex-shrink: 0;
+}
+
+.slider {
+  width: 100%;
+}
+
+.sliderWrapper {
+  flex: 1;
+  margin-right: var(--mantine-spacing-sm);
+}

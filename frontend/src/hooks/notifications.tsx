@@ -1,9 +1,9 @@
 import { Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconX } from '@tabler/icons-react'
+import { IconCheck, IconX } from '@tabler/icons-react'
 import { useCallback } from 'react'
 
-import { isApiQueryError } from '@/types/api'
+import { isApiQueryError, isApiValidationError } from '@/types/api'
 import { isWebsocketError } from '@/types/websocket'
 import { iconSizeProps } from '@/utils'
 
@@ -12,9 +12,18 @@ function useShowError() {
     let errorMessage = 'UnknownError'
 
     if (isApiQueryError(error)) {
-      errorMessage = error.status.toString()
-      if (typeof error.data.detail === 'string') {
-        errorMessage += ` - ${error.data.detail}`
+      if (isApiValidationError(error) && Array.isArray(error.data.detail)) {
+        const validationErrors = error.data.detail
+          .map((err) => {
+            const field = Array.isArray(err.loc) ? err.loc.join('.') : 'unknown field'
+            return `${field}: ${err.msg || 'validation error'}`
+          })
+          .join(', ')
+        errorMessage = `Validation error: ${validationErrors}`
+      } else if (typeof error.data.detail === 'string') {
+        errorMessage = String(error.status) + ' - ' + error.data.detail
+      } else {
+        errorMessage = String(error.status)
       }
     } else if (error instanceof Error || isWebsocketError(error)) {
       errorMessage = error.message
@@ -39,4 +48,20 @@ function useShowError() {
   }, [])
 }
 
-export { useShowError }
+function useShowSuccess() {
+  return useCallback((message: string) => {
+    notifications.show({
+      title: 'Success',
+      message: (
+        <Text fz="sm" fw="bold">
+          {message}
+        </Text>
+      ),
+      autoClose: 5000,
+      color: 'teal',
+      icon: <IconCheck {...iconSizeProps('lg')} />,
+    })
+  }, [])
+}
+
+export { useShowError, useShowSuccess }

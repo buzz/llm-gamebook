@@ -176,7 +176,7 @@ Same endpoints as stories, but under `/api/libraries/`
 
 ```
 POST   /api/sessions
-  └─ Body: { story_id, title?, model_id?, library_ids[] }
+  └─ Body: { story_id, title?, config_id?, library_ids[] }
   └─ Create session with story + libraries
 ```
 
