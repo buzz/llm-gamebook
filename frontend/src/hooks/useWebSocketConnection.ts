@@ -23,17 +23,21 @@ function useWebSocketConnection(sessionId: string) {
 
     const handleMessage = (message: WebSocketServerMessage) => {
       switch (message.kind) {
-        case 'error':
+        case 'error': {
           setLastErrorMessage(message)
           break
-        case 'pong':
+        }
+        case 'pong': {
           break
+        }
         case 'status':
-        case 'stream':
+        case 'stream': {
           setLastMessage(message)
           break
-        default:
+        }
+        default: {
           assertNever(message)
+        }
       }
     }
 

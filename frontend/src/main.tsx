@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 
 import App from './App.tsx'
 
-const rootElem = document.getElementById('root')
+const rootElement = document.querySelector('#root')
 
-if (rootElem) {
-  createRoot(rootElem).render(
+if (rootElement) {
+  createRoot(rootElement).render(
     <StrictMode>
       <App />
     </StrictMode>

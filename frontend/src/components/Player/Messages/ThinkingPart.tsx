@@ -10,12 +10,12 @@ import type { ThinkingPart as ThinkingPartType } from '@/types/api'
 
 import classes from './Messages.module.css'
 
-interface ThinkingPartProps {
+interface ThinkingPartProperties {
   isStreaming: boolean
   part: ThinkingPartType
 }
 
-function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
+function ThinkingPart({ isStreaming, part }: ThinkingPartProperties) {
   const [thinkingOpened, { toggle, close, open }] = useDisclosure(false)
   const mountTime = useRef<number | null>(null)
   const [deltaSecs, setDeltaSecs] = useState<number | null>(null)
@@ -30,7 +30,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
       setDeltaSecs(Math.floor((Date.now() - mountTime.current) / 1000))
 
       // Start interval to update every second
-      timerIntervalId = window.setInterval(() => {
+      timerIntervalId = globalThis.setInterval(() => {
         if (mountTime.current !== null) {
           setDeltaSecs(Math.floor((Date.now() - mountTime.current) / 1000))
         }
@@ -38,7 +38,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
     } else {
       // Auto-collapse if we have been streaming
       if (mountTime.current !== null) {
-        closeTimeoutId = window.setTimeout(() => {
+        closeTimeoutId = globalThis.setTimeout(() => {
           close()
         }, 1000)
       }
@@ -46,22 +46,22 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
 
     return () => {
       if (timerIntervalId) {
-        window.clearInterval(timerIntervalId)
+        globalThis.clearInterval(timerIntervalId)
       }
       if (closeTimeoutId) {
-        window.clearTimeout(closeTimeoutId)
+        globalThis.clearTimeout(closeTimeoutId)
       }
     }
   }, [close, isStreaming, open])
 
   const label =
-    deltaSecs !== null
-      ? isStreaming
+    deltaSecs === null
+      ? part.duration_seconds === null
+        ? 'Thoughts'
+        : `Thought for ${part.duration_seconds.toString()} seconds`
+      : isStreaming
         ? `Thinking for ${deltaSecs.toString()} seconds…`
         : `Thought for ${deltaSecs.toString()} seconds`
-      : part.duration_seconds !== null
-        ? `Thought for ${part.duration_seconds.toString()} seconds`
-        : 'Thoughts'
 
   return (
     <div className={classes.thinkingPart}>

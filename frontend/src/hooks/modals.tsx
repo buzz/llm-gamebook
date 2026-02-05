@@ -4,11 +4,11 @@ import { useCallback } from 'react'
 
 function useShowConfirmationModal() {
   return useCallback(
-    (title: string, msg: string) =>
+    (title: string, message: string) =>
       new Promise<boolean>((resolve) =>
         modals.openConfirmModal({
           title,
-          children: <Text>{msg}</Text>,
+          children: <Text>{message}</Text>,
           labels: { confirm: 'Confirm', cancel: 'Cancel' },
           onConfirm: () => {
             resolve(true)

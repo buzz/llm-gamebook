@@ -15,8 +15,8 @@ function useCreateSession() {
       try {
         const { id } = await createSession().unwrap()
         navigate(`/player/${id}`)
-      } catch (err) {
-        showError('Failed to create story session!', err)
+      } catch (error) {
+        showError('Failed to create story session!', error)
       }
     }, [createSession, navigate, showError]),
     isLoading,
@@ -44,8 +44,8 @@ function useDeleteSession() {
               navigate('/')
             }
           }
-        } catch (err) {
-          showError('Failed to delete story session!', err)
+        } catch (error) {
+          showError('Failed to delete story session!', error)
         }
       },
       [deleteSession, location, navigate, showConfirmationModal, showError]

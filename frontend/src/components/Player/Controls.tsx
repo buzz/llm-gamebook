@@ -8,7 +8,7 @@ import { iconSizeProps } from '@/utils'
 
 import classes from './Controls.module.css'
 
-interface ControlsProps {
+interface ControlsProperties {
   isGenerating: boolean
   sessionId: string
 }
@@ -17,7 +17,7 @@ interface FormValues {
   content: string
 }
 
-function Controls({ isGenerating, sessionId }: ControlsProps) {
+function Controls({ isGenerating, sessionId }: ControlsProperties) {
   const form = useForm<FormValues>({
     mode: 'controlled',
     initialValues: { content: '' },
@@ -43,8 +43,8 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
           ],
         },
       }).unwrap()
-    } catch (err) {
-      showError('Failed to send message!', err)
+    } catch (error) {
+      showError('Failed to send message!', error)
     }
   }
 
@@ -52,12 +52,12 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
     <form onSubmit={form.onSubmit((values) => void send(values))}>
       <Group align="stretch" gap="sm">
         <Textarea
+          key={form.key('content')}
           {...form.getInputProps('content')}
           aria-label="User message"
           autosize
           className={classes.textArea}
           disabled={isLoading || isGenerating}
-          key={form.key('content')}
           maxRows={4}
           minRows={1}
         />

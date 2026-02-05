@@ -1,7 +1,8 @@
 import { Link, useRoute } from 'wouter'
 import type { LinkProps } from 'wouter'
 
-import BasicNavLink, { type BasicNavLinkProps } from './BasicNavLink'
+import BasicNavLink from './BasicNavLink'
+import type { BasicNavLinkProps } from './BasicNavLink'
 
 type RouterNavLinkProps = BasicNavLinkProps & LinkProps
 

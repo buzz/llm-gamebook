@@ -9,15 +9,15 @@ import classes from './Messages.module.css'
 import ThinkingPart from './ThinkingPart'
 import ToolPart from './ToolPart'
 
-interface MessageProps {
+interface MessageProperties {
   currentStreamingPartId: string | null
   message: ModelMessage
 }
 
-function Message({ currentStreamingPartId, message }: MessageProps) {
+function Message({ currentStreamingPartId, message }: MessageProperties) {
   const parts = message.parts.map((part) => {
     switch (part.part_kind) {
-      case 'thinking':
+      case 'thinking': {
         return (
           <ThinkingPart
             key={part.id}
@@ -25,14 +25,16 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
             isStreaming={currentStreamingPartId === part.id}
           />
         )
+      }
       case 'text':
-      case 'user-prompt':
+      case 'user-prompt': {
         return (
           <Streamdown className={classes.text} key={part.id}>
             {part.content}
           </Streamdown>
         )
-      case 'tool-call':
+      }
+      case 'tool-call': {
         return (
           <ToolPart icon={IconTool} title="Tool call" key={part.id}>
             <Box>
@@ -48,7 +50,8 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
             </Box>
           </ToolPart>
         )
-      case 'tool-return':
+      }
+      case 'tool-return': {
         return (
           <ToolPart icon={IconArrowForward} title="Tool return" key={part.id}>
             <Box>
@@ -56,8 +59,10 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
             </Box>
           </ToolPart>
         )
-      default:
+      }
+      default: {
         return null
+      }
     }
   })
 
@@ -69,14 +74,14 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
   return <Box className={className}>{parts}</Box>
 }
 
-interface MessagesProps {
+interface MessagesProperties {
   currentStreamingPartId: string | null
   messages: ModelMessage[]
 }
 
-function Messages({ currentStreamingPartId, messages }: MessagesProps) {
-  const content = messages.map((msg) => (
-    <Message key={msg.id} currentStreamingPartId={currentStreamingPartId} message={msg} />
+function Messages({ currentStreamingPartId, messages }: MessagesProperties) {
+  const content = messages.map((message) => (
+    <Message key={message.id} currentStreamingPartId={currentStreamingPartId} message={message} />
   ))
 
   return (

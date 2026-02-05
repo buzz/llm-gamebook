@@ -8,16 +8,16 @@ import { isWebsocketError } from '@/types/websocket'
 import { iconSizeProps } from '@/utils'
 
 function useShowError() {
-  return useCallback((msg: string, error: unknown) => {
-    let errorMsg = 'UnknownError'
+  return useCallback((message: string, error: unknown) => {
+    let errorMessage = 'UnknownError'
 
     if (isApiQueryError(error)) {
-      errorMsg = error.status.toString()
+      errorMessage = error.status.toString()
       if (typeof error.data.detail === 'string') {
-        errorMsg += ` - ${error.data.detail}`
+        errorMessage += ` - ${error.data.detail}`
       }
     } else if (error instanceof Error || isWebsocketError(error)) {
-      errorMsg = error.message
+      errorMessage = error.message
     }
 
     notifications.show({
@@ -25,10 +25,10 @@ function useShowError() {
       message: (
         <>
           <Text fz="sm" fw="bold">
-            {msg}
+            {message}
           </Text>
           <Text fz="sm" lineClamp={5}>
-            {errorMsg}
+            {errorMessage}
           </Text>
         </>
       ),

@@ -16,11 +16,9 @@ function ErrorAlert({ error }: ErrorAlertProps) {
   let code: string | null = null
 
   if (isApiQueryError(error)) {
-    if (isApiValidationError(error)) {
-      title = `${error.status.toString()} Validation Error`
-    } else {
-      title = `${error.status.toString()} Query Error`
-    }
+    title = isApiValidationError(error)
+      ? `${error.status.toString()} Validation Error`
+      : `${error.status.toString()} Query Error`
     code = JSON.stringify(error.data.detail, undefined, 2)
   } else {
     if (error.name) {

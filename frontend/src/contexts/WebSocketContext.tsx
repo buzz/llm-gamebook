@@ -20,8 +20,9 @@ const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefi
 const pingMessage = JSON.stringify({ kind: 'ping' } satisfies WebSocketPingMessage)
 
 function WebSocketProvider({ children }: { children: React.ReactNode }) {
-  const subscribersRef = useRef<Map<string, Set<EventCallback>>>(new Map())
-  const { lastJsonMessage: lastMsg } = useWebSocket<WebSocketServerMessage | null>(
+  const subscribersReference = useRef<Map<string, Set<EventCallback>>>(new Map())
+
+  const { lastJsonMessage: lastMessage } = useWebSocket<WebSocketServerMessage | null>(
     'ws://localhost:8000/api/ws',
     {
       heartbeat: {
@@ -32,42 +33,49 @@ function WebSocketProvider({ children }: { children: React.ReactNode }) {
       shouldReconnect: () => true,
     }
   )
+
   const [lastError, setLastError] = useState<WebSocketErrorMessage | null>(null)
+  const [prevLastMessage, setPrevLastMessage] = useState(lastMessage)
 
-  const subscribe = useCallback((sessionId: string, callback: EventCallback) => {
-    if (!subscribersRef.current.has(sessionId)) {
-      subscribersRef.current.set(sessionId, new Set())
+  // Sync state updates
+  if (lastMessage !== prevLastMessage) {
+    setPrevLastMessage(lastMessage)
+
+    // If it is an error, we update state immediately
+    if (lastMessage?.kind === 'error') {
+      setLastError(lastMessage)
     }
-    subscribersRef.current.get(sessionId)?.add(callback)
-  }, [])
+  }
 
-  const unsubscribe = useCallback((sessionId: string, callback: EventCallback) => {
-    const sessionSubscribers = subscribersRef.current.get(sessionId)
-    if (sessionSubscribers) {
-      sessionSubscribers.delete(callback)
-      if (sessionSubscribers.size === 0) {
-        subscribersRef.current.delete(sessionId)
-      }
-    }
-  }, [])
-
-  // Notify subscribers when messages arrive
+  // Subscriber notification
   useEffect(() => {
-    if (lastMsg) {
-      if (lastMsg.kind !== 'pong') {
-        if (lastMsg.session_id !== null) {
-          const sessionSubscribers = subscribersRef.current.get(lastMsg.session_id)
-          if (sessionSubscribers) {
-            for (const callback of sessionSubscribers) {
-              callback(lastMsg)
-            }
-          }
-        } else if (lastMsg.kind === 'error') {
-          setLastError(lastMsg)
+    if (lastMessage && lastMessage.kind !== 'pong' && lastMessage.session_id !== null) {
+      const sessionSubscribers = subscribersReference.current.get(lastMessage.session_id)
+
+      if (sessionSubscribers) {
+        for (const callback of sessionSubscribers) {
+          callback(lastMessage)
         }
       }
     }
-  }, [lastMsg])
+  }, [lastMessage])
+
+  const subscribe = useCallback((sessionId: string, callback: EventCallback) => {
+    if (!subscribersReference.current.has(sessionId)) {
+      subscribersReference.current.set(sessionId, new Set())
+    }
+    subscribersReference.current.get(sessionId)?.add(callback)
+  }, [])
+
+  const unsubscribe = useCallback((sessionId: string, callback: EventCallback) => {
+    const sessionSubscribers = subscribersReference.current.get(sessionId)
+    if (sessionSubscribers) {
+      sessionSubscribers.delete(callback)
+      if (sessionSubscribers.size === 0) {
+        subscribersReference.current.delete(sessionId)
+      }
+    }
+  }, [])
 
   const contextValue = {
     error: lastError,

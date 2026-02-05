@@ -10,11 +10,11 @@ import Controls from './Controls'
 import Messages from './Messages/Messages'
 import useMessages from './useMessages'
 
-interface PlayerLoadedProps {
+interface PlayerLoadedProperties {
   session: SessionFull
 }
 
-function PlayerLoaded({ session }: PlayerLoadedProps) {
+function PlayerLoaded({ session }: PlayerLoadedProperties) {
   const { currentStreamingPartId, messages, streamStatus } = useMessages(session)
 
   return (

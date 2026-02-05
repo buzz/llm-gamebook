@@ -6,13 +6,13 @@ import { iconSizeProps } from '@/utils'
 
 import classes from './Messages.module.css'
 
-interface ToolPartProps {
+interface ToolPartProperties {
   children: ReactNode
   icon: Icon
   title: string
 }
 
-function ToolPart({ children, icon: Icon, title }: ToolPartProps) {
+function ToolPart({ children, icon: Icon, title }: ToolPartProperties) {
   return (
     <Group className={classes.toolPart}>
       <Group className={classes.title}>

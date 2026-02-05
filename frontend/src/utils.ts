@@ -7,19 +7,23 @@ interface IconProps {
 
 function iconSizeProps(size: 'lg' | 'md' | 'sm'): IconProps {
   switch (size) {
-    case 'lg':
+    case 'lg': {
       return { size: 30, stroke: 2 }
-    case 'md':
+    }
+    case 'md': {
       return { size: 24, stroke: 1.5 }
-    case 'sm':
+    }
+    case 'sm': {
       return { size: 20, stroke: 1 }
-    default:
+    }
+    default: {
       assertNever(size)
+    }
   }
 }
 
-function truncate(str: string, maxLength = 200) {
-  return str.length > maxLength ? str.slice(0, maxLength) + '…' : str
+function truncate(string_: string, maxLength = 200) {
+  return string_.length > maxLength ? string_.slice(0, maxLength) + '…' : string_
 }
 
 export { iconSizeProps, truncate }

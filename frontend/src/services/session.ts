@@ -30,7 +30,7 @@ const sessionApi = createApi({
           : [{ type: 'Session', id: 'LIST' }],
     }),
     createSession: build.mutation<Session, SessionCreate | void>({
-      query: (session = {}) => ({
+      query: (session) => ({
         url: '',
         method: 'POST',
         body: session,
