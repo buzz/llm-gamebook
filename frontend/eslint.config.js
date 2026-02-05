@@ -7,6 +7,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import reactX from 'eslint-plugin-react-x'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
+import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -68,7 +69,6 @@ const reactRefreshRules = {
 
 export default defineConfig([
   globalIgnores(['dist', 'src/types/openapi.d.ts']),
-  prettierRecommended,
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -77,10 +77,11 @@ export default defineConfig([
       tseslint.configs.stylisticTypeChecked,
       reactX.configs['recommended-typescript'],
       reactDom.configs.recommended,
-      reactHooks.configs['recommended-latest'],
+      reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
       importX.flatConfigs.recommended,
       importX.flatConfigs.typescript,
+      eslintPluginUnicorn.configs.recommended,
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -111,6 +112,10 @@ export default defineConfig([
           ignoreRestSiblings: true,
         },
       ],
+      'unicorn/filename-case': 'off',
+      'unicorn/prevent-abbreviations': 'off', // fights with React conventions
+      'unicorn/no-null': 'off',
     },
   },
+  prettierRecommended,
 ])
