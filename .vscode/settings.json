@@ -4,6 +4,15 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
+  "mypy.configFile": "backend/pyproject.toml",
+  "search.exclude": {
+    "**/.venv": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true
+  },
   "python.analysis.extraPaths": ["./backend"],
   "[typescript][typescriptreact]": {
     "editor.codeActionsOnSave": {
@@ -15,6 +24,5 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.ruff": "always"
     }
-  },
-  "mypy.configFile": "backend/pyproject.toml"
+  }
 }
