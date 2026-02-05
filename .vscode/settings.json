@@ -11,5 +11,10 @@
       "source.fixAll.eslint": "always"
     }
   },
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "always"
+    }
+  },
   "mypy.configFile": "backend/pyproject.toml"
 }
