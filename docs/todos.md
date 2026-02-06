@@ -1,8 +1,9 @@
 # TODOs
 
-- WIP: model selector
-- SPEC: save database in state dir
-- story projects
+- WIP(model-selector): model selector
+  - modularize deps correctly
+- CHANGE(database-location-migration): save database in state dir
+- [story projects](./story-projects.md)
   - standard directory structure
   - persist/restore (in user data dir)
   - load directly from
@@ -12,7 +13,7 @@
   - code inside projects?
     - story entity extensions
   - projects reusable/importable (library projects)
-- story+model instantiation in engine?
+- CHANGE(lazy-engine-initialization): story+model instantiation in engine?
 - story state sidebar
 - show complete/system prompt per message
 - battle test entity story system (maybe tests)
