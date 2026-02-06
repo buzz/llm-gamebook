@@ -4,17 +4,17 @@ Currently, the LLM model selection is hardcoded in `get_model_tmp.py`, requiring
 
 ## What Changes
 
-- New database table `llm_model` for storing provider configurations
-- CRUD API endpoints for managing LLM models (`/api/llm-models/`)
+- New database table `model_config` for storing provider configurations
+- CRUD API endpoints for managing model configurations (`/api/model-configs/`)
 - Frontend model management UI in navbar with create/edit/delete forms
 - Backend factory function to create Pydantic AI models from database config
-- Support for 6 common providers initially: OpenAI, Ollama, Groq, DeepSeek, Mistral, OpenRouter
+- Support for 8 common providers: Anthropic, DeepSeek, Google, Mistral, Ollama, OpenAI, OpenRouter, xAI
 - Session model association (per-session model selection, not global)
 
 ## Capabilities
 
 ### New Capabilities
-- `llm-model-crud`: API and UI for creating, reading, updating, and deleting LLM model configurations
+- `model-config-crud`: API and UI for creating, reading, updating, and deleting model configuration
 - `model-selection`: UI for selecting which model to use per conversation/session
 
 ### Modified Capabilities
@@ -22,7 +22,7 @@ Currently, the LLM model selection is hardcoded in `get_model_tmp.py`, requiring
 
 ## Impact
 
-- **Backend**: New `llm_model.py` SQLModel, CRUD operations, API endpoints, model factory
+- **Backend**: New `model_config.py` SQLModel, CRUD operations, API endpoints, model factory
 - **Frontend**: Navbar "Models" section, model form component, RTK Query services
-- **Database**: New `llm_model` table with JSONB for provider-specific settings
+- **Database**: New `model_config` table with direct provider fields (no JSONB)
 - **Dependencies**: No new dependencies; uses existing Pydantic AI introspection

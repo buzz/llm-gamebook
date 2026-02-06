@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Create LLM Model
-The system SHALL allow users to create a new LLM model configuration with provider, model name, and optional API credentials.
+The system SHALL allow users to create a new model configuration with provider, model name, and optional API credentials.
 
 #### Scenario: User creates OpenAI model
 - **WHEN** user fills the model form with:
@@ -10,7 +10,7 @@ The system SHALL allow users to create a new LLM model configuration with provid
   - Model Name: "gpt-4o"
   - Base URL: "https://api.openai.com/v1"
   - API Key: "sk-..."
-- **THEN** system creates a new LLM model configuration in the database
+- **THEN** system creates a new model configuration in the database
 - **THEN** system returns the created model with generated UUID
 
 #### Scenario: User creates Ollama model
@@ -20,7 +20,7 @@ The system SHALL allow users to create a new LLM model configuration with provid
   - Model Name: "llama3"
   - Base URL: "http://localhost:11434"
   - API Key: (empty)
-- **THEN** system creates a new LLM model configuration
+- **THEN** system creates a new model configuration
 - **THEN** system returns the created model
 
 #### Scenario: User creates model with advanced settings
@@ -29,6 +29,8 @@ The system SHALL allow users to create a new LLM model configuration with provid
 - **WHEN** user saves the form
 - **THEN** system stores the JSON configuration in settings_json field
 - **THEN** system returns the created model with advanced settings
+
+**Note:** JSONB settings_json field has been removed from implementation. All configuration is stored as direct columns.
 
 ### Requirement: List LLM Models
 The system SHALL return a list of all configured LLM models ordered by creation date.
@@ -75,7 +77,7 @@ The system SHALL allow users to modify an existing LLM model configuration.
 - **THEN** system updates all provider-related fields
 - **THEN** system returns updated model
 
-### Requirement: Delete LLM Model
+### Requirement: Delete Model
 The system SHALL allow users to delete an LLM model configuration.
 
 #### Scenario: User deletes model
@@ -100,8 +102,8 @@ The system SHALL allow users to delete an LLM model configuration.
 The system SHALL validate model configurations according to provider requirements.
 
 #### Scenario: Missing required base URL
-- **WHEN** user creates a model without base URL for OpenAI provider
-- **THEN** system returns validation error: "Base URL is required for OpenAI"
+- **WHEN** user creates a model without base URL for Ollama provider
+- **THEN** system returns validation error: "Base URL is required for Ollama"
 - **THEN** system does not create the model
 
 #### Scenario: Invalid provider
@@ -113,3 +115,5 @@ The system SHALL validate model configurations according to provider requirement
 - **WHEN** user provides invalid JSON in advanced settings
 - **THEN** system returns validation error: "Invalid JSON format"
 - **THEN** system does not create the model
+
+**Note:** JSONB settings_json field has been removed from implementation. All configuration is stored as direct columns.

@@ -52,17 +52,32 @@ The current implementation uses hardcoded LLM models in `get_model_tmp.py`, requ
 **Alternative Considered:** EAV (Entity-Attribute-Value) pattern
 - Rejected: Poor query performance, harder to reason about
 
-### 2. Naming Convention: `LLMModel` / `llm_model`
+### 2. Naming Convention: `ModelConfig` / `model_config`
 
-**Decision:** Use `LLMModel` class name and `llm_model` file/module names to avoid conflicts with existing "Model" entities throughout the codebase.
+**Decision:** Use `ModelConfig` class name and `model_config` file/module names to clearly indicate this stores configuration rather than being a "model" in the traditional sense.
 
 **Rationale:**
 - Clear distinction from SQLAlchemy/SQLModel base Model class
-- Avoids naming collisions with existing `GamebookModel`, `SessionModel`, etc.
+- Avoids naming collisions with existing entities
+- Better semantic meaning: this is a configuration, not a model instance
+- Frontend components already use `ModelConfig` terminology (ModelConfigSelector, ModelConfigLink)
 
-### 3. Initial Provider List
+### 3. Database Schema: Direct Fields vs JSONB
 
-**Decision:** Hardcode 6 providers for v1: OpenAI, Ollama, Groq, DeepSeek, Mistral, OpenRouter.
+**Decision:** Use direct columns for all configuration fields instead of JSONB.
+
+**Rationale:**
+- Simpler queries and indexing
+- Easier validation at database level
+- Provider list is hardcoded anyway (not dynamic)
+- Matches implementation: provider, model_name, base_url, api_key as direct fields
+- No need for complex JSON parsing
+
+**Alternative Considered:** JSONB `settings_json` field
+- Rejected: Overly complex for this use case
+- **Note:** All traces of JSONB settings have been removed from the implementation
+
+**Decision:** Hardcode 8 providers for v1: Anthropic, DeepSeek, Google, Mistral, Ollama, OpenAI, OpenRouter, xAI.
 
 **Rationale:**
 - Most commonly used providers
@@ -111,35 +126,32 @@ The current implementation uses hardcoded LLM models in `get_model_tmp.py`, requ
 
 **Decision:** Single form with:
 - Name (user-friendly display name)
-- Provider (dropdown from 6 providers)
+- Provider (dropdown from 8 providers)
 - Model Name (free text)
 - Base URL (pre-filled but editable)
 - API Key (masked input)
-- Advanced Settings (JSON toggle)
 
 **Rationale:**
 - Simple for common case (OpenAI defaults)
-- Advanced users can customize via JSON
 - Single form reduces UI complexity
+- No JSON advanced settings needed
 
 **Alternative:** Provider-specific forms
-- Rejected: 6 forms to maintain, hard to add new providers
-- JSON approach scales better
+- Rejected: 8 forms to maintain, hard to add new providers
 
 ## Risks / Trade-offs
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Provider validation complexity | Runtime errors if required config missing | Add validation layer, clear error messages |
-| JSON schema drift | Different providers need different fields | Versioned settings_json, migration scripts |
-| Missing provider features | Some provider-specific options not exposed | Allow full JSON override for edge cases |
+| Missing provider features | Some provider-specific options not exposed | Accept limitations, expand providers as needed |
 | API key exposure | Local dev machine compromise | Document limitation, consider encryption v2 |
 
 ## Migration Plan
 
-1. **Create database table** - Add `llm_model` table with migration
+1. **Create database table** - Add `model_config` table with migration
 2. **Seed default models** - Optional: pre-populate common configurations
-3. **Build backend API** - CRUD endpoints for llm_model
+3. **Build backend API** - CRUD endpoints for model_config
 4. **Build frontend UI** - Navbar section + form components
 5. **Update get_model** - Replace hardcoded path with DB lookup
 6. **Test flow** - Verify model selection in gameplay session

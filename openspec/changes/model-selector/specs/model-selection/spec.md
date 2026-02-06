@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Select Model for Session
-The system SHALL allow users to select which LLM model to use for their game session.
+The system SHALL allow users to select which model configuration to use for their game session.
 
 #### Scenario: User changes model mid-session
 - **WHEN** user selects a different model from the model selector dropdown
@@ -65,3 +65,5 @@ The system SHALL log which model was used for each message in a session.
 - **WHEN** message is sent with a model
 - **THEN** system captures model configuration snapshot
 - **THEN** snapshot stored to ensure reproducibility if model config changes
+
+**Note:** The database schema uses direct columns (provider, model_name, base_url, api_key) instead of JSONB settings_json.
