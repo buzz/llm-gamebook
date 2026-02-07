@@ -29,7 +29,6 @@ from pydantic_ai import (
     ThinkingPartDelta,
     ToolCallPart,
     ToolCallPartDelta,
-    UsageLimits,
 )
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
@@ -151,11 +150,7 @@ class _StreamRunner:
     ) -> tuple[Sequence[ModelMessage], list[UUID], list[list[UUID]], dict[UUID, int]]:
         messages: list[ModelMessage] = []
 
-        async with self._agent.iter(
-            message_history=msg_history,
-            deps=state,
-            usage_limits=UsageLimits(output_tokens_limit=200_000),
-        ) as run:
+        async with self._agent.iter(message_history=msg_history, deps=state) as run:
             async for node in run:
                 if Agent.is_model_request_node(node):
                     await self._handle_model_request_node(node, run)
