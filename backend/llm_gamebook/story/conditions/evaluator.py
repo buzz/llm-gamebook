@@ -39,16 +39,22 @@ class BoolExprEvaluator:
         right = self.resolve_comparison_operand(comp.right)
         op = comp.op.value
 
+        # Identity/Equality (supports everything)
         if op == "==":
             return left == right
         if op == "!=":
             return left != right
 
-        if isinstance(left, BaseEntity | Sequence):
-            msg = f"Left operand '{left}' not supported for comparison '{op}'"
+        # Membership (requires collection on the right)
+        if op == "in":
+            if isinstance(right, (Sequence, str)) and not isinstance(right, (bool, int, float)):
+                return left in right
+            msg = f"Operator 'in' requires a collection, but got {type(right).__name__}"
             raise TypeError(msg)
-        if isinstance(right, BaseEntity | Sequence):
-            msg = f"Right operand '{right}' not supported for comparison '{op}'"
+
+        # Mathematical inequality (strictly NO entities or sequences)
+        if isinstance(left, (BaseEntity, Sequence)) or isinstance(right, (BaseEntity, Sequence)):
+            msg = f"Operands not supported for comparison '{op}'"
             raise TypeError(msg)
 
         if op == "<":
@@ -59,8 +65,6 @@ class BoolExprEvaluator:
             return left > right
         if op == ">=":
             return left >= right
-        if op == "in":
-            raise NotImplementedError
 
         assert_never(op)
 
