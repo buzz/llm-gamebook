@@ -81,14 +81,14 @@
 
 - [x] 10.1 Write backend tests for CRUD endpoints (`tests/api/test_model_config.py`)
 - [x] 10.2 Write backend tests for model factory (`tests/web/test_model_factory.py`)
-- [ ] 10.3 Write frontend tests for ModelConfigForm component
-- [ ] 10.4 Write frontend tests for ModelConfigSelector component
+- [x] 10.3 Write frontend tests for ModelConfigForm component
+- [x] 10.4 Write frontend tests for ModelConfigSelector component
 - [x] 10.5 Run backend lint and typecheck (`uv run ruff check`, `uv run mypy`)
 - [x] 10.6 Run frontend lint and typecheck (`pnpm lint`, `pnpm typecheck`)
 
 ## 11. Integration
 
-- [ ] 11.1 Connect session message sending to use selected model
-- [ ] 11.2 Update session model association on model switch
-- [ ] 11.3 Add model ID to message logging for audit
-- [ ] 11.4 Test end-to-end flow: create model → select in session → send message
+- [x] 11.1 Connect session message sending to use selected model
+- [x] 11.2 Update session model association on model switch
+- [x] 11.3 Add model ID to message logging for audit
+- [x] 11.4 Test end-to-end flow: create model → select in session → send message
