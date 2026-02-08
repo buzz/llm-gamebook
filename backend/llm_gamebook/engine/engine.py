@@ -34,14 +34,7 @@ class StoryEngine:
         self._session_adapter = SessionAdapter(session_id, state, bus)
         self._bus = bus
         self._log = logger.getChild(f"engine-{session_id}")
-        self._agent = Agent[StoryState, str](
-            model,
-            deps_type=StoryState,
-            model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
-            output_type=str,
-            tools=list(self._state.get_tools()),
-            prepare_tools=self._prepare_tools,
-        )
+        self.set_model(model)
 
     async def generate_response(
         self, db_session: AsyncDbSession, *, streaming: bool = False
@@ -59,9 +52,8 @@ class StoryEngine:
             # Streaming run
             if streaming:
                 runner = StreamRunner(self._agent, self._session_adapter.session_id, self._bus)
-                new_messages, message_ids, parts_ids, durations = await runner.run(
-                    msg_history, self._state
-                )
+                streaming_result = await runner.run(msg_history, self._state)
+                new_messages, message_ids, parts_ids, durations = streaming_result
                 await self._session_adapter.append_messages(
                     db_session, new_messages, message_ids, parts_ids, durations
                 )

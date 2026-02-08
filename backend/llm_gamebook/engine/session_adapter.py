@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterable, Iterable, Sequence
+from contextlib import suppress
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -89,16 +90,14 @@ class SessionAdapter:
         messages: list[Message] = []
 
         for idx, model_message in enumerate(model_messages):
+            model_msg_id: UUID | None = None
+            model_part_ids: Sequence[UUID] | None = None
             if message_ids is not None:
-                try:
+                with suppress(IndexError):
                     model_msg_id = message_ids[idx]
-                except IndexError:
-                    model_msg_id = None
             if part_ids is not None:
-                try:
+                with suppress(IndexError):
                     model_part_ids = part_ids[idx]
-                except IndexError:
-                    model_part_ids = None
             msg = Message.from_model_message(
                 model_message, self._session_id, model_msg_id, model_part_ids, durations
             )
