@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import weakref
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
@@ -50,7 +51,7 @@ class MessageBus:
         for pat, handlers in list(self._subs.items()):
             if fnmatch(topic, pat):
                 for handler in handlers:
-                    if asyncio.iscoroutinefunction(handler):
+                    if inspect.iscoroutinefunction(handler):
                         task = asyncio.create_task(handler(message))
                         self._tasks.add(task)
                         task.add_done_callback(self._handler_done_callback)
@@ -118,7 +119,7 @@ class BusSubscriber:
                 return
 
             # call the target appropriately depending on whether it's async
-            if asyncio.iscoroutinefunction(target):
+            if inspect.iscoroutinefunction(target):
                 await target(message)
             else:
                 # run blocking sync handlers off the event loop
