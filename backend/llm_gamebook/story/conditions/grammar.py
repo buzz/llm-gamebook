@@ -1,9 +1,10 @@
-import string
 import typing
 
 import pyparsing as pp
 
 pp.ParserElement.enable_packrat()
+
+type ComparisonOperatorValue = typing.Literal["==", "!=", "<", "<=", ">", ">=", "in"]
 
 
 # Literals
@@ -39,28 +40,39 @@ class SnakeCase(typing.NamedTuple):
     value: str
 
 
-snake_case_segment = pp.Word(string.ascii_lowercase, string.ascii_lowercase + string.digits)
-snake_case = pp.Combine(
-    snake_case_segment + pp.ZeroOrMore(pp.Literal("_") + snake_case_segment)
-).set_parse_action(lambda t: SnakeCase(t[0]))
+# Use Regex with negative lookahead to exclude keywords (not, and, or).
+# The \b word boundary ensures keywords are rejected regardless of what follows
+# (e.g., "not.b" fails because "not" is followed by a word boundary).
+_snake_case_raw = pp.Regex(r"(?!not\b|and\b|or\b)[a-z]+(_[a-z]+)*")
+
+snake_case = _snake_case_raw.copy().set_parse_action(lambda t: SnakeCase(t[0]))
 
 
 # Dot path
 class DotPath(typing.NamedTuple):
-    """`entity_id.property[.property[...]]`"""
+    """`entity_id.property[.property[.property[...]]]`"""
 
     entity_id: SnakeCase
     property_chain: tuple[SnakeCase, ...]
 
 
-dot_path = (snake_case + pp.OneOrMore(pp.Literal(".").suppress() + snake_case)).set_parse_action(
-    lambda t: DotPath(t[0], tuple(t[1:]))
+# Using pp.Combine enforces adjacency between tokens (no whitespace allowed).
+# If "foo_bar .id" is parsed, Combine fails due to the space, raising ParseException.
+# The dot is NOT suppressed, so Combine merges it into a single string "foo.bar".
+# We then split the string in the parse action to reconstruct the DotPath object.
+dot_path = pp.Combine(
+    _snake_case_raw + pp.OneOrMore(pp.Literal(".") + _snake_case_raw)
+).set_parse_action(
+    lambda t: DotPath(
+        entity_id=SnakeCase(t[0].split(".")[0]),
+        property_chain=tuple(SnakeCase(p) for p in t[0].split(".")[1:]),
+    )
 )
 
 
 # Comparison
 class ComparisonOperator(typing.NamedTuple):
-    value: typing.Literal["==", "!=", "<", "<=", ">", ">=", "in"]
+    value: ComparisonOperatorValue
 
 
 class Comparison(typing.NamedTuple):
