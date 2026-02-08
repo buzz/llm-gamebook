@@ -1,20 +1,10 @@
-import pytest
 from fastapi.testclient import TestClient
-from llm_gamebook.db.database import get_db_session
 
 from llm_gamebook.main import app
 
-client = TestClient(app)
+client = TestClient(app)  # TODO: use proper fixture
 
 
-def override_get_db_session():
-    pass
-
-
-app.dependency_overrides[get_db_session] = override_get_db_session
-
-
-@pytest.mark.asyncio
 async def test_create_model_config():
     model_data = {
         "name": "Test Model",
@@ -32,7 +22,6 @@ async def test_create_model_config():
     assert "id" in data
 
 
-@pytest.mark.asyncio
 async def test_read_model_configs():
     response = client.get("/api/model-configs/")
     assert response.status_code == 200
@@ -42,7 +31,6 @@ async def test_read_model_configs():
     assert isinstance(data["data"], list)
 
 
-@pytest.mark.asyncio
 async def test_read_model_config():
     model_data = {
         "name": "Test Model",
@@ -60,7 +48,6 @@ async def test_read_model_config():
     assert data["name"] == "Test Model"
 
 
-@pytest.mark.asyncio
 async def test_update_model_config():
     model_data = {
         "name": "Original Name",
@@ -78,7 +65,6 @@ async def test_update_model_config():
     assert data["name"] == "Updated Name"
 
 
-@pytest.mark.asyncio
 async def test_delete_model_config():
     model_data = {
         "name": "To Delete",
@@ -96,7 +82,6 @@ async def test_delete_model_config():
     assert get_response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_list_providers():
     response = client.get("/api/model-configs/providers/")
     assert response.status_code == 200

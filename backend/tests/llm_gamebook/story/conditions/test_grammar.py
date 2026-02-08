@@ -14,7 +14,7 @@ def assert_parse_exception(el: pp.ParserElement, string: str) -> None:
     except pp.ParseException:
         pass
     else:
-        pytest.fail(f"{string} should raise but parsed to: {result}")
+        pytest.fail(f"'{string}' should raise but parsed to: {result}")
 
 
 # Literals
@@ -236,6 +236,9 @@ def test_dot_path_bad(string: str) -> None:
     assert_parse_exception(make_parser(g.dot_path), string)
 
 
+type ExpType = tuple[g.Literal | g.DotPath, g.ComparisonOperator, g.Literal | g.DotPath]
+
+
 # Comparison
 @pytest.mark.parametrize(
     ("string", "exp"),
@@ -292,8 +295,9 @@ def test_dot_path_bad(string: str) -> None:
         ),
     ],
 )
-def test_comparison_good(string: str, exp: tuple) -> None:
-    assert g.comparison.parse_string(string)[0] == g.Comparison(*exp)
+def test_comparison_good(string: str, exp: ExpType) -> None:
+    left, op, right = exp
+    assert g.comparison.parse_string(string)[0] == g.Comparison(left, op, right)
 
 
 @pytest.mark.parametrize(
@@ -405,8 +409,8 @@ def test_bool_expr_good(string: str, exp: g.BoolExpr) -> None:
     [
         ".",
         "_",
-        "foo_bar .current_node.id",
         "foo.bar.baz.quz ",
+        "foo_bar .current_node.id",
         "Foo.bar",
         "foo.Bar",
         "foo bar",
@@ -420,4 +424,69 @@ def test_bool_expr_good(string: str, exp: g.BoolExpr) -> None:
     ],
 )
 def test_bool_expr_bad(string: str) -> None:
-    assert_parse_exception(g.bool_expr, string)
+    assert_parse_exception(make_parser(g.bool_expr), string)
+
+
+# Edge cases for robustness
+@pytest.mark.parametrize(
+    "string",
+    [
+        # Keywords as parts of identifiers
+        "standard.item == 1",
+        "notary.active == true",
+        "player.born_at == '1990'",
+        # Complex precedence
+        "a.b == 1 or c.d == 2 and e.f == 3",
+        "not a.b == 1 and c.d == 2",
+        # Variables on both sides
+        "player.health > enemy.attack",
+        # Adjacent operators (no whitespace around comparison)
+        "a.b==1",
+        "a.b != 1",
+        "a.b < 1",
+        "a.b <= 1",
+        "a.b > 1",
+        "a.b >= 1",
+        # Deep parentheses
+        "((((a.b == 1))))",
+        # Nested expressions with parentheses
+        "(a.b == 1 and c.d == 2) or e.f == 3",
+        "(a.b == 1) or (c.d == 2)",
+        # Type combinations
+        "1 == 1.0",
+        "'hello' in 'world'",
+        "true != false",
+        # Unary operator stacking
+        "not not a.b == 1",
+    ],
+)
+def test_bool_expr_edge_cases_good(string: str) -> None:
+    g.bool_expr.parse_string(string, parse_all=True)
+
+
+@pytest.mark.parametrize(
+    "string",
+    [
+        # Invalid operators
+        "a.b === 1",
+        "a.b ==",
+        "a.b !=",
+        # Double or missing dots
+        "a..b",
+        ".a.b",
+        "a.b.",
+        # Space after dot (adjacency violation)
+        "a. b",
+        "foo. bar == 1",
+        # Dangling operators
+        "not",
+        "a.b == 1 and",
+        "a.b == 1 or",
+        # Keywords as full identifiers (not operators)
+        "and.b == 1",
+        "or.b == 1",
+        "not.b == 1",
+    ],
+)
+def test_bool_expr_edge_cases_bad(string: str) -> None:
+    assert_parse_exception(make_parser(g.bool_expr), string)

@@ -2,8 +2,6 @@ import asyncio
 import gc
 import weakref
 
-import pytest
-
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
 
 
@@ -13,11 +11,11 @@ class DummySubscriber(BusSubscriber):
         self.messages: list[str] = []
         self._subscribe("ping", self.on_ping)
 
-    async def on_ping(self, msg: str) -> None:
+    async def on_ping(self, msg: object) -> None:
+        assert isinstance(msg, str)
         self.messages.append(msg)
 
 
-@pytest.mark.asyncio
 async def test_explicit_close_removes_subscription() -> None:
     bus = MessageBus()
     sub = DummySubscriber(bus)
@@ -34,7 +32,6 @@ async def test_explicit_close_removes_subscription() -> None:
     assert sub.messages == ["one"]
 
 
-@pytest.mark.asyncio
 async def test_gc_finalizer_removes_subscription() -> None:
     bus = MessageBus()
 
@@ -63,7 +60,6 @@ async def test_gc_finalizer_removes_subscription() -> None:
     assert not bus._subs  # topic removed by wrapper after weakref dead
 
 
-@pytest.mark.asyncio
 async def test_multiple_subscribers_cleanup_independent() -> None:
     bus = MessageBus()
 
