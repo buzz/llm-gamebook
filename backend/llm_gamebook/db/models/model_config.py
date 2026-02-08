@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Column, Enum, Text
@@ -5,7 +6,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from llm_gamebook.providers import ModelProvider
 
-from .session import Session
+if TYPE_CHECKING:
+    from .session import Session
 
 
 class ModelConfigBase(SQLModel):
@@ -28,7 +30,7 @@ class ModelConfigBase(SQLModel):
 
 class ModelConfig(ModelConfigBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    sessions: list[Session] = Relationship(
+    sessions: list["Session"] = Relationship(
         back_populates="config",
         sa_relationship_kwargs={"lazy": "selectin"},
     )

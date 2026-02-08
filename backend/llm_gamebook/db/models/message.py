@@ -1,7 +1,7 @@
 import enum
 from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Optional, Self
 from uuid import UUID, uuid4
 
 from pydantic_ai import ModelMessage, ModelResponse
@@ -37,7 +37,8 @@ class MessageBase(SQLModel):
 
 class Message(MessageBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    session: "Session | None" = Relationship(back_populates="messages")
+    # "Session | None" would not be resolvable by SQLAlchemy
+    session: Optional["Session"] = Relationship(back_populates="messages")
     session_id: UUID | None = Field(default=None, foreign_key="session.id", ondelete="CASCADE")
     parts: list[Part] = Relationship(
         back_populates="message", passive_deletes="all", sa_relationship_kwargs={"lazy": "selectin"}

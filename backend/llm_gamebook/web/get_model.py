@@ -27,7 +27,9 @@ async def get_model_state(db_session: AsyncDbSession, session_id: UUID) -> tuple
     if not session:
         raise HTTPException(status_code=404, detail="Story session not found")
 
-    # TODO: model settings
+    if not session.config:
+        raise HTTPException(status_code=404, detail="Session has no model config")
+
     model = create_model_from_db_config(
         model_name=session.config.model_name,
         provider=session.config.provider,
