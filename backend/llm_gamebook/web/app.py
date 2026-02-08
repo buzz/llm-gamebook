@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-from llm_gamebook.constants import PROJECT_NAME
+from llm_gamebook.constants import PROJECT_NAME, USER_DATA_DIR
 from llm_gamebook.db import create_async_db_engine
 from llm_gamebook.engine import EngineManager
 from llm_gamebook.logger import setup_logger
@@ -20,6 +20,8 @@ from .websocket import websocket_router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     add_websocket_schema(app.openapi())
+
+    USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     async with (
         create_async_db_engine() as db_engine,

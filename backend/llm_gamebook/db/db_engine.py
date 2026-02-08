@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlmodel import SQLModel, text
 
+from llm_gamebook.constants import PROJECT_NAME, USER_DATA_DIR
 from llm_gamebook.logger import logger
 
 log = logger.getChild("database")
@@ -15,8 +16,8 @@ async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
     # Make sure all models are imported
     from .models import Message, ModelConfig, Part, Session, Usage  # noqa: F401, PLC0415
 
-    sqlite_file_name = "database.db"
-    sqlite_url = f"sqlite+aiosqlite:///{sqlite_file_name}"
+    sqlite_file_name = f"{PROJECT_NAME}.db"
+    sqlite_url = f"sqlite+aiosqlite:///{USER_DATA_DIR / sqlite_file_name}"
 
     try:
         log.info("Creating database engine…")
