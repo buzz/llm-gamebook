@@ -1,3 +1,3 @@
-from .create_db import create_db_and_tables, db_engine
+from .db_engine import create_async_db_engine
 
-__all__ = ["create_db_and_tables", "db_engine"]
+__all__ = ["create_async_db_engine"]

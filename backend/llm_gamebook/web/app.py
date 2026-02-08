@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 from llm_gamebook.constants import PROJECT_NAME
-from llm_gamebook.db import create_db_and_tables
+from llm_gamebook.db import create_async_db_engine
 from llm_gamebook.engine import EngineManager
 from llm_gamebook.logger import setup_logger
 from llm_gamebook.message_bus import MessageBus
@@ -20,8 +20,13 @@ from .websocket import websocket_router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     add_websocket_schema(app.openapi())
-    await create_db_and_tables()
-    async with MessageBus() as bus, EngineManager(bus) as engine_mgr:
+
+    async with (
+        create_async_db_engine() as db_engine,
+        MessageBus() as bus,
+        EngineManager(bus) as engine_mgr,
+    ):
+        app.state.db_engine = db_engine
         app.state.bus = bus
         app.state.engine_mgr = engine_mgr
         yield
