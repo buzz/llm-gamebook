@@ -129,7 +129,7 @@ class EntityType(EntityTypeDefinition):
     def get_trait_options[T: BaseModel](self, trait_id: str, model: type[T]) -> T:
         try:
             options = self.trait_options_map[trait_id]
-        except StopIteration as err:
+        except KeyError as err:
             msg = f"Trait options not found: {trait_id}"
             raise TraitNotFoundError(msg) from err
 
