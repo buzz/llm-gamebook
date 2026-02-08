@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from llm_gamebook.story.trait_registry import trait_registry
 from llm_gamebook.story.types import NormalizedPascalCase, NormalizedSnakeCase
@@ -11,28 +11,53 @@ class TraitDefinition(BaseModel):
     name: NormalizedSnakeCase
     """The name for the trait."""
 
-    options: dict[str, object] | None = None
+    options: dict[str, object] = Field(default_factory=dict)
     """The trait's options."""
 
     @model_validator(mode="before")
     @classmethod
     def normalize(cls, data: object) -> dict[str, object]:
-        """Transform both variants (`str`, `dict`) into `dict` with `options` field."""
+        """
+        Normalizes trait definitions.
+        Supports:
+          1. Shorthand: "trait_name"
+          2. Inline: {"name": "trait_name", "param": "val"}
+          3. Explicit: {"name": "trait_name", "options": {"param": "val"}}
+        """
         if isinstance(data, str):
-            return {"name": data}
-        if isinstance(data, dict):
-            # Lift additional fields into options
-            known = {"name"}
-            name = data["name"]
-            if isinstance(name, str):
-                return {
-                    "name": data["name"],
-                    "options": {k: v for k, v in data.items() if k not in known},
-                }
-            msg = "Expecting name to be str"
+            return {"name": data, "options": {}}
+
+        if not isinstance(data, dict):
+            msg = f"Expected str or dict for trait, got {type(data).__name__}"
+            raise TypeError(msg)
+
+        # Work on a copy to avoid mutating input
+        payload = dict(data)
+
+        # Extract 'name'
+        name = payload.pop("name", None)
+        if not name:
+            msg = "Trait definition dictionary must contain a 'name' key"
             raise ValueError(msg)
-        msg = "Expecting data to be str or dict"
-        raise ValueError(msg)
+
+        # Extract existing 'options' if they exist (prevents 'options': {'options': ...} nesting)
+        options = payload.pop("options", {})
+        options = (
+            # Copy to avoid mutating original nested dict
+            dict(options)
+            if isinstance(options, dict)
+            # Handle cases where 'options' might be a single value (e.g., a string or int)
+            else {"value": options}
+        )
+
+        # Lift remaining fields into options
+        # Anything left in payload (after popping 'name' and 'options') is merged into the dict
+        options.update(payload)
+
+        return {
+            "name": name,
+            "options": options,
+        }
 
     @field_validator("name")
     @classmethod
