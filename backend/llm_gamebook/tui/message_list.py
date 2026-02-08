@@ -1,3 +1,4 @@
+import re
 from time import time
 from typing import TYPE_CHECKING, Final
 
@@ -19,10 +20,20 @@ from textual.widgets import Markdown as TextualMarkdown
 
 from llm_gamebook.engine.engine import StreamState
 from llm_gamebook.tui.thinking_indicator import ThinkingIndicator
-from llm_gamebook.utils import parse_reasoning
 
 if TYPE_CHECKING:
     from llm_gamebook.tui.tui_app import TuiApp
+
+think_block_re = re.compile(r"<think>\s*(.*?)\s*</think>\s*(.*)", re.DOTALL)
+
+
+def parse_reasoning(text: str) -> tuple[str | None, str | None]:
+    match = think_block_re.search(text)
+    if match:
+        think_block = match.group(1) or None
+        msg = match.group(2).strip() or None
+        return think_block, msg
+    return None, text.strip() or None
 
 
 class Markdown(Widget):
