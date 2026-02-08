@@ -113,6 +113,16 @@ class StoryEngine:
     def session_adapter(self) -> SessionAdapter:
         return self._session_adapter
 
+    def set_model(self, model: Model) -> None:
+        self._agent = Agent[StoryState, str](
+            model,
+            deps_type=StoryState,
+            model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
+            output_type=str,
+            tools=list(self._state.get_tools()),
+            prepare_tools=self._prepare_tools,
+        )
+
     def _log_messages(self, messages: Sequence[ModelMessage]) -> None:
         for idx, msg in enumerate(messages):
             self._log.debug("%03d: %s", idx, type(msg).__name__)

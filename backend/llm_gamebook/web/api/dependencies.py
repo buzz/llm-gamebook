@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.engine import EngineManager, StoryEngine
-from llm_gamebook.web.get_model import get_model_state
 
 
 def _get_db_engine(request: Request) -> AsyncEngine:
@@ -38,8 +37,7 @@ async def _get_story_engine(
         msg = "engine_mgr not found"
         raise TypeError(msg)
 
-    model, state = await get_model_state(db_session, session_id)
-    return await engine_manager.get_or_create(session_id, model, state)
+    return await engine_manager.get_or_create(session_id, db_session)
 
 
 StoryEngineDep = Annotated[StoryEngine, Depends(_get_story_engine)]

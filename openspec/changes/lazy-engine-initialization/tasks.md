@@ -1,16 +1,16 @@
 ## 1. Add set_model() to StoryEngine
 
-- [ ] 1.1 Add `set_model(new_model)` method to StoryEngine class
-- [ ] 1.2 Method creates new Agent with new model, preserves StoryState, tools, and callbacks
-- [ ] 1.3 Ensure atomic replacement of internal _agent attribute (thread-safe)
+- [x] 1.1 Add `set_model(new_model)` method to StoryEngine class
+- [x] 1.2 Method creates new Agent with new model, preserves StoryState, tools, and callbacks
+- [x] 1.3 Ensure atomic replacement of internal _agent attribute (thread-safe)
 - [ ] 1.4 Add unit tests for set_model() functionality
 
 ## 2. Modify EngineManager for lazy instantiation
 
-- [ ] 2.1 Update `get_or_create()` signature to accept `db_session` parameter
-- [ ] 2.2 Add model instantiation logic using db_session and session_id
-- [ ] 2.3 Add StoryState instantiation logic using db_session and session_id
-- [ ] 2.4 Keep existing caching logic (check if engine exists, bump timestamp)
+- [x] 2.1 Update `get_or_create()` signature to accept `db_session` parameter
+- [x] 2.2 Add model instantiation logic using db_session and session_id
+- [x] 2.3 Add StoryState instantiation logic using db_session and session_id
+- [x] 2.4 Keep existing caching logic (check if engine exists, bump timestamp)
 - [ ] 2.5 Add unit tests for lazy initialization behavior
 
 ## 3. Add model config change notification
