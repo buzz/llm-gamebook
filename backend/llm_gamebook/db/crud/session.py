@@ -35,9 +35,9 @@ async def get_session(db_session: AsyncDbSession, session_id: UUID) -> Session |
 
 
 async def update_session_model_config(
-    db_session: AsyncDbSession, session_id: str, config_id: UUID | None
+    db_session: AsyncDbSession, session_id: UUID, config_id: UUID | None
 ) -> None:
-    session = await db_session.get(Session, UUID(session_id))
+    session = await db_session.get(Session, session_id)
     if session:
         session.config_id = config_id
         await db_session.commit()

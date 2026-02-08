@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException
 
 from llm_gamebook.db.crud.model_config import get_model_config
@@ -53,7 +55,7 @@ async def create_session(db_session: DbSessionDep, session_in: SessionCreate) ->
 async def update_session(
     db_session: DbSessionDep, session_id: str, session_update: SessionUpdate
 ) -> ServerMessage:
-    await update_session_model_config(db_session, session_id, session_update.config_id)
+    await update_session_model_config(db_session, UUID(session_id), session_update.config_id)
     return ServerMessage(message="Session updated successfully.")
 
 
