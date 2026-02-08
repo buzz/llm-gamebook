@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 from time import time
-from typing import Final
 from uuid import UUID, uuid4
 
 from pydantic_ai import (
@@ -30,17 +29,13 @@ from .message import StreamUpdateBusMessage
 
 
 class StreamRunner:
-    _DEBOUNCE: Final[float] = 0.1  # secs
-
     def __init__(
-        self,
-        agent: Agent[StoryState],
-        session_id: UUID,
-        bus: MessageBus,
+        self, agent: Agent[StoryState], session_id: UUID, bus: MessageBus, debounce: float
     ) -> None:
         self._agent = agent
         self._session_id = session_id
         self._bus = bus
+        self._debounce = debounce
 
         self._log = logger.getChild(f"stream-runner({session_id})")
 
@@ -92,6 +87,10 @@ class StreamRunner:
                     await self._handle_part_start_event(request_stream.response, event)
                 elif isinstance(event, PartDeltaEvent):
                     await self._handle_part_delta_event(request_stream.response, event)
+
+            # Force a final update once the stream is exhausted
+            await self._send_stream_update(request_stream.response, force=True)
+
             self._response_index += 1
 
     async def _handle_call_tools_node(
@@ -140,8 +139,8 @@ class StreamRunner:
         if isinstance(event.delta, TextPartDelta | ThinkingPartDelta | ToolCallPartDelta):
             await self._send_stream_update(response)
 
-    async def _send_stream_update(self, response: ModelResponse) -> None:
-        if time() - self._last_stream_update > self._DEBOUNCE:
+    async def _send_stream_update(self, response: ModelResponse, *, force: bool = False) -> None:
+        if force or time() - self._last_stream_update > self._debounce:
             self._bus.publish(
                 "engine.response.stream",
                 StreamUpdateBusMessage(

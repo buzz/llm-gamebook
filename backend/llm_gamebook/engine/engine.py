@@ -29,11 +29,19 @@ from .session_adapter import SessionAdapter
 
 
 class StoryEngine:
-    def __init__(self, session_id: UUID, model: Model, state: StoryState, bus: MessageBus) -> None:
+    def __init__(
+        self,
+        session_id: UUID,
+        model: Model,
+        state: StoryState,
+        bus: MessageBus,
+        stream_debounce: float = 0.1,
+    ) -> None:
         self._state = state
         self._session_adapter = SessionAdapter(session_id, state, bus)
         self._bus = bus
         self._log = logger.getChild(f"engine-{session_id}")
+        self._stream_debounce = stream_debounce
         self.set_model(model)
 
     async def generate_response(
@@ -51,7 +59,9 @@ class StoryEngine:
 
             # Streaming run
             if streaming:
-                runner = StreamRunner(self._agent, self._session_adapter.session_id, self._bus)
+                runner = StreamRunner(
+                    self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
+                )
                 streaming_result = await runner.run(msg_history, self._state)
                 new_messages, message_ids, parts_ids, durations = streaming_result
                 await self._session_adapter.append_messages(
