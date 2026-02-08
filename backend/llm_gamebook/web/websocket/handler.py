@@ -35,10 +35,10 @@ class WebSocketHandler(BusSubscriber):
     """Handles WebSocket connections for chat sessions."""
 
     def __init__(
-        self, engine_mgr: "EngineManager", db_session: AsyncDbSession, bus: MessageBus
+        self, db_session: AsyncDbSession, engine_mgr: "EngineManager", bus: MessageBus
     ) -> None:
-        self._engine_mgr = engine_mgr
         self._db_session = db_session
+        self._engine_mgr = engine_mgr
         self._bus = bus
         self._websocket: WebSocket
 

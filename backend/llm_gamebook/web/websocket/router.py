@@ -1,7 +1,6 @@
 from fastapi import APIRouter, WebSocket
 
-from llm_gamebook.web.api.deps import DbSessionDep, EngineMgrDepWs, MessageBusDepWs
-
+from .dependencies import DbSessionDep, MessageBusDep, StoryEngineManagerDep
 from .handler import WebSocketHandler
 
 websocket_router = APIRouter()
@@ -9,7 +8,11 @@ websocket_router = APIRouter()
 
 @websocket_router.websocket("")
 async def websocket_endpoint(
-    websocket: WebSocket, mgr: EngineMgrDepWs, db_session: DbSessionDep, bus: MessageBusDepWs
+    websocket: WebSocket,
+    db_session: DbSessionDep,
+    story_engine_manager: StoryEngineManagerDep,
+    message_bus: MessageBusDep,
 ) -> None:
     """WebSocket endpoint for chat sessions."""
-    await WebSocketHandler(mgr, db_session, bus).handle_connection(websocket)
+    handler = WebSocketHandler(db_session, story_engine_manager, message_bus)
+    await handler.handle_connection(websocket)

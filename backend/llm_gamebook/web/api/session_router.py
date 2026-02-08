@@ -9,7 +9,7 @@ from llm_gamebook.db.crud.session import (
 )
 from llm_gamebook.db.models import Message
 from llm_gamebook.db.models import Session as SqlModelSession
-from llm_gamebook.web.api.deps import DbSessionDep, EngineDepRest
+from llm_gamebook.web.api.dependencies import DbSessionDep, StoryEngineDep
 from llm_gamebook.web.schemas.common import ServerMessage
 from llm_gamebook.web.schemas.session import (
     Session,
@@ -35,7 +35,7 @@ async def read_sessions(db_session: DbSessionDep, skip: int = 0, limit: int = 10
 
 
 @session_router.get("/{session_id}", response_model=SessionFull)
-async def read_session(engine: EngineDepRest, db_session: DbSessionDep) -> SqlModelSession:
+async def read_session(engine: StoryEngineDep, db_session: DbSessionDep) -> SqlModelSession:
     session = await engine.session_adapter.get_session(db_session)
     if not session:
         raise HTTPException(status_code=404, detail="Story session not found")
@@ -62,12 +62,12 @@ async def update_session(
 
 @session_router.post("/{session_id}/request", response_model=ModelRequest)
 async def create_model_request(
-    engine: EngineDepRest, db_session: DbSessionDep, message_in: ModelRequestCreate
+    engine: StoryEngineDep, db_session: DbSessionDep, message_in: ModelRequestCreate
 ) -> Message:
     return await engine.session_adapter.create_user_request(db_session, message_in)
 
 
 @session_router.delete("/{session_id}")
-async def delete_session(engine: EngineDepRest, db_session: DbSessionDep) -> ServerMessage:
+async def delete_session(engine: StoryEngineDep, db_session: DbSessionDep) -> ServerMessage:
     await engine.session_adapter.delete_session(db_session)
     return ServerMessage(message="Story session deleted successfully.")
