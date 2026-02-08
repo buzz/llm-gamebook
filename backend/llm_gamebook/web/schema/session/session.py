@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from llm_gamebook.web.schemas.session.message import ModelMessage
+from llm_gamebook.web.schema.session.message import ModelMessage
 
 
 class BaseSession(BaseModel):

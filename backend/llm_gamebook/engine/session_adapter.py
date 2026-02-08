@@ -27,7 +27,7 @@ from llm_gamebook.db.models.part import Part
 if TYPE_CHECKING:
     from llm_gamebook.message_bus import MessageBus
     from llm_gamebook.story.state import StoryState
-    from llm_gamebook.web.schemas.session.message import ModelRequestCreate
+    from llm_gamebook.web.schema.session.message import ModelRequestCreate
 
 
 class SessionAdapter:

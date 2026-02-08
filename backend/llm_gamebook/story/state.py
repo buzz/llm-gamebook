@@ -8,7 +8,7 @@ from llm_gamebook.story.project import Project
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from llm_gamebook.types import StoryTool
+    from .types import StoryTool
 
 
 # TODO: prevent entity id collisions

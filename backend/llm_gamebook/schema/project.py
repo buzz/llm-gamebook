@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from llm_gamebook.schema.entity import EntityTypeDefinition
+from .entity import EntityTypeDefinition
 
 
 class ProjectDefinition(BaseModel):

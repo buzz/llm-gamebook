@@ -7,7 +7,12 @@ from pydantic_ai.tools import ToolDefinition
 
 from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.trait_registry import trait_registry
-from llm_gamebook.types import FunctionResult, NormalizedPascalCase, NormalizedSnakeCase, StoryTool
+from llm_gamebook.story.types import (
+    FunctionResult,
+    NormalizedPascalCase,
+    NormalizedSnakeCase,
+    StoryTool,
+)
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.entity import FunctionDefinition

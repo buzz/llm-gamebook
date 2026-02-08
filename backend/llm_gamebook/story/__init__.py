@@ -1,7 +1,7 @@
-from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.project import Project
-from llm_gamebook.story.state import StoryState
-from llm_gamebook.story.traits import DescribedTrait, GraphNodeTrait, GraphTrait
+from .entity import BaseEntity
+from .project import Project
+from .state import StoryState
+from .traits import DescribedTrait, GraphNodeTrait, GraphTrait
 
 __all__ = [
     "BaseEntity",

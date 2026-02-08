@@ -13,7 +13,7 @@ from llm_gamebook.logger import setup_logger
 from llm_gamebook.message_bus import MessageBus
 
 from .api import api_router
-from .schemas.websocket.openapi import add_websocket_schema
+from .schema.websocket.openapi import add_websocket_schema
 from .websocket import websocket_router
 
 

@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pydantic_ai
 
-from llm_gamebook.web.schemas.session.part import (
+from llm_gamebook.web.schema.session.part import (
     ModelResponsePart,
     TextPart,
     ThinkingPart,

@@ -13,8 +13,8 @@ from llm_gamebook.db.crud.model_config import update_model_config as crud_update
 from llm_gamebook.db.models import ModelConfig as SqlModelModelConfig
 from llm_gamebook.providers import PROVIDERS
 from llm_gamebook.web.api.dependencies import DbSessionDep
-from llm_gamebook.web.schemas.common import ServerMessage
-from llm_gamebook.web.schemas.model_config import (
+from llm_gamebook.web.schema.common import ServerMessage
+from llm_gamebook.web.schema.model_config import (
     ModelConfig,
     ModelConfigCreate,
     ModelConfigs,

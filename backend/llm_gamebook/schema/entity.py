@@ -1,9 +1,10 @@
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-from llm_gamebook.schema.validators import id_from_name
 from llm_gamebook.story.trait_registry import trait_registry
-from llm_gamebook.types import NormalizedPascalCase, NormalizedSnakeCase
+from llm_gamebook.story.types import NormalizedPascalCase, NormalizedSnakeCase
 from llm_gamebook.utils import normalized_pascal_case, normalized_snake_case
+
+from .validators import id_from_name
 
 
 class TraitDefinition(BaseModel):

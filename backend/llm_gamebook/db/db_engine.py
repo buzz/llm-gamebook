@@ -17,10 +17,11 @@ async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
     from .models import Message, ModelConfig, Part, Session, Usage  # noqa: F401, PLC0415
 
     sqlite_file_name = f"{PROJECT_NAME}.db"
-    sqlite_url = f"sqlite+aiosqlite:///{USER_DATA_DIR / sqlite_file_name}"
+    sqlite_database_path = USER_DATA_DIR / sqlite_file_name
+    sqlite_url = f"sqlite+aiosqlite:///{sqlite_database_path}"
 
     try:
-        log.info("Creating database engine…")
+        log.info("Creating database engine (%s)…", sqlite_database_path)
         db_engine = create_async_engine(sqlite_url)
         await _create_db_and_tables(db_engine)
         yield db_engine

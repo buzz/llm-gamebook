@@ -3,7 +3,7 @@ import time
 from contextlib import suppress
 from pathlib import Path
 from types import TracebackType
-from typing import TYPE_CHECKING, Self
+from typing import Self
 from uuid import UUID
 
 from pydantic_ai.models import Model
@@ -15,13 +15,9 @@ from llm_gamebook.db.models import Session
 from llm_gamebook.engine import StoryEngine
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
-from llm_gamebook.providers import ModelProvider
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.state import StoryState
 from llm_gamebook.web.model_factory import create_model_from_db_config
-
-if TYPE_CHECKING:
-    from llm_gamebook.story.state import StoryState
 
 
 class EngineManager(BusSubscriber):
@@ -80,7 +76,7 @@ class EngineManager(BusSubscriber):
         db_session: AsyncDbSession,
     ) -> tuple[Model, StoryState]:
         statement = select(Session).where(Session.id == session_id)
-        statement = statement.options(selectinload(Session.config))
+        statement = statement.options(selectinload(Session.config))  # type: ignore[arg-type]
         result = await db_session.exec(statement)
         session = result.one_or_none()
 

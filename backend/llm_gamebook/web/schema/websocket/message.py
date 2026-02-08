@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Discriminator
 
-from llm_gamebook.web.schemas.session.message import ModelResponse
+from llm_gamebook.web.schema.session.message import ModelResponse
 
 from ._convert_part import convert_part
 

@@ -22,7 +22,7 @@ class ModelConfigBase(SQLModel):
     top_p: float
     presence_penalty: float
     frequency_penalty: float
-    # TODO
+    # TODO: advanced parameters
     # logitBias: unknown
     # extraHeaders: unknown
     # extraBody: unknwon

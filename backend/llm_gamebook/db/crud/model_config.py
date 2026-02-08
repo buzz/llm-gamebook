@@ -5,7 +5,7 @@ from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import ModelConfig
-from llm_gamebook.web.schemas.model_config import ModelConfigUpdate
+from llm_gamebook.web.schema.model_config import ModelConfigUpdate
 
 
 async def create_model_config(db_session: AsyncDbSession, config: ModelConfig) -> ModelConfig:

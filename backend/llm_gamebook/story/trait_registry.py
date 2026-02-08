@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from llm_gamebook.schema.validators import is_normalized_snake_case
 
 if TYPE_CHECKING:
-    from llm_gamebook.story.entity import BaseEntity
+    from .entity import BaseEntity
 
 __all__ = ["trait_registry"]
 

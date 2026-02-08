@@ -10,7 +10,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from llm_gamebook.engine.message import ResponseErrorBusMessage, StreamUpdateBusMessage
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
-from llm_gamebook.web.schemas.websocket.message import (
+from llm_gamebook.web.schema.websocket.message import (
     WebSocketClientMessage,
     WebSocketErrorMessage,
     WebSocketPingMessage,
