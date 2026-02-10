@@ -11,7 +11,7 @@ from llm_gamebook.db.crud.session import (
 )
 from llm_gamebook.db.models import Message
 from llm_gamebook.db.models import Session as SqlModelSession
-from llm_gamebook.web.api.dependencies import DbSessionDep, StoryEngineDep
+from llm_gamebook.engine.message import ModelConfigChangedMessage
 from llm_gamebook.web.schema.common import ServerMessage
 from llm_gamebook.web.schema.session import (
     Session,
@@ -21,6 +21,8 @@ from llm_gamebook.web.schema.session import (
     SessionUpdate,
 )
 from llm_gamebook.web.schema.session.message import ModelRequest, ModelRequestCreate
+
+from .dependencies import DbSessionDep, MessageBusDep, StoryEngineDep
 
 session_router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -53,9 +55,28 @@ async def create_session(db_session: DbSessionDep, session_in: SessionCreate) ->
 
 @session_router.patch("/{session_id}")
 async def update_session(
-    db_session: DbSessionDep, session_id: str, session_update: SessionUpdate
+    db_session: DbSessionDep,
+    session_id: str,
+    session_update: SessionUpdate,
+    message_bus: MessageBusDep,
 ) -> ServerMessage:
-    await update_session_model_config(db_session, UUID(session_id), session_update.config_id)
+    session_uuid = UUID(session_id)
+    await update_session_model_config(db_session, session_uuid, session_update.config_id)
+
+    if session_update.config_id:
+        config = await get_model_config(db_session, session_update.config_id)
+        if config:
+            message_bus.publish(
+                "session.model_config.changed",
+                ModelConfigChangedMessage(
+                    session_id=session_uuid,
+                    model_name=config.model_name,
+                    provider=config.provider,
+                    base_url=config.base_url,
+                    api_key=config.api_key,
+                ),
+            )
+
     return ServerMessage(message="Session updated successfully.")
 
 

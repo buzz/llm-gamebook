@@ -12,12 +12,15 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
-from llm_gamebook.engine import StoryEngine
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
+from llm_gamebook.providers import ModelProvider
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.state import StoryState
-from llm_gamebook.web.model_factory import create_model_from_db_config
+
+from ._model_factory import create_model_from_db_config
+from .engine import StoryEngine
+from .message import ModelConfigChangedMessage
 
 
 class EngineManager(BusSubscriber):
@@ -30,6 +33,7 @@ class EngineManager(BusSubscriber):
         self._evict_task = asyncio.create_task(self._evict_idle())
 
         self._subscribe("engine.session.deleted", self._drop_engine)
+        self._subscribe("session.model_config.changed", self._on_model_config_changed)
 
     async def __aenter__(self) -> Self:
         return self
@@ -96,6 +100,16 @@ class EngineManager(BusSubscriber):
 
         return model, state
 
+    async def _create_model_from_config(
+        self, model_name: str, provider: ModelProvider, base_url: str | None, api_key: str | None
+    ) -> Model:
+        return create_model_from_db_config(
+            model_name=model_name,
+            provider=provider,
+            base_url=base_url,
+            api_key=api_key,
+        )
+
     async def _evict_idle(self) -> None:
         while True:
             await asyncio.sleep(30)
@@ -112,3 +126,22 @@ class EngineManager(BusSubscriber):
         self._log.debug(f"Dropping engine for session {session_id}")
         with suppress(KeyError):
             self._engines.pop(session_id)
+
+    async def _on_model_config_changed(self, message: object) -> None:
+        if not isinstance(message, ModelConfigChangedMessage):
+            msg = f"Invalid message type for session.model_config.changed: {type(message)}"
+            raise TypeError(msg)
+
+        session_id = message.session_id
+        if session_id not in self._engines:
+            self._log.debug(
+                f"No active engine for session {session_id}, ignoring model config change"
+            )
+            return
+
+        self._log.info(f"Model config changed for session {session_id}, updating engine")
+        engine, _ = self._engines[session_id]
+        new_model = await self._create_model_from_config(
+            message.model_name, message.provider, message.base_url, message.api_key
+        )
+        engine.set_model(new_model)

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.engine import EngineManager, StoryEngine
+from llm_gamebook.message_bus import MessageBus
 
 
 def _get_db_engine(request: Request) -> AsyncEngine:
@@ -41,3 +42,14 @@ async def _get_story_engine(
 
 
 StoryEngineDep = Annotated[StoryEngine, Depends(_get_story_engine)]
+
+
+def _get_message_bus(request: Request) -> MessageBus:
+    bus = request.app.state.bus
+    if not isinstance(bus, MessageBus):
+        msg = "MessageBus not found"
+        raise TypeError(msg)
+    return bus
+
+
+MessageBusDep = Annotated[MessageBus, Depends(_get_message_bus)]

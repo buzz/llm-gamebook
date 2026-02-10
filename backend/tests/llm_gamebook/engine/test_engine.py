@@ -231,6 +231,67 @@ async def test_story_engine_generate_response_error_model_http(
     assert isinstance(error_events[0].error, ModelHTTPError)
 
 
+async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: TestModel) -> None:
+    new_model = TestModel(custom_output_text="New model response")
+
+    story_engine.set_model(new_model)
+
+    assert story_engine._agent.model is new_model
+
+
+async def test_set_model_preserves_story_state(
+    story_engine: StoryEngine, story_state: StoryState
+) -> None:
+    new_model = TestModel(custom_output_text="New model response")
+
+    story_engine.set_model(new_model)
+
+    assert story_engine._state is story_state
+
+
+async def test_set_model_preserves_tools(
+    story_engine: StoryEngine, story_state: StoryState
+) -> None:
+    new_model = TestModel(custom_output_text="New model response")
+
+    story_engine.set_model(new_model)
+
+    assert story_engine._agent.deps_type is StoryState
+
+
+async def test_set_model_uses_same_prepare_tools(
+    story_engine: StoryEngine, story_state: StoryState
+) -> None:
+    new_model = TestModel(custom_output_text="New model response")
+
+    story_engine.set_model(new_model)
+
+    assert story_engine._agent._prepare_tools == story_engine._prepare_tools
+
+
+async def test_set_model_creates_new_agent_instance(story_engine: StoryEngine) -> None:
+    original_agent = story_engine._agent
+    new_model = TestModel(custom_output_text="New model response")
+
+    story_engine.set_model(new_model)
+
+    assert story_engine._agent is not original_agent
+
+
+async def test_set_model_allows_subsequent_requests_with_new_model(
+    story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
+) -> None:
+    new_model = TestModel(custom_output_text="Response from new model")
+    story_engine.set_model(new_model)
+
+    events, error_events = engine_events
+    await story_engine.generate_response(db_session, streaming=False)
+
+    assert "started" in events
+    assert "stopped" in events
+    assert len(error_events) == 0
+
+
 @pytest.mark.parametrize(
     "messages",
     [

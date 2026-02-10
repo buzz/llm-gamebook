@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic_ai import ModelResponse
 
+from llm_gamebook.providers import ModelProvider
+
 
 @dataclass
 class StreamUpdateBusMessage:
@@ -16,3 +18,12 @@ class StreamUpdateBusMessage:
 class ResponseErrorBusMessage:
     session_id: UUID
     error: Exception
+
+
+@dataclass
+class ModelConfigChangedMessage:
+    session_id: UUID
+    model_name: str
+    provider: ModelProvider
+    base_url: str | None
+    api_key: str | None
