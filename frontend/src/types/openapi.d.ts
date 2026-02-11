@@ -454,11 +454,6 @@ export interface components {
     SessionUpdate: {
       /** Title */
       title?: string | null
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string
       /** Config Id */
       config_id?: string | null
     }

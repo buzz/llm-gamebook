@@ -34,8 +34,6 @@ class Session(BaseSession):
 class SessionUpdate(BaseSession):
     """Update fields for a session."""
 
-    id: UUID
-
     config_id: UUID | None = None
     """The ID of the model config associated with this session."""
 

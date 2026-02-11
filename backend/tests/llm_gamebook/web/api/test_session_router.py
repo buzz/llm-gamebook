@@ -63,11 +63,7 @@ def test_create_session_model_config_not_found(client: TestClient) -> None:
 
 
 def test_update_session(client: TestClient, model_config: ModelConfig, session: Session) -> None:
-    update_data = {
-        "id": str(session.id),
-        "config_id": str(model_config.id),
-        "title": "Updated Title",
-    }
+    update_data = {"config_id": str(model_config.id), "title": "Updated Title"}
     response = client.patch(f"/api/sessions/{session.id}", json=update_data)
     assert response.status_code == 200
     data = response.json()

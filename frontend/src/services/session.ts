@@ -41,7 +41,7 @@ const sessionApi = createApi({
       invalidatesTags: [{ type: 'Session', id: 'LIST' }],
     }),
 
-    updateSession: build.mutation<ServerMessage, SessionUpdate>({
+    updateSession: build.mutation<ServerMessage, { id: string } & SessionUpdate>({
       query: ({ id, config_id }) => ({
         url: id,
         method: 'PATCH',
