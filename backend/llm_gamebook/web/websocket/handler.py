@@ -7,7 +7,14 @@ from openai import APIError
 from pydantic import TypeAdapter, ValidationError
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
-from llm_gamebook.engine.message import ResponseErrorBusMessage, StreamUpdateBusMessage
+from llm_gamebook.engine.message import (
+    EngineCreated,
+    ResponseErrorMessage,
+    ResponseStartedMessage,
+    ResponseStoppedMessage,
+    ResponseStreamUpdateMessage,
+    ResponseUserRequestMessage,
+)
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
 from llm_gamebook.web.schema.websocket.message import (
@@ -41,12 +48,12 @@ class WebSocketHandler(BusSubscriber):
         self._bus = bus
         self._websocket: WebSocket
 
-        self._subscribe("engine.created", self._on_engine_created)
-        self._subscribe("engine.response.user_request", self._on_engine_response_user_request)
-        self._subscribe("engine.response.started", self._on_engine_response_started)
-        self._subscribe("engine.response.stopped", self._on_engine_response_stopped)
-        self._subscribe("engine.response.error", self._on_engine_response_error)
-        self._subscribe("engine.response.stream", self._on_engine_response_stream)
+        self._subscribe(EngineCreated, self._on_engine_created)
+        self._subscribe(ResponseUserRequestMessage, self._on_engine_response_user_request)
+        self._subscribe(ResponseStartedMessage, self._on_engine_response_started)
+        self._subscribe(ResponseStoppedMessage, self._on_engine_response_stopped)
+        self._subscribe(ResponseErrorMessage, self._on_engine_response_error)
+        self._subscribe(ResponseStreamUpdateMessage, self._on_engine_response_stream)
 
     async def handle_connection(self, websocket: WebSocket) -> None:
         """Main connection handler for WebSocket connections."""
@@ -103,45 +110,24 @@ class WebSocketHandler(BusSubscriber):
         else:
             _log.warning("Trying to send message while not connected")
 
-    async def _on_engine_created(self, session_id: object) -> None:
-        if not isinstance(session_id, UUID):
-            msg = f"Invalid message type for engine.created: {type(session_id)}"
-            raise TypeError(msg)
+    async def _on_engine_created(self, message: EngineCreated) -> None:
+        await self._send_introduction_if_needed(message.session_id)
 
-        await self._send_introduction_if_needed(session_id)
-
-    async def _on_engine_response_user_request(self, session_id: object) -> None:
-        if not isinstance(session_id, UUID):
-            msg = f"Invalid message type for engine.response.user_request: {type(session_id)}"
-            raise TypeError(msg)
-
+    async def _on_engine_response_user_request(self, message: ResponseUserRequestMessage) -> None:
+        session_id = message.session_id
         await self._generate_response(self._engine_mgr.get(session_id))
 
-    async def _on_engine_response_started(self, session_id: object) -> None:
-        if not isinstance(session_id, UUID):
-            msg = f"Invalid message type for engine.response.started: {type(session_id)}"
-            raise TypeError(msg)
-
+    async def _on_engine_response_started(self, message: ResponseStartedMessage) -> None:
+        session_id = message.session_id
         await self._send_message(WebSocketStatusMessage(session_id=session_id, status="started"))
 
-    async def _on_engine_response_stopped(self, session_id: object) -> None:
-        if not isinstance(session_id, UUID):
-            msg = f"Invalid message type for engine.response.stopped: {type(session_id)}"
-            raise TypeError(msg)
-
+    async def _on_engine_response_stopped(self, message: ResponseStoppedMessage) -> None:
+        session_id = message.session_id
         await self._send_message(WebSocketStatusMessage(session_id=session_id, status="stopped"))
 
-    async def _on_engine_response_error(self, msg: object) -> None:
-        if not isinstance(msg, ResponseErrorBusMessage):
-            msg = f"Invalid message type for engine.response.error: {type(msg)}"
-            raise TypeError(msg)
-
-        ws_msg = WebSocketErrorMessage.from_exception(msg.session_id, msg.error)
+    async def _on_engine_response_error(self, message: ResponseErrorMessage) -> None:
+        ws_msg = WebSocketErrorMessage.from_exception(message.session_id, message.error)
         await self._send_message(ws_msg)
 
-    async def _on_engine_response_stream(self, msg: object) -> None:
-        if not isinstance(msg, StreamUpdateBusMessage):
-            msg = f"Invalid message type for engine.response.stream: {type(msg)}"
-            raise TypeError(msg)
-
-        await self._send_message(WebSocketStreamMessage.from_stream_update(msg))
+    async def _on_engine_response_stream(self, message: ResponseStreamUpdateMessage) -> None:
+        await self._send_message(WebSocketStreamMessage.from_stream_update(message))

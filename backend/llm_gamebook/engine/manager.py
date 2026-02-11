@@ -20,7 +20,7 @@ from llm_gamebook.story.state import StoryState
 
 from ._model_factory import create_model_from_db_config
 from .engine import StoryEngine
-from .message import ModelConfigChangedMessage
+from .message import EngineCreated, SessionDeleted, SessionModelConfigChangedMessage
 
 
 class EngineManager(BusSubscriber):
@@ -32,8 +32,8 @@ class EngineManager(BusSubscriber):
         self._max_idle = max_idle_seconds
         self._evict_task = asyncio.create_task(self._evict_idle())
 
-        self._subscribe("engine.session.deleted", self._drop_engine)
-        self._subscribe("session.model_config.changed", self._on_model_config_changed)
+        self._subscribe(SessionDeleted, self._on_session_deleted)
+        self._subscribe(SessionModelConfigChangedMessage, self._on_model_config_changed)
 
     async def __aenter__(self) -> Self:
         return self
@@ -70,7 +70,7 @@ class EngineManager(BusSubscriber):
         self._engines[session_id] = (engine, time.time())
 
         if created:
-            self._bus.publish("engine.created", session_id)
+            self._bus.publish(EngineCreated(session_id))
 
         return engine
 
@@ -118,20 +118,15 @@ class EngineManager(BusSubscriber):
             for sid in to_drop:
                 self._drop_engine(sid)
 
-    def _drop_engine(self, session_id: object) -> None:
-        if not isinstance(session_id, UUID):
-            msg = f"Invalid message type for engine.session.deleted: {type(session_id)}"
-            raise TypeError(msg)
-
+    def _drop_engine(self, session_id: UUID) -> None:
         self._log.debug(f"Dropping engine for session {session_id}")
         with suppress(KeyError):
             self._engines.pop(session_id)
 
-    async def _on_model_config_changed(self, message: object) -> None:
-        if not isinstance(message, ModelConfigChangedMessage):
-            msg = f"Invalid message type for session.model_config.changed: {type(message)}"
-            raise TypeError(msg)
+    def _on_session_deleted(self, message: SessionDeleted) -> None:
+        self._drop_engine(message.session_id)
 
+    async def _on_model_config_changed(self, message: SessionModelConfigChangedMessage) -> None:
         session_id = message.session_id
         if session_id not in self._engines:
             self._log.debug(

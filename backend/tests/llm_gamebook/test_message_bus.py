@@ -1,32 +1,38 @@
 import asyncio
 import gc
 import weakref
+from dataclasses import dataclass
 
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
+from llm_gamebook.message_bus.messages import BaseMessage
+
+
+@dataclass(frozen=True)
+class PingMessage(BaseMessage):
+    value: str
 
 
 class DummySubscriber(BusSubscriber):
     def __init__(self, bus: MessageBus):
         self._bus = bus
         self.messages: list[str] = []
-        self._subscribe("ping", self.on_ping)
+        self._subscribe(PingMessage, self.on_ping)
 
-    async def on_ping(self, msg: object) -> None:
-        assert isinstance(msg, str)
-        self.messages.append(msg)
+    async def on_ping(self, msg: PingMessage) -> None:
+        self.messages.append(msg.value)
 
 
 async def test_explicit_close_removes_subscription() -> None:
     bus = MessageBus()
     sub = DummySubscriber(bus)
 
-    bus.publish("ping", "one")
+    bus.publish(PingMessage("one"))
     await bus.wait_all()
     assert sub.messages == ["one"]
 
     sub.close()
 
-    bus.publish("ping", "two")
+    bus.publish(PingMessage("two"))
     await bus.wait_all()
     # No further messages after close
     assert sub.messages == ["one"]
@@ -39,7 +45,7 @@ async def test_gc_finalizer_removes_subscription() -> None:
     ref = weakref.ref(sub)
 
     # Let it handle one message
-    bus.publish("ping", "alpha")
+    bus.publish(PingMessage("alpha"))
     await bus.wait_all()
     assert sub.messages == ["alpha"]
 
@@ -52,7 +58,7 @@ async def test_gc_finalizer_removes_subscription() -> None:
     assert ref() is None
 
     # No handler should remain
-    bus.publish("ping", "beta")
+    bus.publish(PingMessage("beta"))
     await bus.wait_all()
 
     # If the handler were still present, the bus would error (no instance) or leak message
@@ -67,7 +73,7 @@ async def test_multiple_subscribers_cleanup_independent() -> None:
     s2 = DummySubscriber(bus)
     r1, _r2 = weakref.ref(s1), weakref.ref(s2)
 
-    bus.publish("ping", "x")
+    bus.publish(PingMessage("x"))
     await bus.wait_all()
     assert s1.messages == ["x"]
     assert s2.messages == ["x"]
@@ -78,14 +84,14 @@ async def test_multiple_subscribers_cleanup_independent() -> None:
     await asyncio.sleep(0)
 
     # Remaining subscriber still works
-    bus.publish("ping", "y")
+    bus.publish(PingMessage("y"))
     await bus.wait_all()
     assert r1() is None
     assert s2.messages == ["x", "y"]
 
     # Bus should still have one subscriber
-    assert "ping" in bus._subs
-    assert len(bus._subs["ping"]) == 1
+    assert PingMessage in bus._subs
+    assert len(bus._subs[PingMessage]) == 1
 
     s2.close()
     assert not bus._subs

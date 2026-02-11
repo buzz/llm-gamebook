@@ -24,6 +24,7 @@ from llm_gamebook.db.crud.message import (
 from llm_gamebook.db.crud.session import delete_session, get_session
 from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.part import Part
+from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
 
 if TYPE_CHECKING:
     from llm_gamebook.message_bus import MessageBus
@@ -44,7 +45,7 @@ class SessionAdapter:
 
     async def delete_session(self, db_session: AsyncDbSession) -> None:
         await delete_session(db_session, self._session_id)
-        self._bus.publish("engine.session.deleted", self._session_id)
+        self._bus.publish(SessionDeleted(self._session_id))
 
     async def get_message_count(self, db_session: AsyncDbSession) -> int:
         return await get_message_count(db_session, self._session_id)
@@ -119,7 +120,7 @@ class SessionAdapter:
             parts=[Part(**p.model_dump()) for p in message_in.parts],
         )
         message = await create_message(db_session, message)
-        self._bus.publish("engine.response.user_request", self._session_id)
+        self._bus.publish(ResponseUserRequestMessage(self._session_id))
         return message
 
     @property

@@ -25,7 +25,7 @@ from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.state import StoryState
 
-from .message import StreamUpdateBusMessage
+from .message import ResponseStreamUpdateMessage
 
 
 class StreamRunner:
@@ -142,8 +142,7 @@ class StreamRunner:
     async def _send_stream_update(self, response: ModelResponse, *, force: bool = False) -> None:
         if force or time() - self._last_stream_update > self._debounce:
             self._bus.publish(
-                "engine.response.stream",
-                StreamUpdateBusMessage(
+                ResponseStreamUpdateMessage(
                     self._session_id,
                     response,
                     self._response_ids[self._response_index],

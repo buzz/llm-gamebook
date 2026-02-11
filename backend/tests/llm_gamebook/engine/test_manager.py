@@ -82,13 +82,6 @@ def test_engine_manager_drop_engine(session: Session, message_bus: MessageBus) -
     assert session.id not in engine_mgr._engines
 
 
-def test_engine_manager_drop_engine_invalid_type(message_bus: MessageBus) -> None:
-    engine_mgr = EngineManager(message_bus)
-
-    with pytest.raises(TypeError, match="Invalid message type"):
-        engine_mgr._drop_engine("not a uuid")
-
-
 async def test_engine_manager_context_manager(message_bus: MessageBus) -> None:
     async with EngineManager(message_bus) as engine_mgr:
         assert engine_mgr._evict_task is not None

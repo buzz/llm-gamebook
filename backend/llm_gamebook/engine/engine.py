@@ -24,7 +24,7 @@ from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.state import StoryState
 
 from ._runner import StreamRunner
-from .message import ResponseErrorBusMessage
+from .message import ResponseErrorMessage, ResponseStartedMessage, ResponseStoppedMessage
 from .session_adapter import SessionAdapter
 
 
@@ -48,7 +48,7 @@ class StoryEngine:
         self, db_session: AsyncDbSession, *, streaming: bool = False
     ) -> None:
         self._log.info("Generating new response")
-        self._bus.publish("engine.response.started", self._session_adapter.session_id)
+        self._bus.publish(ResponseStartedMessage(self._session_adapter.session_id))
         try:
             msg_history = [
                 msg async for msg in self._session_adapter.get_message_history(db_session)
@@ -81,12 +81,9 @@ class StoryEngine:
                     with suppress(KeyError):
                         message = err.body["message"]
                 self._log.error("The error message:\n%s", message)
-            self._bus.publish(
-                "engine.response.error",
-                ResponseErrorBusMessage(self._session_adapter.session_id, err),
-            )
+            self._bus.publish(ResponseErrorMessage(self._session_adapter.session_id, err))
         finally:
-            self._bus.publish("engine.response.stopped", self._session_adapter.session_id)
+            self._bus.publish(ResponseStoppedMessage(self._session_adapter.session_id))
 
     async def _prepare_tools(
         self,

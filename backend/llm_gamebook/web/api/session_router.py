@@ -11,7 +11,7 @@ from llm_gamebook.db.crud.session import (
 )
 from llm_gamebook.db.models import Message
 from llm_gamebook.db.models import Session as SqlModelSession
-from llm_gamebook.engine.message import ModelConfigChangedMessage
+from llm_gamebook.engine.message import SessionModelConfigChangedMessage
 from llm_gamebook.web.schema.common import ServerMessage
 from llm_gamebook.web.schema.session import (
     Session,
@@ -67,8 +67,7 @@ async def update_session(
         config = await get_model_config(db_session, session_update.config_id)
         if config:
             message_bus.publish(
-                "session.model_config.changed",
-                ModelConfigChangedMessage(
+                SessionModelConfigChangedMessage(
                     session_id=session_uuid,
                     model_name=config.model_name,
                     provider=config.provider,

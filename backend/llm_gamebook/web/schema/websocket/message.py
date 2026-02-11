@@ -8,7 +8,7 @@ from llm_gamebook.web.schema.session.message import ModelResponse
 from ._convert_part import convert_part
 
 if TYPE_CHECKING:
-    from llm_gamebook.engine.message import StreamUpdateBusMessage
+    from llm_gamebook.engine.message import ResponseStreamUpdateMessage
 
 
 class BaseWebSocketMessage(BaseModel):
@@ -55,7 +55,7 @@ class WebSocketStreamMessage(BaseSessionWebSocketMessage):
     response: ModelResponse
 
     @classmethod
-    def from_stream_update(cls, msg: "StreamUpdateBusMessage") -> Self:
+    def from_stream_update(cls, msg: "ResponseStreamUpdateMessage") -> Self:
         api_response = ModelResponse.model_validate({
             "id": msg.response_id,
             "parts": [

@@ -1,6 +1,5 @@
 from collections.abc import AsyncIterator
 from typing import NoReturn
-from uuid import UUID
 
 import httpx
 import pytest
@@ -22,34 +21,36 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
 from llm_gamebook.engine.engine import StoryEngine
-from llm_gamebook.engine.message import ResponseErrorBusMessage, StreamUpdateBusMessage
+from llm_gamebook.engine.message import (
+    ResponseErrorMessage,
+    ResponseStartedMessage,
+    ResponseStoppedMessage,
+    ResponseStreamUpdateMessage,
+)
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.state import StoryState
 
-type EngineEvents = tuple[list[str], list[ResponseErrorBusMessage]]
-type StreamEvents = list[StreamUpdateBusMessage]
+type EngineEvents = tuple[list[str], list[ResponseErrorMessage]]
+type StreamEvents = list[ResponseStreamUpdateMessage]
 
 
 @pytest.fixture
 def engine_events(message_bus: MessageBus) -> EngineEvents:
     events: list[str] = []
-    error_events: list[ResponseErrorBusMessage] = []
+    error_events: list[ResponseErrorMessage] = []
 
-    def track_started(session_id: object) -> None:
-        assert isinstance(session_id, UUID)
+    def track_started(msg: ResponseStartedMessage) -> None:
         events.append("started")
 
-    def track_stopped(session_id: object) -> None:
-        assert isinstance(session_id, UUID)
+    def track_stopped(msg: ResponseStoppedMessage) -> None:
         events.append("stopped")
 
-    def track_error(msg: object) -> None:
-        assert isinstance(msg, ResponseErrorBusMessage)
+    def track_error(msg: ResponseErrorMessage) -> None:
         error_events.append(msg)
 
-    message_bus.subscribe("engine.response.started", track_started)
-    message_bus.subscribe("engine.response.stopped", track_stopped)
-    message_bus.subscribe("engine.response.error", track_error)
+    message_bus.subscribe(ResponseStartedMessage, track_started)
+    message_bus.subscribe(ResponseStoppedMessage, track_stopped)
+    message_bus.subscribe(ResponseErrorMessage, track_error)
 
     return events, error_events
 
@@ -58,11 +59,10 @@ def engine_events(message_bus: MessageBus) -> EngineEvents:
 def stream_events(message_bus: MessageBus) -> StreamEvents:
     events: StreamEvents = []
 
-    def track_stream(msg: object) -> None:
-        assert isinstance(msg, StreamUpdateBusMessage)
+    def track_stream(msg: ResponseStreamUpdateMessage) -> None:
         events.append(msg)
 
-    message_bus.subscribe("engine.response.stream", track_stream)
+    message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
 
     return events
 
