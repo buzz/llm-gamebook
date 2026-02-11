@@ -110,13 +110,16 @@ class EngineManager(BusSubscriber):
             api_key=api_key,
         )
 
+    def _perform_eviction(self) -> None:
+        cutoff = time.time() - self._max_idle
+        to_drop = [sid for sid, (_, ts) in self._engines.items() if ts < cutoff]
+        for sid in to_drop:
+            self._drop_engine(sid)
+
     async def _evict_idle(self) -> None:
         while True:
             await asyncio.sleep(30)
-            cutoff = time.time() - self._max_idle
-            to_drop = [sid for sid, (_, ts) in self._engines.items() if ts < cutoff]
-            for sid in to_drop:
-                self._drop_engine(sid)
+            self._perform_eviction()
 
     def _drop_engine(self, session_id: UUID) -> None:
         self._log.debug(f"Dropping engine for session {session_id}")

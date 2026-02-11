@@ -11,6 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from llm_gamebook.db.models import Message, ModelConfig, Session
 from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine.engine import StoryEngine
+from llm_gamebook.engine.manager import EngineManager
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.providers import ModelProvider
@@ -157,6 +158,12 @@ def story_state(simple_project: Project) -> StoryState:
 async def message_bus() -> AsyncIterator[MessageBus]:
     async with MessageBus() as bus:
         yield bus
+
+
+@pytest.fixture
+async def engine_manager(message_bus: MessageBus) -> AsyncIterator[EngineManager]:
+    async with EngineManager(message_bus) as manager:
+        yield manager
 
 
 @pytest.fixture
