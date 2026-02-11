@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pydantic_ai.models.test import TestModel
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -33,15 +33,20 @@ def project(examples_path: Path) -> Project:
 
 
 @pytest.fixture
-async def db_session() -> AsyncIterator[AsyncDbSession]:
+async def db_engine() -> AsyncIterator[AsyncEngine]:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
     try:
-        async with AsyncDbSession(engine, expire_on_commit=False) as session:
-            yield session
+        yield engine
     finally:
         await engine.dispose()
+
+
+@pytest.fixture
+async def db_session(db_engine: AsyncEngine) -> AsyncIterator[AsyncDbSession]:
+    async with AsyncDbSession(db_engine, expire_on_commit=False) as session:
+        yield session
 
 
 @pytest.fixture

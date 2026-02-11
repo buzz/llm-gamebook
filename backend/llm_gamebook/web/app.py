@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from starlette.types import Lifespan
 
 from llm_gamebook.constants import PROJECT_NAME, USER_DATA_DIR
 from llm_gamebook.db import create_async_db_engine
@@ -18,7 +19,7 @@ from .websocket import websocket_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def app_lifespan(app: FastAPI) -> AsyncIterator[None]:
     add_websocket_schema(app.openapi())
 
     USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -34,12 +35,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
 
 
-def create_app(log_file: Path | None = None, *, debug: bool = False) -> FastAPI:
+def create_app(
+    log_file: Path | None = None,
+    *,
+    debug: bool = False,
+    lifespan: Lifespan[FastAPI] | None = None,
+) -> FastAPI:
     uvicorn_logger = logging.getLogger("uvicorn.error")
     log_level = logging.DEBUG if debug or uvicorn_logger.level <= logging.DEBUG else logging.INFO
     setup_logger("web", log_level, log_file)
 
-    app = FastAPI(title=PROJECT_NAME, lifespan=lifespan)
+    app = FastAPI(title=PROJECT_NAME, lifespan=lifespan or app_lifespan)
 
     @app.get("/", include_in_schema=False)
     async def get() -> HTMLResponse:
