@@ -38,8 +38,10 @@ async def read_sessions(db_session: DbSessionDep, skip: int = 0, limit: int = 10
 @session_router.get("/{session_id}", response_model=SessionFull)
 async def read_session(engine: StoryEngineDep, db_session: DbSessionDep) -> SqlModelSession:
     session = await engine.session_adapter.get_session(db_session)
+
     if not session:
-        raise HTTPException(status_code=404, detail="Story session not found")
+        # If we get this far, the session must be available
+        raise HTTPException(status_code=500, detail="Story session expected")
 
     return session
 

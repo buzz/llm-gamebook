@@ -32,7 +32,7 @@ class StoryEngine:
     def __init__(
         self,
         session_id: UUID,
-        model: Model,
+        model: Model | None,
         state: StoryState,
         bus: MessageBus,
         stream_debounce: float = 0.1,
@@ -42,14 +42,24 @@ class StoryEngine:
         self._bus = bus
         self._log = logger.getChild(f"engine-{session_id}")
         self._stream_debounce = stream_debounce
-        self.set_model(model)
+        self._agent: Agent[StoryState, str] | None
+        if model:
+            self.set_model(model)
 
     async def generate_response(
         self, db_session: AsyncDbSession, *, streaming: bool = False
     ) -> None:
         self._log.info("Generating new response")
         self._bus.publish(ResponseStartedMessage(self._session_adapter.session_id))
+
         try:
+            if not self._agent:
+                msg = "Response cancelled: No agent"
+                self._log.warning(msg)
+                err = ValueError(msg)
+                self._bus.publish(ResponseErrorMessage(self._session_adapter.session_id, err))
+                raise err
+
             msg_history = [
                 msg async for msg in self._session_adapter.get_message_history(db_session)
             ]

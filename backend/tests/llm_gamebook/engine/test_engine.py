@@ -236,6 +236,7 @@ async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: T
 
     story_engine.set_model(new_model)
 
+    assert story_engine._agent is not None
     assert story_engine._agent.model is new_model
 
 
@@ -256,6 +257,7 @@ async def test_set_model_preserves_tools(
 
     story_engine.set_model(new_model)
 
+    assert story_engine._agent is not None
     assert story_engine._agent.deps_type is StoryState
 
 
@@ -266,6 +268,7 @@ async def test_set_model_uses_same_prepare_tools(
 
     story_engine.set_model(new_model)
 
+    assert story_engine._agent is not None
     assert story_engine._agent._prepare_tools == story_engine._prepare_tools
 
 

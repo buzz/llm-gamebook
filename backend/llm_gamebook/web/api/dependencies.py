@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -38,7 +38,10 @@ async def _get_story_engine(
         msg = "engine_mgr not found"
         raise TypeError(msg)
 
-    return await engine_manager.get_or_create(session_id, db_session)
+    try:
+        return await engine_manager.get_or_create(session_id, db_session)
+    except ValueError as err:
+        raise HTTPException(status_code=404, detail=str(err)) from err
 
 
 StoryEngineDep = Annotated[StoryEngine, Depends(_get_story_engine)]

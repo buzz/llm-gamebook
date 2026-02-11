@@ -48,7 +48,7 @@ async def test_engine_manager_create_model_and_state_missing_session(
 ) -> None:
     non_existent_session_id = uuid4()
 
-    with pytest.raises(ValueError, match=r"Session .* or its config not found"):
+    with pytest.raises(ValueError, match=r"Session .* not found"):
         await engine_manager._create_model_and_state(non_existent_session_id, db_session)
 
 

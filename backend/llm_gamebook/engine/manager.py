@@ -78,24 +78,28 @@ class EngineManager(BusSubscriber):
         self,
         session_id: UUID,
         db_session: AsyncDbSession,
-    ) -> tuple[Model, StoryState]:
+    ) -> tuple[Model | None, StoryState]:
         statement = select(Session).where(Session.id == session_id)
         statement = statement.options(selectinload(Session.config))  # type: ignore[arg-type]
         result = await db_session.exec(statement)
         session = result.one_or_none()
 
-        if not session or not session.config:
-            msg = f"Session {session_id} or its config not found"
+        if not session:
+            msg = f"Session {session_id} not found"
             raise ValueError(msg)
 
         project_path = Path(Path.home() / "llm/llm-gamebook/llm-gamebook/examples/broken-bulb")
         state = StoryState(Project.from_path(project_path))
 
-        model = create_model_from_db_config(
-            model_name=session.config.model_name,
-            provider=session.config.provider,
-            base_url=session.config.base_url,
-            api_key=session.config.api_key,
+        model = (
+            create_model_from_db_config(
+                model_name=session.config.model_name,
+                provider=session.config.provider,
+                base_url=session.config.base_url,
+                api_key=session.config.api_key,
+            )
+            if session.config
+            else None
         )
 
         return model, state
