@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING
 
 import pytest
+from pydantic_ai import Agent
 from pydantic_ai.models.test import TestModel
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -101,6 +102,17 @@ async def engine_manager(message_bus: MessageBus) -> AsyncIterator[EngineManager
 @pytest.fixture
 def test_model() -> TestModel:
     return TestModel(custom_output_text="Test response")
+
+
+@pytest.fixture
+def test_agent(test_model: TestModel, story_state: StoryState) -> Agent[StoryState, str]:
+    return Agent(
+        test_model,
+        deps_type=StoryState,
+        instructions="You are a test agent.",
+        output_type=str,
+        tools=list(story_state.get_tools()),
+    )
 
 
 @pytest.fixture
