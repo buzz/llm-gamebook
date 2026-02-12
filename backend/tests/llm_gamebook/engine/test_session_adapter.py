@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import pytest
 from pydantic_ai import ModelRequest, ModelResponse, RequestUsage, TextPart, UserPromptPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -84,3 +85,10 @@ async def test_session_adapter_create_user_request(
     assert result is not None
     assert result.session_id == session.id
     assert result.kind == MessageKind.REQUEST
+
+
+@pytest.mark.skip(reason="Not yet implemented")
+async def test_session_adapter_get_messages(
+    session_adapter: SessionAdapter, db_session: AsyncDbSession, session: Session
+) -> None:
+    """Test retrieving full message history including intro and stored messages."""

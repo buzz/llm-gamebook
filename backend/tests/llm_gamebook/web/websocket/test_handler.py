@@ -245,3 +245,21 @@ async def test_on_engine_response_stream(
     call_args = mock_websocket.send_text.call_args[0][0]
     assert '"kind":"stream"' in call_args
     assert f'"{session.id}"' in call_args
+
+
+@pytest.mark.skip(reason="Not yet implemented")
+async def test_send_message_disconnected_state(
+    handler: WebSocketHandler, mock_websocket: AsyncMock, session: Session
+) -> None:
+    """Test that send_message handles disconnected WebSocket gracefully."""
+
+
+@pytest.mark.skip(reason="Not yet implemented")
+async def test_on_engine_response_user_request(
+    handler: WebSocketHandler,
+    mock_websocket: AsyncMock,
+    session: Session,
+    engine_manager: EngineManager,
+    db_session: AsyncDbSession,
+) -> None:
+    """Test handling ResponseUserRequestMessage to trigger response generation."""
