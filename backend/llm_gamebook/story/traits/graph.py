@@ -68,11 +68,13 @@ class GraphTrait(BaseEntity):
     _nodes: list[GraphNodeTrait]
     """List of resolved entities that are part of the graph."""
 
-    current_node_id: NormalizedSnakeCase
-    """ID of current graph node."""
-
     _current_node: GraphNodeTrait
     """The current graph node."""
+
+    @property
+    def current_node_id(self) -> NormalizedSnakeCase:
+        """ID of current graph node."""
+        return self._current_node.id
 
     @property
     def nodes(self) -> list[GraphNodeTrait]:
