@@ -7,24 +7,6 @@ import pydantic_core
 from pydantic import BaseModel, Discriminator
 
 
-class SystemPromptPart(BaseModel):
-    """A system prompt, generally written by the application developer.
-
-    This gives the model context and guidance on how to respond.
-    """
-
-    id: UUID
-
-    part_kind: Literal["system-prompt"] = "system-prompt"
-    """Part type identifier, this is available on all parts as a discriminator."""
-
-    content: str
-    """The content of the prompt."""
-
-    timestamp: datetime
-    """The timestamp of the prompt."""
-
-
 class BaseUserPromptPart(BaseModel):
     part_kind: Literal["user-prompt"] = "user-prompt"
     """Part type identifier, this is available on all parts as a discriminator."""
@@ -93,7 +75,7 @@ class RetryPromptPart(BaseModel):
 
 
 type ModelRequestPart = Annotated[
-    SystemPromptPart | UserPromptPart | ToolReturnPart | RetryPromptPart,
+    UserPromptPart | ToolReturnPart | RetryPromptPart,
     Discriminator("part_kind"),
 ]
 """A message part sent to an LLM."""

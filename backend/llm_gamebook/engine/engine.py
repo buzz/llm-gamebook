@@ -82,6 +82,7 @@ class StoryEngine:
             else:
                 result = await self._agent.run(message_history=msg_history, deps=self._state)
                 new_messages = result.new_messages()
+                # TODO: need to record durations for non-streaming, too
                 await self._session_adapter.append_messages(db_session, new_messages)
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
@@ -111,11 +112,16 @@ class StoryEngine:
         self._agent = Agent[StoryState, str](
             model,
             deps_type=StoryState,
+            instructions=self._instructions,
             model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
             output_type=str,
             tools=list(self._state.get_tools()),
             prepare_tools=self._prepare_tools,
         )
+
+    @staticmethod
+    async def _instructions(run_context: RunContext[StoryState]) -> str:
+        return await run_context.deps.get_system_prompt()
 
     def _log_messages(self, messages: Sequence[ModelMessage]) -> None:
         for idx, msg in enumerate(messages):

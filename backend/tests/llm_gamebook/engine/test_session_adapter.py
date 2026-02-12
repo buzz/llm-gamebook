@@ -5,7 +5,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
 from llm_gamebook.db.models.message import MessageKind
-from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.web.schema.session.message import ModelRequestCreate
 from llm_gamebook.web.schema.session.part import UserPromptPartCreate
@@ -42,7 +41,7 @@ async def test_session_adapter_get_message_history(
     assert len(messages) == 1
     initial_request = messages[0]
     assert isinstance(initial_request, ModelRequest)
-    assert len(initial_request.parts) == 2
+    assert len(initial_request.parts) == 1
 
 
 async def test_session_adapter_append_messages(
@@ -85,11 +84,3 @@ async def test_session_adapter_create_user_request(
     assert result is not None
     assert result.session_id == session.id
     assert result.kind == MessageKind.REQUEST
-
-
-async def test_session_adapter_generate_initial_request(story_engine: StoryEngine) -> None:
-    adapter = story_engine.session_adapter
-    initial_request = await adapter._generate_initial_request()
-
-    assert isinstance(initial_request, ModelRequest)
-    assert len(initial_request.parts) == 2

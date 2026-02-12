@@ -9,7 +9,6 @@ from uuid import UUID, uuid4
 from pydantic_ai.messages import (
     ModelRequestPart,
     ModelResponsePart,
-    SystemPromptPart,
     TextPart,
     ThinkingPart,
     ToolCallPart,
@@ -23,7 +22,6 @@ if TYPE_CHECKING:
     from llm_gamebook.db.models.message import Message
 
 SUPPORTED_PARTS: Final = (
-    SystemPromptPart,
     UserPromptPart,
     ToolCallPart,
     ToolReturnPart,
@@ -33,7 +31,6 @@ SUPPORTED_PARTS: Final = (
 
 
 class PartKind(enum.StrEnum):
-    SYSTEM_PROMPT = "system-prompt"
     USER_PROMPT = "user-prompt"
     TEXT = "text"
     THINKING = "thinking"

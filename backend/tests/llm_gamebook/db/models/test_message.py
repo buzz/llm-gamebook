@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from pydantic_ai import ModelRequest, ModelResponse
-from pydantic_ai.messages import SystemPromptPart, TextPart, UserPromptPart
+from pydantic_ai.messages import TextPart, UserPromptPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.crud import message as message_crud
@@ -138,19 +138,14 @@ async def test_create_messages_batch(db_session: AsyncDbSession, session: Sessio
 def test_message_from_model_message_request() -> None:
     session_id = uuid4()
     msg_id = uuid4()
-
-    model_request = ModelRequest([
-        SystemPromptPart(content="You are a helpful assistant"),
-        UserPromptPart(content="Hello, world!"),
-    ])
-
+    model_request = ModelRequest([UserPromptPart(content="Hello, world!")])
     message = Message.from_model_message(model_request, session_id, msg_id, None)
 
     assert message.id == msg_id
     assert message.session_id == session_id
     assert message.kind == MessageKind.REQUEST
     assert message.model_name is None
-    assert len(message.parts) == 2
+    assert len(message.parts) == 1
 
 
 def test_message_from_model_message_response() -> None:

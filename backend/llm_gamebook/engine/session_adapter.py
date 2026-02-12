@@ -9,7 +9,6 @@ from pydantic_ai import (
     ModelMessagesTypeAdapter,
     ModelRequest,
     ModelResponse,
-    SystemPromptPart,
     TextPart,
     UserPromptPart,
 )
@@ -51,17 +50,14 @@ class SessionAdapter:
         return await get_message_count(db_session, self._session_id)
 
     async def get_message_history(self, db_session: AsyncDbSession) -> AsyncIterable[ModelMessage]:
-        yield await self._generate_initial_request()
+        # Introduction message
+        yield ModelRequest([UserPromptPart(content=await self._state.get_intro_message())])
+
+        # Message history
         messages = await get_messages(db_session, self._session_id)
         as_dicts = [msg.to_dict() for msg in messages]
         model_messages = ModelMessagesTypeAdapter.validate_python(as_dicts)
         for msg in model_messages:
-            # Skip system prompt/first request as we generate it dynamically
-            if isinstance(msg, ModelRequest) and any(
-                isinstance(p, SystemPromptPart) for p in msg.parts
-            ):
-                continue
-
             # Keep only relevant parts
             if isinstance(msg, ModelResponse):
                 msg.parts = [p for p in msg.parts if isinstance(p, TextPart)]
@@ -73,12 +69,6 @@ class SessionAdapter:
                 continue
 
             yield msg
-
-    async def _generate_initial_request(self) -> ModelRequest:
-        return ModelRequest([
-            SystemPromptPart(content=await self._state.get_system_prompt()),
-            UserPromptPart(content=await self._state.get_intro_message()),
-        ])
 
     async def append_messages(
         self,
