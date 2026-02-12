@@ -316,7 +316,6 @@ export interface components {
       parts: components['schemas']['UserPromptPartCreate'][]
     }
     ModelRequestPart:
-      | components['schemas']['SystemPromptPart']
       | components['schemas']['UserPromptPart']
       | components['schemas']['ToolReturnPart']
       | components['schemas']['RetryPromptPart']
@@ -466,31 +465,6 @@ export interface components {
       data: components['schemas']['Session'][]
       /** Count */
       count: number
-    }
-    /**
-     * SystemPromptPart
-     * @description A system prompt, generally written by the application developer.
-     *
-     *     This gives the model context and guidance on how to respond.
-     */
-    SystemPromptPart: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      part_kind: 'system-prompt'
-      /** Content */
-      content: string
-      /**
-       * Timestamp
-       * Format: date-time
-       */
-      timestamp: string
     }
     /**
      * TextPart
