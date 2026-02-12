@@ -93,8 +93,11 @@ class BoolExprEvaluator:
             raise ExpressionEvalError(msg) from err
 
     def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
-        if property_id not in entity.__class__.model_fields:
-            msg = f"Property '{property_id}' not found on entity '{entity.id}'"
-            raise ExpressionEvalError(msg)
+        is_model_field = property_id in entity.__class__.model_fields
+        is_property = isinstance(getattr(entity.__class__, property_id, None), property)
 
-        return cast("EntityProperty", getattr(entity, property_id))
+        if is_model_field or is_property:
+            return cast("EntityProperty", getattr(entity, property_id))
+
+        msg = f"Property '{property_id}' not found on entity '{entity.id}'"
+        raise ExpressionEvalError(msg)
