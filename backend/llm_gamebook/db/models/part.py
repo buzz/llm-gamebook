@@ -79,9 +79,9 @@ class Part(PartBase, table=True):
 
             if isinstance(part, ToolReturnPart):
                 if isinstance(part.content, dict | list):
-                    kwargs = {"content": json.dumps(part.content)}
+                    kwargs["content"] = json.dumps(part.content)
                 elif isinstance(part.content, str):
-                    kwargs = {"content": part.content}
+                    kwargs["content"] = part.content
             elif isinstance(part, ThinkingPart) and durations is not None and part_ids is not None:
                 with suppress(IndexError):
                     part_id = part_ids[idx]
