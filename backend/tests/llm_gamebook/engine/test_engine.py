@@ -232,11 +232,12 @@ async def test_story_engine_generate_response_error_model_http(
 
 
 async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: TestModel) -> None:
-    new_model = TestModel(custom_output_text="New model response")
+    assert story_engine._agent is not None
+    assert story_engine._agent.model is test_model
 
+    new_model = TestModel(custom_output_text="New model response")
     story_engine.set_model(new_model)
 
-    assert story_engine._agent is not None
     assert story_engine._agent.model is new_model
 
 
