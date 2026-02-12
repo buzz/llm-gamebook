@@ -70,6 +70,9 @@ class Part(PartBase, table=True):
             attrs = ("timestamp", "content", "tool_name", "tool_call_id", "args")
             kwargs = {a: getattr(part, a) for a in attrs if hasattr(part, a)}
 
+            if isinstance(part, ToolCallPart) and not isinstance(kwargs.get("args"), str):
+                kwargs["args"] = json.dumps(kwargs["args"])
+
             if part_ids is not None:
                 with suppress(IndexError):
                     kwargs["id"] = part_ids[idx]
