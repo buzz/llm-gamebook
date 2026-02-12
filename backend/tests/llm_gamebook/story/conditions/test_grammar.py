@@ -27,7 +27,7 @@ def assert_parse_exception(el: pp.ParserElement, string: str) -> None:
         ('"foo"', "foo"),
         ("' foo'", " foo"),
         ('"foo "', "foo "),
-        ("'in_the_living_room'", "in_the_living_room"),
+        ("'living_room'", "living_room"),
     ],
 )
 def test_str_literal_good(string: str, exp: str) -> None:
@@ -260,9 +260,9 @@ type ExpType = tuple[g.Literal | g.DotPath, g.ComparisonOperator, g.Literal | g.
             ),
         ),
         (
-            "'in_the_living_room' != locations.current_node.id",
+            "'living_room' != locations.current_node.id",
             (
-                g.StrLiteral("in_the_living_room"),
+                g.StrLiteral("living_room"),
                 g.ComparisonOperator("!="),
                 g.DotPath(
                     g.SnakeCase("locations"), (g.SnakeCase("current_node"), g.SnakeCase("id"))

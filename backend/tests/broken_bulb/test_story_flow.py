@@ -27,7 +27,7 @@ async def test_story_flow(
     assert "cockroaches under bed" in system_prompt
     assert "A leaflet was placed under" not in system_prompt
 
-    # Living room
+    # Living room: triggers location transition
     await test_player.send_text("go to living room", db_session)
     test_model.add_responses(
         ModelResponse(parts=[ToolCallPart("change_location", {"to": "living_room"})]),
@@ -40,3 +40,16 @@ async def test_story_flow(
     assert "run-down living room" in system_prompt
     assert "messy, scattered with empty bottles" in system_prompt
     assert "A leaflet was placed under" in system_prompt
+
+    # Take leaflet: triggers The Meeting story arc transition
+    await test_player.send_text("take the leaflet", db_session)
+    test_model.add_responses(
+        ModelResponse(parts=[ToolCallPart("progress_the_meeting_story", {"to": "leaflet_found"})]),
+        lambda msgs, _: msgs[-1].parts[0].part_kind == "tool-return",
+        ModelResponse(parts=[TextPart("You pick up the leaflet…")]),
+    )
+    await story_engine.generate_response(db_session, streaming=False)
+
+    system_prompt = test_model.current_system_prompt
+    assert "A leaflet was placed under" not in system_prompt
+    assert "Player found the leaflet" in system_prompt

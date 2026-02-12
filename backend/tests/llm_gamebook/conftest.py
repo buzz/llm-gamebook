@@ -44,14 +44,6 @@ def simple_project() -> Project:
                     "described",
                     {"name": "graph", "node_type_id": "TestNode"},
                 ],
-                "functions": [
-                    {
-                        "name": "transition",
-                        "description": "Transition to another node",
-                        "target": "transition",
-                        "properties": {"to": "The node to transition to"},
-                    }
-                ],
                 "entities": [
                     {
                         "id": "test_graph",
@@ -59,6 +51,14 @@ def simple_project() -> Project:
                         "description": "A test graph",
                         "node_ids": ["node_a", "node_b"],
                         "current_node_id": "node_a",
+                        "functions": [
+                            {
+                                "name": "transition",
+                                "description": "Transition to another node",
+                                "target": "transition",
+                                "properties": {"to": "The node to transition to"},
+                            }
+                        ],
                     }
                 ],
             },

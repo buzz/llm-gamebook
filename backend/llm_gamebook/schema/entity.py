@@ -93,6 +93,9 @@ class EntityDefinition(BaseModel):
     id: NormalizedSnakeCase
     """A unique identifier (snake_case)."""
 
+    functions: list[FunctionDefinition] | None = None
+    """List of tool functions the LLM may call."""
+
     @model_validator(mode="before")
     @classmethod
     def id_from_name(cls, data: object) -> object:
@@ -116,9 +119,6 @@ class EntityTypeDefinition(BaseModel):
 
     entities: list[EntityDefinition]
     """List of entity definitions."""
-
-    functions: list[FunctionDefinition] | None = None
-    """List of tool functions the LLM may call."""
 
     @model_validator(mode="before")
     @classmethod

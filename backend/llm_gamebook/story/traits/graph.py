@@ -94,7 +94,7 @@ class GraphTrait(BaseEntity):
     def get_tools(self) -> Iterable[StoryTool]:
         yield from super().get_tools()
 
-        for func_spec in self.entity_type.functions or ():
+        for func_spec in self.functions or ():
             if func_spec.target == "transition":
                 yield self._make_transition_tool(func_spec)
 

@@ -70,16 +70,16 @@ def test_graph_trait_get_tools(simple_project: Project) -> None:
 
 def test_graph_trait_make_transition_tool(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    assert graph_entity.entity_type.functions is not None
-    func_spec = graph_entity.entity_type.functions[0]
+    assert graph_entity.functions is not None
+    func_spec = graph_entity.functions[0]
     tool = graph_entity._make_transition_tool(func_spec)
     assert tool.name == "transition"
 
 
 def test_graph_trait_prepare_function(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    assert graph_entity.entity_type.functions is not None
-    func_spec = graph_entity.entity_type.functions[0]
+    assert graph_entity.functions is not None
+    func_spec = graph_entity.functions[0]
     tool = graph_entity._make_transition_tool(func_spec)
 
     result = tool.prepare

@@ -25,6 +25,12 @@ entity_types:
           - the_beginning
           - spark_of_hope
           - happy_end
+        functions:
+          - target: transition
+            name: progress_main_story
+            description: Progress the main story arc to the next node.
+            properties:
+              to: The next node in the main story arc.
       - name: The Meeting
         description: A story arc where the player can attend a meeting at the local community center.
         current_node_id: leaflet_not_found_yet
@@ -33,6 +39,12 @@ entity_types:
           - leaflet_found
           - attending_meeting
           - meeting_is_over
+        functions:
+          - target: transition
+            name: progress_the_meeting_story
+            description: Progress the meeting story arc to the next node.
+            properties:
+              to: The next node in the meeting story arc.
 
   - name: Story Arc Node
     traits:
@@ -71,8 +83,8 @@ entity_types:
           - It's an invitation to a meeting at the local community center.
         edge_ids: ["attending_meeting"]
         enabled:
-          - locations.current_node_id == "in_the_living_room"
-          - the_meeting.current_node_id == "leaflet-found"
+          - locations.current_node_id == "living_room"
+          - the_meeting.current_node_id == "leaflet_found"
       - name: Attending meeting
         description: |
           - Player found a leaflet with an invitation to a meeting at the local community center.
@@ -92,12 +104,6 @@ entity_types:
     traits:
       - name: graph
         node_type_id: Location
-    functions:
-      - target: transition
-        name: change_location
-        description: Player moves to another location.
-        properties:
-          to: The location to move to.
     entities:
       - id: locations
         current_node_id: bedroom
@@ -107,6 +113,12 @@ entity_types:
           - living_room
           - in_the_street
           - community_center
+        functions:
+          - target: transition
+            name: change_location
+            description: Player moves to another location.
+            properties:
+              to: The location to move to.
 
   - name: Location
     traits:
