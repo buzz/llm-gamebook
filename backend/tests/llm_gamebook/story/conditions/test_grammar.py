@@ -379,6 +379,19 @@ def test_comparison_bad(string: str) -> None:
             ),
         ),
         (
+            "node_a.enabled or node_b.enabled",
+            g.OrExpr(
+                left=g.DotPath(
+                    entity_id=g.SnakeCase(value="node_a"),
+                    property_chain=(g.SnakeCase(value="enabled"),),
+                ),
+                right=g.DotPath(
+                    entity_id=g.SnakeCase(value="node_b"),
+                    property_chain=(g.SnakeCase(value="enabled"),),
+                ),
+            ),
+        ),
+        (
             "foo_bar.id",
             g.DotPath(g.SnakeCase("foo_bar"), (g.SnakeCase("id"),)),
         ),
@@ -402,6 +415,15 @@ def test_comparison_bad(string: str) -> None:
 )
 def test_bool_expr_good(string: str, exp: g.BoolExpr) -> None:
     assert g.bool_expr.parse_string(string)[0] == exp
+
+
+def test_bool_expr_and_or_do_not_equal() -> None:
+    op = g.DotPath(g.SnakeCase(value="node_a"), (g.SnakeCase(value="enabled"),))
+    a = g.AndExpr(left=op, right=op)
+    b = g.OrExpr(left=op, right=op)
+
+    # Defining `AndExpr`/`OrExpr` as tuples would silently pass equal test
+    assert a != b  # type: ignore[comparison-overlap]
 
 
 @pytest.mark.parametrize(

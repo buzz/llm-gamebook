@@ -1,4 +1,5 @@
 import typing
+from dataclasses import dataclass
 
 import pyparsing as pp
 
@@ -8,19 +9,23 @@ type ComparisonOperatorValue = typing.Literal["==", "!=", "<", "<=", ">", ">=", 
 
 
 # Literals
-class StrLiteral(typing.NamedTuple):
+@dataclass(frozen=True)
+class StrLiteral:
     value: str
 
 
-class IntLiteral(typing.NamedTuple):
+@dataclass(frozen=True)
+class IntLiteral:
     value: int
 
 
-class FloatLiteral(typing.NamedTuple):
+@dataclass(frozen=True)
+class FloatLiteral:
     value: float
 
 
-class BoolLiteral(typing.NamedTuple):
+@dataclass(frozen=True)
+class BoolLiteral:
     value: bool
 
 
@@ -36,7 +41,8 @@ literal = string_literal | float_literal | integer_literal | bool_literal
 
 
 # snake_case
-class SnakeCase(typing.NamedTuple):
+@dataclass(frozen=True)
+class SnakeCase:
     value: str
 
 
@@ -49,7 +55,8 @@ snake_case = _snake_case_raw.copy().set_parse_action(lambda t: SnakeCase(t[0]))
 
 
 # Dot path
-class DotPath(typing.NamedTuple):
+@dataclass(frozen=True)
+class DotPath:
     """`entity_id.property[.property[.property[...]]]`"""
 
     entity_id: SnakeCase
@@ -71,11 +78,13 @@ dot_path = pp.Combine(
 
 
 # Comparison
-class ComparisonOperator(typing.NamedTuple):
+@dataclass(frozen=True)
+class ComparisonOperator:
     value: ComparisonOperatorValue
 
 
-class Comparison(typing.NamedTuple):
+@dataclass(frozen=True)
+class Comparison:
     left: DotPath | Literal
     op: ComparisonOperator
     right: DotPath | Literal
@@ -89,16 +98,19 @@ comparison = (comp_operand + comp_op + comp_operand).set_parse_action(
 
 
 # Boolean expression grammar
-class NotExpr(typing.NamedTuple):
+@dataclass(frozen=True)
+class NotExpr:
     expr: "BoolExpr"
 
 
-class AndExpr(typing.NamedTuple):
+@dataclass(frozen=True)
+class AndExpr:
     left: "BoolExpr"
     right: "BoolExpr"
 
 
-class OrExpr(typing.NamedTuple):
+@dataclass(frozen=True)
+class OrExpr:
     left: "BoolExpr"
     right: "BoolExpr"
 
