@@ -8,6 +8,7 @@ from openai import APIError
 from pydantic_ai import ModelResponse
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from starlette.websockets import WebSocketDisconnect as StarletteDisconnect
+from starlette.websockets import WebSocketState
 
 from llm_gamebook.db.models.session import Session
 from llm_gamebook.engine.manager import EngineManager
@@ -17,8 +18,9 @@ from llm_gamebook.engine.message import (
     ResponseStartedMessage,
     ResponseStoppedMessage,
     ResponseStreamUpdateMessage,
+    ResponseUserRequestMessage,
 )
-from llm_gamebook.web.schema.websocket.message import WebSocketPingMessage
+from llm_gamebook.web.schema.websocket.message import WebSocketPingMessage, WebSocketPongMessage
 from llm_gamebook.web.websocket.handler import WebSocketHandler
 
 
@@ -247,14 +249,19 @@ async def test_on_engine_response_stream(
     assert f'"{session.id}"' in call_args
 
 
-@pytest.mark.skip(reason="Not yet implemented")
 async def test_send_message_disconnected_state(
     handler: WebSocketHandler, mock_websocket: AsyncMock, session: Session
 ) -> None:
     """Test that send_message handles disconnected WebSocket gracefully."""
+    handler._websocket = mock_websocket
+    mock_websocket.client_state = WebSocketState.DISCONNECTED
+
+    message = WebSocketPongMessage()
+    await handler._send_message(message)
+
+    mock_websocket.send_text.assert_not_called()
 
 
-@pytest.mark.skip(reason="Not yet implemented")
 async def test_on_engine_response_user_request(
     handler: WebSocketHandler,
     mock_websocket: AsyncMock,
@@ -263,3 +270,12 @@ async def test_on_engine_response_user_request(
     db_session: AsyncDbSession,
 ) -> None:
     """Test handling ResponseUserRequestMessage to trigger response generation."""
+    handler._websocket = mock_websocket
+
+    engine = await engine_manager.get_or_create(session.id, db_session)
+
+    with patch.object(handler, "_generate_response", new_callable=AsyncMock) as mock_generate:
+        message = ResponseUserRequestMessage(session_id=session.id)
+        await handler._on_engine_response_user_request(message)
+
+        mock_generate.assert_called_once_with(engine)
