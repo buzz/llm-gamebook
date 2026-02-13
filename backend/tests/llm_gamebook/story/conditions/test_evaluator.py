@@ -5,15 +5,9 @@ import pytest
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator, ExpressionEvalError
 from llm_gamebook.story.conditions.grammar import ComparisonOperatorValue
-from llm_gamebook.story.project import Project
 
 if TYPE_CHECKING:
     from llm_gamebook.story.traits.described import DescribedTrait
-
-
-@pytest.fixture
-def evaluator(simple_project: Project) -> BoolExprEvaluator:
-    return BoolExprEvaluator(simple_project)
 
 
 def test_bool_expr_evaluator_eval_literal_true(evaluator: BoolExprEvaluator) -> None:
