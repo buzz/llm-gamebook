@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
-from llm_gamebook.db.models import Message, ModelConfig, Session
+from llm_gamebook.db.models import Message, ModelConfig, Part, Session
 from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.providers import ModelProvider
@@ -103,3 +104,41 @@ async def story_engine(
     session: Session, test_model: Model, story_state: StoryState, message_bus: MessageBus
 ) -> StoryEngine:
     return StoryEngine(session.id, test_model, story_state, message_bus, stream_debounce=0.0)
+
+
+@pytest.fixture
+async def sample_message_with_parts(db_session: AsyncDbSession, session: Session) -> Message:
+    msg = Message(
+        kind=MessageKind.REQUEST,
+        session=session,
+        model_name=None,
+        finish_reason=None,
+    )
+    db_session.add(msg)
+    await db_session.flush()
+
+    parts = [
+        Part(
+            part_kind=PartKind.USER_PROMPT,
+            content="Hello, world!",
+            timestamp=None,
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        ),
+        Part(
+            part_kind=PartKind.TEXT,
+            content="This is a test message.",
+            timestamp=None,
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        ),
+    ]
+    for part in parts:
+        part.message_id = msg.id
+        db_session.add(part)
+
+    await db_session.commit()
+    await db_session.refresh(msg)
+    return msg

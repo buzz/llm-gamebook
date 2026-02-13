@@ -4,10 +4,8 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic_ai import Agent
 from pydantic_ai.models.test import TestModel
-from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
-from llm_gamebook.db.models import Message, Session
-from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models import Session
 from llm_gamebook.engine.manager import EngineManager
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.message_bus import MessageBus
@@ -16,20 +14,6 @@ from llm_gamebook.story.state import StoryState
 
 if TYPE_CHECKING:
     from llm_gamebook.story.entity import EntityType
-
-
-@pytest.fixture
-async def message(db_session: AsyncDbSession, session: Session) -> Message:
-    msg = Message(
-        kind=MessageKind.REQUEST,
-        session=session,
-        model_name=None,
-        finish_reason=None,
-    )
-    db_session.add(msg)
-    await db_session.commit()
-    await db_session.refresh(msg)
-    return msg
 
 
 @pytest.fixture
