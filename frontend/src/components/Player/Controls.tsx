@@ -50,7 +50,7 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
 
   return (
     <form onSubmit={form.onSubmit((values) => void send(values))}>
-      <Group align="stretch" gap="sm">
+      <Group align="stretch" gap="sm" mt="md">
         <Textarea
           key={form.key('content')}
           {...form.getInputProps('content')}
