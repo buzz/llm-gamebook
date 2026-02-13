@@ -118,26 +118,43 @@ class OrExpr:
 BoolExpr = Literal | DotPath | Comparison | NotExpr | AndExpr | OrExpr
 
 
+def create_binary_expr(op_class: type[AndExpr | OrExpr]) -> pp.ParseAction:
+    def parse_action(t: pp.ParseResults) -> object:
+        # t[0] is the list of tokens: [op1, 'and', op2, 'and', op3...]
+        # We start with the left-most operand
+        tokens = t[0]
+        expr = tokens[0]
+        # Iterate over the rest in steps of 2 (skipping the operator string)
+        for i in range(2, len(tokens), 2):
+            right = tokens[i]
+            expr = op_class(left=expr, right=right)
+        return expr
+
+    return parse_action
+
+
+def create_unary_expr(op_class: type[NotExpr]) -> pp.ParseAction:
+    def parse_action(t: pp.ParseResults) -> object:
+        tokens = t[0]
+        # The operand is the last element
+        expr = tokens[-1]
+        # The operators are everything before the last element
+        # We iterate backwards or simply wrap for every 'not' found
+        operator_count = len(tokens) - 1
+
+        for _ in range(operator_count):
+            expr = op_class(expr=expr)
+
+        return expr
+
+    return parse_action
+
+
 bool_expr = pp.infix_notation(
     comparison | dot_path | literal,
     [
-        (
-            pp.Keyword("not"),
-            1,
-            pp.opAssoc.RIGHT,
-            lambda t: NotExpr(t[0][1]),
-        ),
-        (
-            pp.Keyword("and"),
-            2,
-            pp.opAssoc.LEFT,
-            lambda t: AndExpr(t[0][0], t[0][2]),
-        ),
-        (
-            pp.Keyword("or"),
-            2,
-            pp.opAssoc.LEFT,
-            lambda t: OrExpr(t[0][0], t[0][2]),
-        ),
+        (pp.Keyword("not"), 1, pp.opAssoc.RIGHT, create_unary_expr(NotExpr)),
+        (pp.Keyword("and"), 2, pp.opAssoc.LEFT, create_binary_expr(AndExpr)),
+        (pp.Keyword("or"), 2, pp.opAssoc.LEFT, create_binary_expr(OrExpr)),
     ],
 )

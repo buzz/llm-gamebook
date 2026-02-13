@@ -331,6 +331,26 @@ def test_comparison_bad(string: str) -> None:
     ("string", "exp"),
     [
         (
+            "foo_bar.id",
+            g.DotPath(g.SnakeCase("foo_bar"), (g.SnakeCase("id"),)),
+        ),
+        (
+            "''",
+            g.StrLiteral(""),
+        ),
+        (
+            "true",
+            g.BoolLiteral(value=True),
+        ),
+        (
+            "66",
+            g.IntLiteral(66),
+        ),
+        (
+            "1.234",
+            g.FloatLiteral(1.234),
+        ),
+        (
             "foo.bar <= 0.99 and not foo.status == 'ok'",
             g.AndExpr(
                 left=g.Comparison(
@@ -391,25 +411,92 @@ def test_comparison_bad(string: str) -> None:
                 ),
             ),
         ),
+        # 1. Operator Precedence: 'and' should bind tighter than 'or'
         (
-            "foo_bar.id",
-            g.DotPath(g.SnakeCase("foo_bar"), (g.SnakeCase("id"),)),
+            "a.x or b.y and c.z",
+            g.OrExpr(
+                left=g.DotPath(g.SnakeCase("a"), (g.SnakeCase("x"),)),
+                right=g.AndExpr(
+                    left=g.DotPath(g.SnakeCase("b"), (g.SnakeCase("y"),)),
+                    right=g.DotPath(g.SnakeCase("c"), (g.SnakeCase("z"),)),
+                ),
+            ),
         ),
+        # 2. Parentheses: Overriding default precedence
         (
-            "''",
-            g.StrLiteral(""),
+            "(a.x or b.y) and c.z",
+            g.AndExpr(
+                left=g.OrExpr(
+                    left=g.DotPath(g.SnakeCase("a"), (g.SnakeCase("x"),)),
+                    right=g.DotPath(g.SnakeCase("b"), (g.SnakeCase("y"),)),
+                ),
+                right=g.DotPath(g.SnakeCase("c"), (g.SnakeCase("z"),)),
+            ),
         ),
+        # 3. Chained AND (Left Associativity): (A and B) and C
         (
-            "true",
-            g.BoolLiteral(value=True),
+            "node.a and node.b and node.c",
+            g.AndExpr(
+                left=g.AndExpr(
+                    left=g.DotPath(g.SnakeCase("node"), (g.SnakeCase("a"),)),
+                    right=g.DotPath(g.SnakeCase("node"), (g.SnakeCase("b"),)),
+                ),
+                right=g.DotPath(g.SnakeCase("node"), (g.SnakeCase("c"),)),
+            ),
         ),
+        # 4. Double NOT (Right Associativity): not (not A)
         (
-            "66",
-            g.IntLiteral(66),
+            "not not node.active",
+            g.NotExpr(
+                expr=g.NotExpr(expr=g.DotPath(g.SnakeCase("node"), (g.SnakeCase("active"),)))
+            ),
         ),
+        # 5. Complex mix with literals and comparisons
         (
-            "1.234",
-            g.FloatLiteral(1.234),
+            "user.age > 18 or (user.vip == true and not user.banned)",
+            g.OrExpr(
+                left=g.Comparison(
+                    g.DotPath(g.SnakeCase("user"), (g.SnakeCase("age"),)),
+                    g.ComparisonOperator(">"),
+                    g.IntLiteral(18),
+                ),
+                right=g.AndExpr(
+                    left=g.Comparison(
+                        g.DotPath(g.SnakeCase("user"), (g.SnakeCase("vip"),)),
+                        g.ComparisonOperator("=="),
+                        g.BoolLiteral(value=True),
+                    ),
+                    right=g.NotExpr(expr=g.DotPath(g.SnakeCase("user"), (g.SnakeCase("banned"),))),
+                ),
+            ),
+        ),
+        # 6. Deeply nested DotPath (Edge Case)
+        (
+            "system.sub.node.value == 10",
+            g.Comparison(
+                left=g.DotPath(
+                    g.SnakeCase("system"),
+                    (g.SnakeCase("sub"), g.SnakeCase("node"), g.SnakeCase("value")),
+                ),
+                op=g.ComparisonOperator("=="),
+                right=g.IntLiteral(10),
+            ),
+        ),
+        # 7. Comparison with String Literal (Edge Case)
+        (
+            "foo.status == 'active' or bar.status == 'pending'",
+            g.OrExpr(
+                left=g.Comparison(
+                    g.DotPath(g.SnakeCase("foo"), (g.SnakeCase("status"),)),
+                    g.ComparisonOperator("=="),
+                    g.StrLiteral("active"),
+                ),
+                right=g.Comparison(
+                    g.DotPath(g.SnakeCase("bar"), (g.SnakeCase("status"),)),
+                    g.ComparisonOperator("=="),
+                    g.StrLiteral("pending"),
+                ),
+            ),
         ),
     ],
 )
