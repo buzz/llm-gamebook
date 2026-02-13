@@ -107,7 +107,7 @@ def test_entity_type_get_template_context(simple_entity_type: EntityType) -> Non
     assert "traits" in context
     assert "entities" in context
     entities_list: list[dict[str, object]] = cast("list[dict[str, object]]", context["entities"])
-    assert len(entities_list) == 2
+    assert len(entities_list) == 4
 
 
 def test_entity_type_get_tools(simple_entity_type: EntityType) -> None:
@@ -142,6 +142,8 @@ def test_entity_type_from_definition(simple_project: Project) -> None:
     entity_type = EntityType.from_definition(entity_type_def, simple_project)
 
     assert entity_type.id == "TestNode"
-    assert len(entity_type.entity_map) == 2
+    assert len(entity_type.entity_map) == 4
     assert "node_a" in entity_type.entity_map
     assert "node_b" in entity_type.entity_map
+    assert "node_c" in entity_type.entity_map
+    assert "node_d" in entity_type.entity_map

@@ -580,6 +580,7 @@ def test_bool_expr_edge_cases_good(string: str) -> None:
         "a.b === 1",
         "a.b ==",
         "a.b !=",
+        "a.b << 5",
         # Double or missing dots
         "a..b",
         ".a.b",

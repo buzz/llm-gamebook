@@ -33,9 +33,11 @@ def test_graph_node_trait_get_template_context(simple_entity_type: EntityType) -
 def test_graph_trait_nodes_property(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
     nodes = graph_entity.nodes
-    assert len(nodes) == 2
+    assert len(nodes) == 4
     assert nodes[0].id == "node_a"
     assert nodes[1].id == "node_b"
+    assert nodes[2].id == "node_c"
+    assert nodes[3].id == "node_d"
 
 
 def test_graph_trait_current_node_property(simple_project: Project) -> None:
@@ -58,7 +60,7 @@ def test_graph_trait_transition_invalid(simple_project: Project) -> None:
 
 def test_graph_trait_resolve_node_ids(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    assert len(graph_entity._nodes) == 2
+    assert len(graph_entity._nodes) == 4
     assert graph_entity._current_node.id == "node_a"
 
 
