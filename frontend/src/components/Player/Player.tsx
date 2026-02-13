@@ -1,4 +1,4 @@
-import { Flex, Stack } from '@mantine/core'
+import { Box, Stack } from '@mantine/core'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useCallback, useState } from 'react'
 import { useParams } from 'wouter'
@@ -10,6 +10,7 @@ import type { SessionFull } from '@/types/api'
 
 import Controls from './Controls'
 import Messages from './Messages/Messages'
+import classes from './Player.module.css'
 import useMessages from './useMessages'
 
 interface PlayerLoadedProps {
@@ -42,10 +43,10 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
         onModelConfigChange={handleModelChange}
         disabled={isUpdating || streamStatus === 'started'}
       />
-      <Flex direction="column" gap={{ base: 'sm', sm: 'lg' }} justify="center" flex={1}>
+      <Box className={classes.container}>
         <Messages currentStreamingPartId={currentStreamingPartId} messages={messages} />
         <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
-      </Flex>
+      </Box>
     </Stack>
   )
 }
