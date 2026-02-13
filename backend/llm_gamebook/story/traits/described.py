@@ -1,6 +1,9 @@
 from collections.abc import Mapping
 
+from pydantic import Field
+
 from llm_gamebook.schema.expression import BoolExprDefinition
+from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.trait_registry import trait_registry
 
@@ -15,7 +18,9 @@ class DescribedTrait(BaseEntity):
     description: str
     """Detailed description of the entity presented to the LLM."""
 
-    enabled: BoolExprDefinition = BoolExprDefinition(value=True)
+    enabled: BoolExprDefinition = Field(
+        default_factory=lambda: BoolExprDefinition(value=g.BoolLiteral(value=True))
+    )
     """If the entity should be presented to the LLM."""
 
     def get_template_context(self) -> Mapping[str, object]:

@@ -1,11 +1,14 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, assert_never, cast
 
+from pydantic import BaseModel
+
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.errors import EntityNotFoundError
 
 if TYPE_CHECKING:
+    from llm_gamebook.schema.expression import BoolExprDefinition
     from llm_gamebook.story.entity import EntityProperty
     from llm_gamebook.story.project import Project
 
@@ -22,7 +25,7 @@ class BoolExprEvaluator:
         if isinstance(expr, g.Literal):
             return bool(expr.value)
         if isinstance(expr, g.DotPath):
-            return bool(self._resolve_dot_path(expr))
+            return self._eval_dot_path(expr)
         if isinstance(expr, g.Comparison):
             return self._eval_comparison(expr)
         if isinstance(expr, g.AndExpr):
@@ -33,6 +36,23 @@ class BoolExprEvaluator:
             return not self.eval(expr.expr)
 
         assert_never(expr)
+
+    def _eval_dot_path(self, dot_path: g.DotPath) -> bool:
+        value = self._resolve_dot_path(dot_path)
+
+        # Can't check for BoolExprDefinition (circular dep)
+        if isinstance(value, BaseModel):
+            try:
+                maybe_bool_expr = cast("BoolExprDefinition", value).value
+            except AttributeError:
+                pass
+            else:
+                if isinstance(maybe_bool_expr, list):
+                    return all(self.eval(ex) for ex in maybe_bool_expr)
+                if isinstance(maybe_bool_expr, g.BoolExpr):
+                    return self.eval(maybe_bool_expr)
+
+        return bool(value)
 
     def _eval_comparison(self, comp: g.Comparison) -> bool:
         left = self.resolve_comparison_operand(comp.left)
