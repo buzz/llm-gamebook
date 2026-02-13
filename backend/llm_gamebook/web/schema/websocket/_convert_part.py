@@ -25,7 +25,7 @@ def _(part: pydantic_ai.TextPart, part_id: UUID) -> ModelResponsePart:
 
 @convert_part.register
 def _(part: pydantic_ai.ToolCallPart, part_id: UUID) -> ModelResponsePart:
-    args = json.dumps(part.args) if isinstance(part.args, (dict, list)) else part.args
+    args = json.dumps(part.args) if isinstance(part.args, dict) else part.args
     return ToolCallPart(
         id=part_id,
         args=args,
