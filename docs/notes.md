@@ -36,7 +36,10 @@ Author defines nodes, conditions, and entities in a JSON/YAML file.
 ### Graph-based node editor
 
 - Graph library
+  - https://github.com/chrisjpatty/flume
   - https://github.com/retejs/rete
+  - https://github.com/xyflow/xyflow (multi port/handles only at specific points (N/NW/NE/...))
+  - https://github.com/projectstorm/react-diagrams
   - https://github.com/jagenjo/litegraph.js (used by ComfyUI)
   - https://js.cytoscape.org/
   - https://visjs.org/
