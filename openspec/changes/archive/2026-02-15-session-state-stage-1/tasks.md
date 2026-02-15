@@ -36,14 +36,14 @@
 
 ## 5. Testing
 
-- [ ] 5.1 Add unit tests for `SessionState` class (set/get/serialize/deserialize)
-- [ ] 5.2 Add tests for effective field values (override vs default)
-- [ ] 5.3 Add tests for orphaned field handling (project field removed)
-- [ ] 5.4 Add tests for missing field handling (project adds new field)
-- [ ] 5.5 Add integration test for state persistence through message flow
+- [x] 5.1 Add unit tests for `SessionState` class (set/get/serialize/deserialize)
+- [x] 5.2 Add tests for effective field values (override vs default)
+- [x] 5.3 Add tests for orphaned field handling (project field removed)
+- [x] 5.4 Add tests for missing field handling (project adds new field)
+- [x] 5.5 Add integration test for state persistence through message flow
 
 ## 6. Error Handling
 
-- [ ] 6.1 Validate entity_id exists in project when setting field
-- [ ] 6.2 Validate state via `SessionStateData` Pydantic model on deserialization
-- [ ] 6.3 Handle Pydantic validation errors gracefully with descriptive error message
+- [x] 6.1 Validate entity_id exists in project when setting field
+- [x] 6.2 Validate state via `SessionStateData` Pydantic model on deserialization
+- [x] 6.3 Handle Pydantic validation errors gracefully with descriptive error message
