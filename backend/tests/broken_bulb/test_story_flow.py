@@ -1,4 +1,3 @@
-import pytest
 from pydantic_ai import ModelResponse, TextPart, ToolCallPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -8,7 +7,6 @@ from .mocks.model import MockModel
 from .mocks.player import MockPlayer
 
 
-@pytest.mark.xfail(reason="MockModel needs update for streaming mode")
 async def test_story_flow(
     test_model: MockModel,
     test_player: MockPlayer,
