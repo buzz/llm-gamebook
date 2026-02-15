@@ -19,7 +19,8 @@ async def test_stream_runner_run_returns_messages(
 
     result = await stream_runner.run(messages, story_state)
 
-    _, response_ids, part_ids, _ = result
+    response_ids = result.message_ids
+    part_ids = result.part_ids
 
     assert len(response_ids) > 0
     assert len(part_ids) > 0
@@ -83,13 +84,13 @@ async def test_stream_runner_multiple_responses(
     result1 = await stream_runner.run(messages, story_state)
 
     messages2: list[ModelMessage] = [
-        *result1[0],
+        *result1.messages,
         ModelRequest(parts=[UserPromptPart(content="Second")]),
     ]
 
     result2 = await stream_runner.run(messages2, story_state)
 
-    total_responses = len(result1[1]) + len(result2[1])
+    total_responses = len(result1.message_ids) + len(result2.message_ids)
     assert total_responses >= 1
 
 
@@ -141,7 +142,7 @@ async def test_stream_runner_response_id_is_uuid(
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
     result = await stream_runner.run(messages, story_state)
-    response_ids = result[1]
+    response_ids = result.message_ids
 
     for response_id in response_ids:
         assert isinstance(response_id, UUID)
@@ -154,7 +155,7 @@ async def test_stream_runner_part_ids_are_uuids(
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
     result = await stream_runner.run(messages, story_state)
-    part_ids = result[2]
+    part_ids = result.part_ids
 
     for response_parts in part_ids:
         for part_id in response_parts:
