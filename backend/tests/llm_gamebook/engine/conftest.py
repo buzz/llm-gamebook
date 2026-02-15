@@ -11,7 +11,7 @@ from llm_gamebook.engine.message import (
     ResponseStreamUpdateMessage,
 )
 from llm_gamebook.message_bus import MessageBus
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.context import StoryContext
 
 type EngineEvents = tuple[list[str], list[ResponseErrorMessage]]
 type StreamEvents = list[ResponseStreamUpdateMessage]
@@ -52,7 +52,7 @@ def stream_events(message_bus: MessageBus) -> StreamEvents:
 
 @pytest.fixture
 async def stream_runner(
-    message_bus: MessageBus, test_agent: Agent[StoryState, str]
+    message_bus: MessageBus, test_agent: Agent[StoryContext, str]
 ) -> StreamRunner:
     session_id = uuid4()
     return StreamRunner(test_agent, session_id, message_bus, debounce=0.0)

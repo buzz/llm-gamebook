@@ -13,8 +13,8 @@ from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.providers import ModelProvider
+from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.project import Project
-from llm_gamebook.story.state import StoryState
 
 
 @pytest.fixture
@@ -95,15 +95,15 @@ async def message_bus() -> AsyncIterator[MessageBus]:
 
 
 @pytest.fixture
-def story_state(project: Project) -> StoryState:
-    return StoryState(project)
+def story_context(project: Project) -> StoryContext:
+    return StoryContext(project)
 
 
 @pytest.fixture
 async def story_engine(
-    session: Session, test_model: Model, story_state: StoryState, message_bus: MessageBus
+    session: Session, test_model: Model, story_context: StoryContext, message_bus: MessageBus
 ) -> StoryEngine:
-    return StoryEngine(session.id, test_model, story_state, message_bus, stream_debounce=0.0)
+    return StoryEngine(session.id, test_model, story_context, message_bus, stream_debounce=0.0)
 
 
 @pytest.fixture

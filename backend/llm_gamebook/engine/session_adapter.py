@@ -17,6 +17,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from llm_gamebook.db.crud.message import (
     create_message,
     create_messages,
+    get_latest_message_with_state,
     get_message_count,
     get_messages,
 )
@@ -25,19 +26,20 @@ from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.part import Part
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
+from llm_gamebook.story.session_state import SessionStateData
 
 if TYPE_CHECKING:
     from llm_gamebook.message_bus import MessageBus
-    from llm_gamebook.story.state import StoryState
+    from llm_gamebook.story import StoryContext
     from llm_gamebook.web.schema.session.message import ModelRequestCreate
 
 
 class SessionAdapter:
     """SQL-backed message history."""
 
-    def __init__(self, session_id: UUID, state: "StoryState", bus: "MessageBus") -> None:
+    def __init__(self, session_id: UUID, context: "StoryContext", bus: "MessageBus") -> None:
         self._session_id = session_id
-        self._state = state
+        self._context = context
         self._bus = bus
 
     async def get_session(self, db_session: AsyncDbSession) -> Session | None:
@@ -52,7 +54,7 @@ class SessionAdapter:
 
     async def get_message_history(self, db_session: AsyncDbSession) -> AsyncIterable[ModelMessage]:
         # Introduction message
-        yield ModelRequest([UserPromptPart(content=await self._state.get_intro_message())])
+        yield ModelRequest([UserPromptPart(content=await self._context.get_intro_message())])
 
         # Message history
         messages = await get_messages(db_session, self._session_id)
@@ -90,9 +92,19 @@ class SessionAdapter:
                 model_part_ids,
                 result.thinking_durations,
             )
+
+            if result.state is not None and idx == len(result.messages) - 1:
+                msg.state = result.state.model_dump()
+
             messages.append(msg)
 
         await create_messages(db_session, messages)
+
+    async def load_state(self, db_session: AsyncDbSession) -> SessionStateData | None:
+        message = await get_latest_message_with_state(db_session, self._session_id)
+        if message is not None and message.state is not None:
+            return SessionStateData.model_validate(message.state)
+        return None
 
     async def create_user_request(
         self, db_session: AsyncDbSession, message_in: "ModelRequestCreate"

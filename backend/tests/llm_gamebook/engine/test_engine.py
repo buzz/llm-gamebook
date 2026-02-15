@@ -20,7 +20,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
 from llm_gamebook.engine.engine import StoryEngine
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.context import StoryContext
 
 from .conftest import EngineEvents, StreamEvents
 
@@ -206,29 +206,27 @@ async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: T
     assert story_engine._agent.model is new_model
 
 
-async def test_set_model_preserves_story_state(
-    story_engine: StoryEngine, story_state: StoryState
-) -> None:
+async def test_set_model_preserves_(story_engine: StoryEngine, story_context: StoryContext) -> None:
     new_model = TestModel(custom_output_text="New model response")
 
     story_engine.set_model(new_model)
 
-    assert story_engine._state is story_state
+    assert story_engine._context is story_context
 
 
 async def test_set_model_preserves_tools(
-    story_engine: StoryEngine, story_state: StoryState
+    story_engine: StoryEngine, story_context: StoryContext
 ) -> None:
     new_model = TestModel(custom_output_text="New model response")
 
     story_engine.set_model(new_model)
 
     assert story_engine._agent is not None
-    assert story_engine._agent.deps_type is StoryState
+    assert story_engine._agent.deps_type is StoryContext
 
 
 async def test_set_model_uses_same_prepare_tools(
-    story_engine: StoryEngine, story_state: StoryState
+    story_engine: StoryEngine, story_context: StoryContext
 ) -> None:
     new_model = TestModel(custom_output_text="New model response")
 
@@ -275,10 +273,10 @@ async def test_set_model_allows_subsequent_requests_with_new_model(
     ],
 )
 async def test_prepare_tools_returns_none_for_intro(
-    story_engine: StoryEngine, story_state: StoryState, messages: list[ModelMessage]
+    story_engine: StoryEngine, story_context: StoryContext, messages: list[ModelMessage]
 ) -> None:
     tools = [ToolDefinition(name="Foo")]
-    ctx = RunContext(deps=story_state, model=TestModel(), usage=RunUsage(), messages=messages)
+    ctx = RunContext(deps=story_context, model=TestModel(), usage=RunUsage(), messages=messages)
 
     result = await story_engine._prepare_tools(ctx, tools)
 
@@ -286,7 +284,7 @@ async def test_prepare_tools_returns_none_for_intro(
 
 
 async def test_prepare_tools_returns_tools_for_conversation(
-    story_engine: StoryEngine, story_state: StoryState
+    story_engine: StoryEngine, story_context: StoryContext
 ) -> None:
     tools = [ToolDefinition(name="Foo")]
 
@@ -295,7 +293,7 @@ async def test_prepare_tools_returns_tools_for_conversation(
         ModelRequest(parts=[UserPromptPart(content="Second")]),
         ModelRequest(parts=[UserPromptPart(content="Third")]),
     ]
-    ctx = RunContext(deps=story_state, model=TestModel(), usage=RunUsage(), messages=messages)
+    ctx = RunContext(deps=story_context, model=TestModel(), usage=RunUsage(), messages=messages)
 
     result = await story_engine._prepare_tools(ctx, tools)
 

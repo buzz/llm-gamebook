@@ -5,19 +5,19 @@ from pydantic_ai import Agent, ModelMessage, ModelRequest, UserPromptPart
 from llm_gamebook.engine._runner import StreamRunner
 from llm_gamebook.engine.message import ResponseStreamUpdateMessage
 from llm_gamebook.message_bus import MessageBus
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.context import StoryContext
 
 from .conftest import StreamEvents
 
 
 async def test_stream_runner_run_returns_messages(
     stream_runner: StreamRunner,
-    story_state: StoryState,
+    story_context: StoryContext,
     stream_events: StreamEvents,
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Hello")])]
 
-    result = await stream_runner.run(messages, story_state)
+    result = await stream_runner.run(messages, story_context)
 
     response_ids = result.message_ids
     part_ids = result.part_ids
@@ -29,12 +29,12 @@ async def test_stream_runner_run_returns_messages(
 
 async def test_stream_runner_handles_model_request_node(
     stream_runner: StreamRunner,
-    story_state: StoryState,
+    story_context: StoryContext,
     stream_events: StreamEvents,
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test prompt")])]
 
-    await stream_runner.run(messages, story_state)
+    await stream_runner.run(messages, story_context)
 
     assert len(stream_events) >= 1
     event = stream_events[0]
@@ -44,12 +44,12 @@ async def test_stream_runner_handles_model_request_node(
 
 async def test_stream_runner_handles_part_start_event(
     stream_runner: StreamRunner,
-    story_state: StoryState,
+    story_context: StoryContext,
     stream_events: StreamEvents,
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    await stream_runner.run(messages, story_state)
+    await stream_runner.run(messages, story_context)
 
     assert len(stream_events) >= 1
     event = stream_events[0]
@@ -60,12 +60,12 @@ async def test_stream_runner_handles_part_start_event(
 
 async def test_stream_runner_handles_part_delta_event(
     stream_runner: StreamRunner,
-    story_state: StoryState,
+    story_context: StoryContext,
     stream_events: StreamEvents,
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    await stream_runner.run(messages, story_state)
+    await stream_runner.run(messages, story_context)
 
     assert len(stream_events) >= 1
     for event in stream_events:
@@ -76,26 +76,26 @@ async def test_stream_runner_handles_part_delta_event(
 
 async def test_stream_runner_multiple_responses(
     stream_runner: StreamRunner,
-    story_state: StoryState,
+    story_context: StoryContext,
     stream_events: StreamEvents,
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="First")])]
 
-    result1 = await stream_runner.run(messages, story_state)
+    result1 = await stream_runner.run(messages, story_context)
 
     messages2: list[ModelMessage] = [
         *result1.messages,
         ModelRequest(parts=[UserPromptPart(content="Second")]),
     ]
 
-    result2 = await stream_runner.run(messages2, story_state)
+    result2 = await stream_runner.run(messages2, story_context)
 
     total_responses = len(result1.message_ids) + len(result2.message_ids)
     assert total_responses >= 1
 
 
 async def test_stream_runner_debounce_reduces_events(
-    message_bus: MessageBus, story_state: StoryState, test_agent: Agent[StoryState, str]
+    message_bus: MessageBus, story_context: StoryContext, test_agent: Agent[StoryContext, str]
 ) -> None:
     session_id = uuid4()
     runner = StreamRunner(test_agent, session_id, message_bus, debounce=0.5)
@@ -109,14 +109,14 @@ async def test_stream_runner_debounce_reduces_events(
 
     message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
 
-    await runner.run(messages, story_state)
+    await runner.run(messages, story_context)
 
     assert len(events) > 0
     assert len(events) <= 4
 
 
 async def test_stream_runner_zero_debounce_produces_more_events(
-    message_bus: MessageBus, story_state: StoryState, test_agent: Agent[StoryState, str]
+    message_bus: MessageBus, story_context: StoryContext, test_agent: Agent[StoryContext, str]
 ) -> None:
     session_id = uuid4()
     runner_zero = StreamRunner(test_agent, session_id, message_bus, debounce=0.0)
@@ -130,18 +130,17 @@ async def test_stream_runner_zero_debounce_produces_more_events(
 
     message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
 
-    await runner_zero.run(messages, story_state)
+    await runner_zero.run(messages, story_context)
 
     assert len(events) >= 1
 
 
 async def test_stream_runner_response_id_is_uuid(
-    stream_runner: StreamRunner,
-    story_state: StoryState,
+    stream_runner: StreamRunner, story_context: StoryContext
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    result = await stream_runner.run(messages, story_state)
+    result = await stream_runner.run(messages, story_context)
     response_ids = result.message_ids
 
     for response_id in response_ids:
@@ -149,12 +148,11 @@ async def test_stream_runner_response_id_is_uuid(
 
 
 async def test_stream_runner_part_ids_are_uuids(
-    stream_runner: StreamRunner,
-    story_state: StoryState,
+    stream_runner: StreamRunner, story_context: StoryContext
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    result = await stream_runner.run(messages, story_state)
+    result = await stream_runner.run(messages, story_context)
     part_ids = result.part_ids
 
     for response_parts in part_ids:
@@ -163,13 +161,11 @@ async def test_stream_runner_part_ids_are_uuids(
 
 
 async def test_stream_runner_response_contains_model_output(
-    stream_runner: StreamRunner,
-    story_state: StoryState,
-    stream_events: StreamEvents,
+    stream_runner: StreamRunner, story_context: StoryContext, stream_events: StreamEvents
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    await stream_runner.run(messages, story_state)
+    await stream_runner.run(messages, story_context)
 
     assert len(stream_events) >= 1
     final_event = stream_events[-1]
@@ -177,13 +173,11 @@ async def test_stream_runner_response_contains_model_output(
 
 
 async def test_stream_runner_session_id_matches(
-    stream_runner: StreamRunner,
-    story_state: StoryState,
-    stream_events: StreamEvents,
+    stream_runner: StreamRunner, story_context: StoryContext, stream_events: StreamEvents
 ) -> None:
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    await stream_runner.run(messages, story_state)
+    await stream_runner.run(messages, story_context)
 
     for event in stream_events:
         assert event.session_id == stream_runner._session_id

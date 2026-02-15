@@ -1,6 +1,6 @@
+from .context import StoryContext
 from .entity import BaseEntity
 from .project import Project
-from .state import StoryState
 from .traits import DescribedTrait, GraphNodeTrait, GraphTrait
 
 __all__ = [
@@ -9,5 +9,5 @@ __all__ = [
     "GraphNodeTrait",
     "GraphTrait",
     "Project",
-    "StoryState",
+    "StoryContext",
 ]

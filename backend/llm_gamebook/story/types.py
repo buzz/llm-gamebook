@@ -7,9 +7,9 @@ from llm_gamebook.schema.validators import is_normalized_pascal_case, is_normali
 if TYPE_CHECKING:
     from pydantic_ai.tools import Tool
 
-    from .state import StoryState
+    from .context import StoryContext
 
-type StoryTool = Tool[StoryState]
+type StoryTool = Tool[StoryContext]
 """An LLM tool function."""
 
 NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]

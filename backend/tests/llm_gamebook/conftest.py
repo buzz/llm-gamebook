@@ -9,8 +9,8 @@ from llm_gamebook.db.models import Session
 from llm_gamebook.engine.manager import EngineManager
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.message_bus import MessageBus
+from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.project import Project
-from llm_gamebook.story.state import StoryState
 
 if TYPE_CHECKING:
     from llm_gamebook.story.entity import EntityType
@@ -103,18 +103,18 @@ def test_model() -> TestModel:
 
 
 @pytest.fixture
-def test_agent(test_model: TestModel, story_state: StoryState) -> Agent[StoryState, str]:
+def test_agent(test_model: TestModel, story_context: StoryContext) -> Agent[StoryContext, str]:
     return Agent(
         test_model,
-        deps_type=StoryState,
+        deps_type=StoryContext,
         instructions="You are a test agent.",
         output_type=str,
-        tools=list(story_state.get_tools()),
+        tools=list(story_context.get_tools()),
     )
 
 
 @pytest.fixture
 def session_adapter(
-    session: Session, story_state: StoryState, message_bus: MessageBus
+    session: Session, story_context: StoryContext, message_bus: MessageBus
 ) -> SessionAdapter:
-    return SessionAdapter(session.id, story_state, message_bus)
+    return SessionAdapter(session.id, story_context, message_bus)

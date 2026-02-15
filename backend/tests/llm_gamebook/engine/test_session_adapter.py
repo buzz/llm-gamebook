@@ -7,6 +7,7 @@ from llm_gamebook.db.models import Session
 from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.session_adapter import SessionAdapter
+from llm_gamebook.story.session_state import SessionStateData
 from llm_gamebook.web.schema.session.message import ModelRequestCreate
 from llm_gamebook.web.schema.session.part import UserPromptPartCreate
 
@@ -101,3 +102,33 @@ async def test_session_adapter_session_id(
     session_adapter: SessionAdapter, session: Session
 ) -> None:
     assert session_adapter.session_id == session.id
+
+
+async def test_session_adapter_state_persistence(
+    session_adapter: SessionAdapter, db_session: AsyncDbSession, session: Session
+) -> None:
+    session_data = SessionStateData(entities={"player": {"health": 100, "name": "Hero"}})
+    model_response = ModelResponse(
+        parts=[TextPart(content="Test response")],
+        model_name="gpt-4",
+        usage=RequestUsage(input_tokens=5, output_tokens=5),
+    )
+    result = StreamResult(
+        messages=[model_response],
+        message_ids=[],
+        part_ids=[],
+        thinking_durations={},
+        state=session_data,
+    )
+    await session_adapter.append_messages(db_session, result)
+
+    loaded_state = await session_adapter.load_state(db_session)
+    assert loaded_state is not None
+    assert loaded_state.entities == {"player": {"health": 100, "name": "Hero"}}
+
+
+async def test_session_adapter_load_state_no_state(
+    session_adapter: SessionAdapter, db_session: AsyncDbSession, session: Session
+) -> None:
+    loaded_state = await session_adapter.load_state(db_session)
+    assert loaded_state is None

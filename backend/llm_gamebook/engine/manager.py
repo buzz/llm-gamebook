@@ -6,17 +6,20 @@ from types import TracebackType
 from typing import Self
 from uuid import UUID
 
+from pydantic import ValidationError
 from pydantic_ai.models import Model
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
+from llm_gamebook.db.crud.message import get_latest_message_with_state
 from llm_gamebook.db.models import Session
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
 from llm_gamebook.providers import ModelProvider
+from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.project import Project
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.session_state import SessionStateData
 
 from ._model_factory import create_model_from_db_config
 from .engine import StoryEngine
@@ -63,8 +66,8 @@ class EngineManager(BusSubscriber):
         try:
             engine, _ = self._engines[session_id]
         except KeyError:
-            model, state = await self._create_model_and_state(session_id, db_session)
-            engine = StoryEngine(session_id, model, state, self._bus)
+            model, context = await self._create_model_and_context(session_id, db_session)
+            engine = StoryEngine(session_id, model, context, self._bus)
             created = True
 
         self._engines[session_id] = (engine, time.time())
@@ -74,11 +77,11 @@ class EngineManager(BusSubscriber):
 
         return engine
 
-    async def _create_model_and_state(
+    async def _create_model_and_context(
         self,
         session_id: UUID,
         db_session: AsyncDbSession,
-    ) -> tuple[Model | None, StoryState]:
+    ) -> tuple[Model | None, StoryContext]:
         statement = select(Session).where(Session.id == session_id)
         statement = statement.options(selectinload(Session.config))  # type: ignore[arg-type]
         result = await db_session.exec(statement)
@@ -89,7 +92,18 @@ class EngineManager(BusSubscriber):
             raise ValueError(msg)
 
         project_path = Path(Path.home() / "llm/llm-gamebook/llm-gamebook/examples/broken-bulb")
-        state = StoryState(Project.from_path(project_path))
+
+        message_with_state = await get_latest_message_with_state(db_session, session_id)
+        session_state_data = None
+        if message_with_state and message_with_state.state:
+            try:
+                session_state_data = SessionStateData.model_validate(message_with_state.state)
+            except ValidationError as err:
+                self._log.warning(
+                    "Invalid session state for session %s, ignoring: %s", session_id, err.errors()
+                )
+
+        context = StoryContext(Project.from_path(project_path), session_state_data)
 
         model = (
             create_model_from_db_config(
@@ -102,7 +116,7 @@ class EngineManager(BusSubscriber):
             else None
         )
 
-        return model, state
+        return model, context
 
     async def _create_model_from_config(
         self, model_name: str, provider: ModelProvider, base_url: str | None, api_key: str | None

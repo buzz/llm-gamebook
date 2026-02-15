@@ -21,7 +21,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.context import StoryContext
 
 from ._runner import StreamRunner
 from .message import ResponseErrorMessage, ResponseStartedMessage, ResponseStoppedMessage
@@ -33,16 +33,16 @@ class StoryEngine:
         self,
         session_id: UUID,
         model: Model | None,
-        state: StoryState,
+        context: StoryContext,
         bus: MessageBus,
         stream_debounce: float = 0.1,
     ) -> None:
-        self._state = state
-        self._session_adapter = SessionAdapter(session_id, state, bus)
+        self._context = context
+        self._session_adapter = SessionAdapter(session_id, context, bus)
         self._bus = bus
         self._log = logger.getChild(f"engine-{session_id}")
         self._stream_debounce = stream_debounce
-        self._agent: Agent[StoryState, str] | None
+        self._agent: Agent[StoryContext, str] | None
         if model:
             self.set_model(model)
 
@@ -68,7 +68,7 @@ class StoryEngine:
             runner = StreamRunner(
                 self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
             )
-            result = await runner.run(msg_history, self._state)
+            result = await runner.run(msg_history, self._context)
             await self._session_adapter.append_messages(db_session, result)
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
@@ -84,7 +84,7 @@ class StoryEngine:
 
     async def _prepare_tools(
         self,
-        ctx: RunContext[StoryState],
+        ctx: RunContext[StoryContext],
         tools: list[ToolDefinition],
     ) -> list[ToolDefinition] | None:
         # No tools for introduction message
@@ -95,18 +95,18 @@ class StoryEngine:
         return self._session_adapter
 
     def set_model(self, model: Model) -> None:
-        self._agent = Agent[StoryState, str](
+        self._agent = Agent[StoryContext, str](
             model,
-            deps_type=StoryState,
+            deps_type=StoryContext,
             instructions=self._instructions,
             model_settings=ModelSettings(seed=random.randint(0, 10000), temperature=0.8),
             output_type=str,
-            tools=list(self._state.get_tools()),
+            tools=list(self._context.get_tools()),
             prepare_tools=self._prepare_tools,
         )
 
     @staticmethod
-    async def _instructions(run_context: RunContext[StoryState]) -> str:
+    async def _instructions(run_context: RunContext[StoryContext]) -> str:
         return await run_context.deps.get_system_prompt()
 
     def _log_messages(self, messages: Sequence[ModelMessage]) -> None:

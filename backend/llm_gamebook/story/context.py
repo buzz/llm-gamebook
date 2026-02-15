@@ -3,7 +3,10 @@ from typing import TYPE_CHECKING
 
 import jinja2
 
+from llm_gamebook.story.errors import EntityNotFoundError
 from llm_gamebook.story.project import Project
+
+from .session_state import FieldValue, SessionState, SessionStateData
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -12,17 +15,38 @@ if TYPE_CHECKING:
 
 
 # TODO: prevent entity id collisions
-class StoryState:
+class StoryContext:
     def __init__(
         self,
         project: Project,
+        session_state: SessionStateData | None = None,
     ) -> None:
         super().__init__()
         self._project = project
+        self._session_state = SessionState(session_state)
 
     @property
     def project(self) -> "Project":
         return self._project
+
+    @property
+    def session_state(self) -> SessionState:
+        return self._session_state
+
+    def get_effective_field(self, entity_id: str, field_name: str) -> FieldValue | None:
+        session_value = self._session_state.get_field(entity_id, field_name)
+        if session_value is not None:
+            return session_value
+
+        try:
+            entity = self._project.get_entity(entity_id)
+            return entity.model_dump().get(field_name)
+        except EntityNotFoundError:
+            return None
+
+    def set_field(self, entity_id: str, field_name: str, value: FieldValue) -> None:
+        self._project.get_entity(entity_id)  # make sure entity exists
+        self._session_state.set_field(entity_id, field_name, value)
 
     def get_tools(self) -> "Iterable[StoryTool]":
         for entity_type in self._project.entity_type_map.values():

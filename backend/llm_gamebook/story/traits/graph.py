@@ -16,7 +16,7 @@ from llm_gamebook.story.types import (
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.entity import FunctionDefinition
-    from llm_gamebook.story.state import StoryState
+    from llm_gamebook.story.context import StoryContext
 
 
 class InvalidTransitionError(Exception):
@@ -116,7 +116,7 @@ class GraphTrait(BaseEntity):
             return {"result": "success"}
 
         async def prepare(
-            ctx: "RunContext[StoryState]", tool_def: ToolDefinition
+            ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
         ) -> ToolDefinition | None:
             schema = tool_def.parameters_json_schema
             edge_ids = [edge.id for edge in self.current_node.edges]

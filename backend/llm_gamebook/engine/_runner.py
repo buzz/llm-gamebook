@@ -24,7 +24,8 @@ from pydantic_ai import (
 
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
-from llm_gamebook.story.state import StoryState
+from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.session_state import SessionStateData
 
 from .message import ResponseStreamUpdateMessage
 
@@ -48,10 +49,13 @@ class StreamResult:
     thinking_durations: dict[UUID, int]
     """Thinking duration in milliseconds for each thinking part, keyed by part UUID."""
 
+    state: SessionStateData | None = None
+    """Session state to persist with this response."""
+
 
 class StreamRunner:
     def __init__(
-        self, agent: Agent[StoryState], session_id: UUID, bus: MessageBus, debounce: float
+        self, agent: Agent[StoryContext], session_id: UUID, bus: MessageBus, debounce: float
     ) -> None:
         self._agent = agent
         self._session_id = session_id
@@ -69,10 +73,10 @@ class StreamRunner:
         self._thinking_start_time: float | None = None
         self._thinking_durations: dict[UUID, int] = {}
 
-    async def run(self, msg_history: Sequence[ModelMessage], state: StoryState) -> StreamResult:
+    async def run(self, msg_history: Sequence[ModelMessage], context: StoryContext) -> StreamResult:
         messages: list[ModelMessage] = []
 
-        async with self._agent.iter(message_history=msg_history, deps=state) as run:
+        async with self._agent.iter(message_history=msg_history, deps=context) as run:
             async for node in run:
                 if Agent.is_model_request_node(node):
                     await self._handle_model_request_node(node, run)
@@ -97,10 +101,11 @@ class StreamRunner:
             message_ids=self._response_ids,
             part_ids=self._part_ids,
             thinking_durations=self._thinking_durations,
+            state=context.session_state._data if context.session_state._data.entities else None,
         )
 
     async def _handle_model_request_node(
-        self, node: ModelRequestNode[StoryState, str], run: AgentRun[StoryState, str]
+        self, node: ModelRequestNode[StoryContext, str], run: AgentRun[StoryContext, str]
     ) -> None:
         self._log.debug("ModelRequestNode: streaming partial request tokens")
         async with node.stream(run.ctx) as request_stream:
@@ -118,7 +123,7 @@ class StreamRunner:
             self._response_index += 1
 
     async def _handle_call_tools_node(
-        self, node: CallToolsNode[StoryState, str], run: AgentRun[StoryState, str]
+        self, node: CallToolsNode[StoryContext, str], run: AgentRun[StoryContext, str]
     ) -> None:
         # A handle-response node => The model returned some data, potentially calls a tool
         self._log.debug("CallToolsNode: streaming partial response & tool usage")

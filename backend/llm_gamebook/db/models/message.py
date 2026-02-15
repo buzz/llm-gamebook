@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional, Self
 from uuid import UUID, uuid4
 
 from pydantic_ai import ModelMessage, ModelResponse
-from sqlalchemy import Column, Enum, String
+from sqlalchemy import JSON, Column, Enum, String
 from sqlmodel import Field, Relationship, SQLModel
 
 from .part import Part
@@ -47,6 +47,7 @@ class Message(MessageBase, table=True):
         back_populates="message", passive_deletes="all", sa_relationship_kwargs={"lazy": "selectin"}
     )
     instructions: str | None = Field(default=None, sa_column=Column(String))
+    state: dict[str, object] | None = Field(default=None, sa_column=Column(JSON(none_as_null=True)))
 
     @classmethod
     def from_model_message(
@@ -93,4 +94,5 @@ class Message(MessageBase, table=True):
             **self.model_dump(mode="json", exclude={"parts", "usage", "session"}),
             "parts": parts,
             "usage": usage,
+            "state": self.state,
         }

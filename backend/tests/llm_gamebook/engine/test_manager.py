@@ -37,10 +37,10 @@ async def test_engine_manager_get_or_create_does_not_reinstantiate_for_existing(
 async def test_engine_manager_create_model_and_state(
     session: Session, db_session: AsyncDbSession, engine_manager: EngineManager
 ) -> None:
-    model, state = await engine_manager._create_model_and_state(session.id, db_session)
+    model, context = await engine_manager._create_model_and_context(session.id, db_session)
 
     assert model is not None
-    assert state is not None
+    assert context is not None
 
 
 async def test_engine_manager_create_model_and_state_missing_session(
@@ -49,7 +49,7 @@ async def test_engine_manager_create_model_and_state_missing_session(
     non_existent_session_id = uuid4()
 
     with pytest.raises(ValueError, match=r"Session .* not found"):
-        await engine_manager._create_model_and_state(non_existent_session_id, db_session)
+        await engine_manager._create_model_and_context(non_existent_session_id, db_session)
 
 
 async def test_engine_manager_evict_idle(
