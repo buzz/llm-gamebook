@@ -46,9 +46,7 @@ class StoryEngine:
         if model:
             self.set_model(model)
 
-    async def generate_response(
-        self, db_session: AsyncDbSession, *, streaming: bool = False
-    ) -> None:
+    async def generate_response(self, db_session: AsyncDbSession) -> None:
         self._log.info("Generating new response")
         self._bus.publish(ResponseStartedMessage(self._session_adapter.session_id))
 
@@ -67,23 +65,14 @@ class StoryEngine:
             if self._log.level <= logging.DEBUG:
                 self._log_messages(msg_history)
 
-            # Streaming run
-            if streaming:
-                runner = StreamRunner(
-                    self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
-                )
-                streaming_result = await runner.run(msg_history, self._state)
-                new_messages, message_ids, parts_ids, durations = streaming_result
-                await self._session_adapter.append_messages(
-                    db_session, new_messages, message_ids, parts_ids, durations
-                )
-
-            # Non-streaming run
-            else:
-                result = await self._agent.run(message_history=msg_history, deps=self._state)
-                new_messages = result.new_messages()
-                # TODO: need to record durations for non-streaming, too
-                await self._session_adapter.append_messages(db_session, new_messages)
+            runner = StreamRunner(
+                self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
+            )
+            streaming_result = await runner.run(msg_history, self._state)
+            new_messages, message_ids, parts_ids, durations = streaming_result
+            await self._session_adapter.append_messages(
+                db_session, new_messages, message_ids, parts_ids, durations
+            )
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
             self._log.exception("Request failed. The exception was:")

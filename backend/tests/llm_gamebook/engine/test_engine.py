@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator
-from typing import NoReturn
 
 import httpx
 import pytest
@@ -44,7 +43,7 @@ async def test_story_engine_generate_response_streaming(
     func_model = FunctionModel(stream_function=stream_function)
     story_engine.set_model(func_model)
 
-    await story_engine.generate_response(db_session, streaming=True)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -70,7 +69,7 @@ async def test_story_engine_generate_response_non_streaming(
     story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
 ) -> None:
     events, error_events = engine_events
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -85,14 +84,15 @@ async def test_story_engine_generate_response_error_httpx(
 ) -> None:
     events, error_events = engine_events
 
-    def mock_fail_function(messages: list[ModelMessage], info: AgentInfo) -> NoReturn:
+    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "error"  # Yield first to make it a proper async generator
         msg = "Network error"
         raise httpx.RequestError(msg, request=None)
 
-    error_model = FunctionModel(function=mock_fail_function)
+    error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -108,13 +108,14 @@ async def test_story_engine_generate_response_error_openai(
 ) -> None:
     events, error_events = engine_events
 
-    def mock_fail_function(messages: list[ModelMessage], info: AgentInfo) -> NoReturn:
+    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "error"
         raise OpenAIError
 
-    error_model = FunctionModel(function=mock_fail_function)
+    error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -130,14 +131,17 @@ async def test_story_engine_generate_response_error_agent_run(
 ) -> None:
     events, error_events = engine_events
 
-    def mock_fail_function(messages: list[ModelMessage], info: AgentInfo) -> NoReturn:
+    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "error"
+        msg = "Agent run failed"
+        raise AgentRunError(msg)
         msg = "Agent run failed"
         raise AgentRunError(msg)
 
-    error_model = FunctionModel(function=mock_fail_function)
+    error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -153,14 +157,15 @@ async def test_story_engine_generate_response_error_model_api(
 ) -> None:
     events, error_events = engine_events
 
-    def mock_fail_function(messages: list[ModelMessage], info: AgentInfo) -> NoReturn:
+    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "error"
         model_name = "test"
         raise ModelAPIError(model_name, "Model API error")
 
-    error_model = FunctionModel(function=mock_fail_function)
+    error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -176,13 +181,14 @@ async def test_story_engine_generate_response_error_model_http(
 ) -> None:
     events, error_events = engine_events
 
-    def mock_fail_function(messages: list[ModelMessage], info: AgentInfo) -> NoReturn:
+    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "error"
         raise ModelHTTPError(500, "ModelName", body={"message": "HTTP error"})
 
-    error_model = FunctionModel(function=mock_fail_function)
+    error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
@@ -248,7 +254,7 @@ async def test_set_model_allows_subsequent_requests_with_new_model(
     story_engine.set_model(new_model)
 
     events, error_events = engine_events
-    await story_engine.generate_response(db_session, streaming=False)
+    await story_engine.generate_response(db_session)
 
     assert "started" in events
     assert "stopped" in events
