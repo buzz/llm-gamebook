@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterable, Iterable, Sequence
+from collections.abc import AsyncIterable, Sequence
 from contextlib import suppress
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
@@ -23,6 +23,7 @@ from llm_gamebook.db.crud.message import (
 from llm_gamebook.db.crud.session import delete_session, get_session
 from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.part import Part
+from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
 
 if TYPE_CHECKING:
@@ -70,27 +71,24 @@ class SessionAdapter:
 
             yield msg
 
-    async def append_messages(
-        self,
-        db_session: AsyncDbSession,
-        model_messages: Iterable[ModelMessage],
-        message_ids: Sequence[UUID] | None = None,
-        part_ids: Sequence[Sequence[UUID]] | None = None,
-        durations: dict[UUID, int] | None = None,
-    ) -> None:
+    async def append_messages(self, db_session: AsyncDbSession, result: StreamResult) -> None:
         messages: list[Message] = []
 
-        for idx, model_message in enumerate(model_messages):
+        for idx, model_message in enumerate(result.messages):
             model_msg_id: UUID | None = None
             model_part_ids: Sequence[UUID] | None = None
-            if message_ids is not None:
+            if result.message_ids is not None:
                 with suppress(IndexError):
-                    model_msg_id = message_ids[idx]
-            if part_ids is not None:
+                    model_msg_id = result.message_ids[idx]
+            if result.part_ids is not None:
                 with suppress(IndexError):
-                    model_part_ids = part_ids[idx]
+                    model_part_ids = result.part_ids[idx]
             msg = Message.from_model_message(
-                model_message, self._session_id, model_msg_id, model_part_ids, durations
+                model_message,
+                self._session_id,
+                model_msg_id,
+                model_part_ids,
+                result.thinking_durations,
             )
             messages.append(msg)
 

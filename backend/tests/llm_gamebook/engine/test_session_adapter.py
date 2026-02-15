@@ -5,6 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
 from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.web.schema.session.message import ModelRequestCreate
 from llm_gamebook.web.schema.session.part import UserPromptPartCreate
@@ -53,7 +54,13 @@ async def test_session_adapter_append_messages(
         model_name="gpt-4",
         usage=RequestUsage(input_tokens=5, output_tokens=5),
     )
-    await session_adapter.append_messages(db_session, [model_request, model_response])
+    result = StreamResult(
+        messages=[model_request, model_response],
+        message_ids=[],
+        part_ids=[],
+        thinking_durations={},
+    )
+    await session_adapter.append_messages(db_session, result)
 
     count = await session_adapter.get_message_count(db_session)
     assert count == 2
@@ -65,9 +72,13 @@ async def test_session_adapter_append_messages_with_ids(
     msg_id = uuid4()
     part_ids = [uuid4()]
     model_request = ModelRequest(parts=[UserPromptPart(content="Test user message")])
-    await session_adapter.append_messages(
-        db_session, [model_request], message_ids=[msg_id], part_ids=[part_ids]
+    result = StreamResult(
+        messages=[model_request],
+        message_ids=[msg_id],
+        part_ids=[part_ids],
+        thinking_durations={},
     )
+    await session_adapter.append_messages(db_session, result)
 
     count = await session_adapter.get_message_count(db_session)
     assert count == 1

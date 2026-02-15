@@ -68,11 +68,8 @@ class StoryEngine:
             runner = StreamRunner(
                 self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
             )
-            streaming_result = await runner.run(msg_history, self._state)
-            new_messages, message_ids, parts_ids, durations = streaming_result
-            await self._session_adapter.append_messages(
-                db_session, new_messages, message_ids, parts_ids, durations
-            )
+            result = await runner.run(msg_history, self._state)
+            await self._session_adapter.append_messages(db_session, result)
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
             self._log.exception("Request failed. The exception was:")

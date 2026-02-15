@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from time import time
 from uuid import UUID, uuid4
 
@@ -28,6 +29,26 @@ from llm_gamebook.story.state import StoryState
 from .message import ResponseStreamUpdateMessage
 
 
+@dataclass(frozen=True)
+class StreamResult:
+    """Result of a streaming LLM response run.
+
+    Contains all the data needed to persist the response and update the UI.
+    """
+
+    messages: Sequence[ModelMessage]
+    """The updated message history after the LLM response, including the new assistant messages."""
+
+    message_ids: list[UUID]
+    """Unique identifiers for each message in the response, in order."""
+
+    part_ids: list[list[UUID]]
+    """Unique identifiers for each part within each message, grouped by message."""
+
+    thinking_durations: dict[UUID, int]
+    """Thinking duration in milliseconds for each thinking part, keyed by part UUID."""
+
+
 class StreamRunner:
     def __init__(
         self, agent: Agent[StoryState], session_id: UUID, bus: MessageBus, debounce: float
@@ -48,9 +69,7 @@ class StreamRunner:
         self._thinking_start_time: float | None = None
         self._thinking_durations: dict[UUID, int] = {}
 
-    async def run(
-        self, msg_history: Sequence[ModelMessage], state: StoryState
-    ) -> tuple[Sequence[ModelMessage], list[UUID], list[list[UUID]], dict[UUID, int]]:
+    async def run(self, msg_history: Sequence[ModelMessage], state: StoryState) -> StreamResult:
         messages: list[ModelMessage] = []
 
         async with self._agent.iter(message_history=msg_history, deps=state) as run:
@@ -73,7 +92,12 @@ class StreamRunner:
                                 last_part_id = response_parts[-1]
                                 self._thinking_durations[last_part_id] = duration
 
-        return messages, self._response_ids, self._part_ids, self._thinking_durations
+        return StreamResult(
+            messages=messages,
+            message_ids=self._response_ids,
+            part_ids=self._part_ids,
+            thinking_durations=self._thinking_durations,
+        )
 
     async def _handle_model_request_node(
         self, node: ModelRequestNode[StoryState, str], run: AgentRun[StoryState, str]
