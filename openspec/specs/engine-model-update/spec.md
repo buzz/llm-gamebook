@@ -8,7 +8,7 @@ The StoryEngine SHALL provide a method to replace its underlying Model instance 
 
 - **WHEN** `StoryEngine.set_model(new_model)` is called on an active engine
 - **THEN** Engine replaces its internal Model instance with `new_model`
-- **AND** Engine continues to use existing StoryState
+- **AND** Engine continues to use existing StoryContext
 - **AND** Engine continues to use existing session message history
 - **AND** Subsequent agent runs use the new model
 
