@@ -48,6 +48,9 @@ Author defines nodes, conditions, and entities in a JSON/YAML file.
 
 - https://chasm.run/
 - https://github.com/neph1/LlamaTale
+- https://github.com/skorotkiewicz/rpg-ai
+- https://github.com/p-e-w/waidrin
+- https://github.com/AventurasTeam/Aventuras
 
 ## Open Gamebook Content
 
