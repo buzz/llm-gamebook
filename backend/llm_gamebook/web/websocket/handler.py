@@ -92,7 +92,7 @@ class WebSocketHandler(BusSubscriber):
     async def _generate_response(self, engine: "StoryEngine") -> None:
         """Generate response from engine and notify Web UI."""
         try:
-            await engine.generate_response(self._db_session, streaming=True)
+            await engine.generate_response(self._db_session)
         except APIError as err:
             msg = WebSocketErrorMessage(
                 name=type(err).__name__,
