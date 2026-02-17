@@ -7,6 +7,7 @@ from llm_gamebook.schema.validators import is_normalized_snake_case
 
 if TYPE_CHECKING:
     from .entity import BaseEntity
+    from .store import Reducer
 
 __all__ = ["trait_registry"]
 
@@ -17,6 +18,9 @@ class TraitRegistryEntry(NamedTuple):
 
     options_model: type[BaseModel] | None
     """Trait options model."""
+
+    reducers: Mapping[str, "Reducer"] | None
+    """Reducers mapping action names to reducer functions."""
 
 
 class TraitRegistry(Mapping[str, TraitRegistryEntry]):
@@ -34,7 +38,10 @@ class TraitRegistry(Mapping[str, TraitRegistryEntry]):
         return len(self._registry)
 
     def register(
-        self, name: str, options_model: type[BaseModel] | None = None
+        self,
+        name: str,
+        options_model: type[BaseModel] | None = None,
+        reducers: Mapping[str, "Reducer"] | None = None,
     ) -> Callable[[type], type]:
         """Class decorator that registers story entity traits."""
 
@@ -43,10 +50,21 @@ class TraitRegistry(Mapping[str, TraitRegistryEntry]):
             raise ValueError(msg)
 
         def wrapper(cls: type) -> type:
-            self._registry[name] = TraitRegistryEntry(cls, options_model)
+            self._registry[name] = TraitRegistryEntry(cls, options_model, reducers)
             return cls
 
         return wrapper
+
+    def get_all_reducers(self) -> dict[str, list["Reducer"]]:
+        """Get all registered reducers grouped by action name."""
+        result: dict[str, list[Reducer]] = {}
+        for entry in self._registry.values():
+            if entry.reducers:
+                for action_name, reducer in entry.reducers.items():
+                    if action_name not in result:
+                        result[action_name] = []
+                    result[action_name].append(reducer)
+        return result
 
 
 trait_registry = TraitRegistry()

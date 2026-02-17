@@ -5,7 +5,9 @@ from pydantic import BaseModel, Field, PrivateAttr
 from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
+from llm_gamebook.story.actions import Action
 from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.session_state import SessionState
 from llm_gamebook.story.trait_registry import trait_registry
 from llm_gamebook.story.types import (
     FunctionResult,
@@ -21,6 +23,29 @@ if TYPE_CHECKING:
 
 class InvalidTransitionError(Exception):
     pass
+
+
+class GraphTransitionPayload(BaseModel):
+    """Payload for GraphTransitionAction."""
+
+    entity_id: str
+    to: str
+
+
+class GraphTransitionAction(Action[GraphTransitionPayload]):
+    """Action for transitioning an entity to a new graph node."""
+
+    def __init__(self, entity_id: str, to: str) -> None:
+        super().__init__(
+            name="graph/transition", payload=GraphTransitionPayload(entity_id=entity_id, to=to)
+        )
+
+
+def graph_transition_reducer(state: SessionState, action: Action[BaseModel]) -> SessionState:
+    """Reducer for graph/transition action."""
+    payload = GraphTransitionPayload.model_validate(action.payload.model_dump())
+    state.set_field(payload.entity_id, "current_node_id", payload.to)
+    return state
 
 
 @trait_registry.register("graph_node")
@@ -58,7 +83,11 @@ class GraphTraitOptions(BaseModel):
     """The ID of the graph node entity type."""
 
 
-@trait_registry.register("graph", GraphTraitOptions)
+@trait_registry.register(
+    "graph",
+    GraphTraitOptions,
+    reducers={"graph/transition": graph_transition_reducer},
+)
 class GraphTrait(BaseEntity):
     """Adds the capability to be used as graph to an entity."""
 

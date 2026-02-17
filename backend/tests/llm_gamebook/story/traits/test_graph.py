@@ -1,8 +1,15 @@
 import pytest
 
+from llm_gamebook.story.actions import Action
 from llm_gamebook.story.entity import EntityType
 from llm_gamebook.story.project import Project
-from llm_gamebook.story.traits.graph import GraphNodeTrait, GraphTrait, InvalidTransitionError
+from llm_gamebook.story.traits.graph import (
+    GraphNodeTrait,
+    GraphTrait,
+    GraphTransitionAction,
+    GraphTransitionPayload,
+    InvalidTransitionError,
+)
 
 
 def test_graph_node_trait_edges_property(simple_entity_type: EntityType) -> None:
@@ -91,3 +98,26 @@ def test_graph_trait_prepare_function(simple_project: Project) -> None:
 def test_graph_trait_prepare_function_no_edges(simple_project: Project) -> None:
     node_b = simple_project.get_entity("node_b", GraphNodeTrait)
     assert len(node_b.edge_ids) == 0
+
+
+def test_create_graph_transition_action() -> None:
+    action = GraphTransitionAction(entity_id="graph_1", to="start_node")
+    assert action.name == "graph/transition"
+    assert action.payload.entity_id == "graph_1"
+    assert action.payload.to == "start_node"
+
+
+def test_graph_transition_serialization() -> None:
+    action = GraphTransitionAction(entity_id="graph_1", to="node1")
+    json_str = action.model_dump_json()
+    assert "graph/transition" in json_str
+    assert "node1" in json_str
+
+
+def test_graph_transition_roundtrip() -> None:
+    original = GraphTransitionAction(entity_id="graph_1", to="next_node")
+    json_str = original.model_dump_json()
+    restored = Action[GraphTransitionPayload].model_validate_json(json_str)
+    assert restored.name == original.name
+    assert restored.payload.entity_id == original.payload.entity_id
+    assert restored.payload.to == original.payload.to
