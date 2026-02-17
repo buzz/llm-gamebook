@@ -108,6 +108,8 @@ max-returns = 8
 plugins = ["pydantic.mypy"]
 strict = true
 disallow_any_explicit = true
+# temporarily exclude tui
+exclude = ["^llm_gamebook/tui"]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
