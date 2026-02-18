@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, ValidationError
 from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
@@ -144,6 +144,16 @@ class GraphTrait(BaseEntity):
                 to: The node to transition to.
             """
             story_ctx = ctx.deps
+
+            if not story_ctx.validate_entity_exists(entity_id):
+                return {"result": "error", "reason": f"Entity '{entity_id}' not found in project"}
+
+            if to not in self.node_ids:
+                return {
+                    "result": "error",
+                    "reason": f"Node '{to}' is not part of graph '{entity_id}'",
+                }
+
             current_node = self._resolve_current_node(story_ctx)
 
             valid_targets = [edge.id for edge in current_node.edges]
@@ -156,7 +166,7 @@ class GraphTrait(BaseEntity):
             action = GraphTransitionAction(entity_id, to)
             try:
                 story_ctx.store.dispatch(action)
-            except (RuntimeError, TypeError) as err:
+            except (RuntimeError, TypeError, ValidationError) as err:
                 return {"result": "error", "reason": str(err)}
             else:
                 return {"result": "success"}

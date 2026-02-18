@@ -51,6 +51,14 @@ class StoryContext:
         except (AttributeError, EntityNotFoundError):
             return None
 
+    def validate_entity_exists(self, entity_id: str) -> bool:
+        try:
+            self._project.get_entity(entity_id)
+        except EntityNotFoundError:
+            return False
+        else:
+            return True
+
     def get_tools(self) -> "Iterable[StoryTool]":
         for entity_type in self._project.entity_type_map.values():
             yield from entity_type.get_tools()

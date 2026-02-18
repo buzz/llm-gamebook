@@ -1,9 +1,11 @@
 from collections.abc import AsyncIterable, Sequence
 from contextlib import suppress
 from datetime import UTC, datetime
+from logging import getLogger
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from pydantic import ValidationError
 from pydantic_ai import (
     ModelMessage,
     ModelMessagesTypeAdapter,
@@ -27,6 +29,8 @@ from llm_gamebook.db.models.part import Part
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
 from llm_gamebook.story.session_state import SessionStateData
+
+logger = getLogger(__name__)
 
 if TYPE_CHECKING:
     from llm_gamebook.message_bus import MessageBus
@@ -102,9 +106,19 @@ class SessionAdapter:
 
     async def load_state(self, db_session: AsyncDbSession) -> SessionStateData | None:
         message = await get_latest_message_with_state(db_session, self._session_id)
-        if message is not None and message.state is not None:
+        if message is None or message.state is None:
+            return None
+
+        try:
             return SessionStateData.model_validate(message.state)
-        return None
+        except (ValidationError, TypeError, ValueError) as err:
+            logger.warning(
+                "Corrupted state JSON in message %s for session %s: %s",
+                message.id,
+                self._session_id,
+                err,
+            )
+            return None
 
     async def create_user_request(
         self, db_session: AsyncDbSession, message_in: "ModelRequestCreate"
