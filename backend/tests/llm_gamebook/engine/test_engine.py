@@ -21,6 +21,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from llm_gamebook.db.models import Session
 from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.traits.graph import GraphTransitionAction
 
 from .conftest import EngineEvents, StreamEvents
 
@@ -299,3 +300,28 @@ async def test_prepare_tools_returns_tools_for_conversation(
 
     assert result is not None
     assert len(result) == len(tools)
+
+
+async def test_state_persists_after_response(
+    story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
+) -> None:
+    _, error_events = engine_events
+
+    action = GraphTransitionAction(entity_id="main", to="spark_of_hope")
+    story_engine._context.store.dispatch(action)
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+
+    assert len(error_events) == 0
+
+    loaded_state = await story_engine.session_adapter.load_state(db_session)
+    assert loaded_state is not None
+    main_entity = loaded_state.entities["main"]
+    current_node_id = main_entity["current_node_id"]
+    assert current_node_id == "spark_of_hope"

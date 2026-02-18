@@ -1,3 +1,6 @@
+from pydantic_ai import RunContext, RunUsage
+from pydantic_ai.models.test import TestModel
+
 from llm_gamebook.story.actions import Action
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.entity import EntityType
@@ -135,3 +138,57 @@ def test_graph_transition_roundtrip() -> None:
     assert restored.name == original.name
     assert restored.payload.entity_id == original.payload.entity_id
     assert restored.payload.to == original.payload.to
+
+
+def test_transition_tool_dispatches_action(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    graph_entity = simple_project.get_entity("test_graph", GraphTrait)
+    assert graph_entity.functions is not None
+    func_spec = graph_entity.functions[0]
+    tool = graph_entity._make_transition_tool(func_spec)
+
+    ctx = RunContext(
+        deps=simple_story_context,
+        model=TestModel(),
+        usage=RunUsage(),
+        messages=[],
+    )
+
+    result = tool.function(ctx, to="node_b")
+
+    assert result == {"result": "success"}
+    assert simple_story_context.session_state.get_field("test_graph", "current_node_id") == "node_b"
+
+
+def test_transition_tool_validates_target(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    graph_entity = simple_project.get_entity("test_graph", GraphTrait)
+    assert graph_entity.functions is not None
+    func_spec = graph_entity.functions[0]
+    tool = graph_entity._make_transition_tool(func_spec)
+
+    ctx = RunContext(
+        deps=simple_story_context,
+        model=TestModel(),
+        usage=RunUsage(),
+        messages=[],
+    )
+
+    result = tool.function(ctx, to="invalid_node")
+
+    assert result["result"] == "error"
+    assert "invalid_node" in result.get("reason", "")
+
+
+def test_multiple_transitions_accumulate_state(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    action1 = GraphTransitionAction(entity_id="test_graph", to="node_b")
+    simple_story_context.store.dispatch(action1)
+    assert simple_story_context.session_state.get_field("test_graph", "current_node_id") == "node_b"
+
+    action2 = GraphTransitionAction(entity_id="test_graph", to="node_a")
+    simple_story_context.store.dispatch(action2)
+    assert simple_story_context.session_state.get_field("test_graph", "current_node_id") == "node_a"
