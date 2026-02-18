@@ -7,6 +7,7 @@ from llm_gamebook.story.errors import EntityNotFoundError
 from llm_gamebook.story.project import Project
 
 from .session_state import FieldValue, SessionState, SessionStateData
+from .store import Store
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -23,7 +24,8 @@ class StoryContext:
     ) -> None:
         super().__init__()
         self._project = project
-        self._session_state = SessionState(session_state)
+        initial_state = SessionState(session_state)
+        self._store = Store(initial_state=initial_state, load_trait_reducers=True)
 
     @property
     def project(self) -> "Project":
@@ -31,10 +33,14 @@ class StoryContext:
 
     @property
     def session_state(self) -> SessionState:
-        return self._session_state
+        return self._store.get_state()
+
+    @property
+    def store(self) -> Store:
+        return self._store
 
     def get_effective_field(self, entity_id: str, field_name: str) -> FieldValue | None:
-        session_value = self._session_state.get_field(entity_id, field_name)
+        session_value = self._store.get_state().get_field(entity_id, field_name)
         if session_value is not None:
             return session_value
 
@@ -45,8 +51,8 @@ class StoryContext:
             return None
 
     def set_field(self, entity_id: str, field_name: str, value: FieldValue) -> None:
-        self._project.get_entity(entity_id)  # make sure entity exists
-        self._session_state.set_field(entity_id, field_name, value)
+        self._project.get_entity(entity_id)
+        self._store.get_state().set_field(entity_id, field_name, value)
 
     def get_tools(self) -> "Iterable[StoryTool]":
         for entity_type in self._project.entity_type_map.values():
