@@ -2,6 +2,7 @@ from llm_gamebook.story.actions import Action
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.entity import EntityType
 from llm_gamebook.story.project import Project
+from llm_gamebook.story.template_view import EntityView
 from llm_gamebook.story.traits.graph import (
     GraphNodeTrait,
     GraphTrait,
@@ -28,11 +29,15 @@ def test_graph_node_trait_resolve_edge_ids(simple_entity_type: EntityType) -> No
     assert entity._edges[0].id == "node_b"
 
 
-def test_graph_node_trait_get_template_context(simple_entity_type: EntityType) -> None:
-    entity = simple_entity_type.get_entity("node_a", GraphNodeTrait)
-    context = entity.get_template_context()
-    assert context["id"] == "node_a"
-    assert context["edges"] == ["node_b"]
+def test_graph_node_trait_view_edges(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    entity = simple_project.get_entity("node_a", GraphNodeTrait)
+    view = EntityView(entity, simple_story_context)
+    edges = view.edges
+    assert isinstance(edges, list)
+    assert len(edges) == 1
+    assert edges[0].id == "node_b"
 
 
 def test_graph_trait_nodes_property(simple_project: Project) -> None:
@@ -51,22 +56,24 @@ def test_graph_trait_current_node_property(simple_project: Project) -> None:
     assert current_node.id == "node_a"
 
 
-def test_graph_trait_transition_valid(simple_project: Project) -> None:
+def test_graph_trait_transition_valid(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
 
-    story_context = StoryContext(simple_project)
     action = GraphTransitionAction(entity_id="test_graph", to="node_b")
-    story_context.store.dispatch(action)
+    simple_story_context.store.dispatch(action)
 
-    effective_node_id = graph_entity.get_effective_current_node_id(story_context)
+    effective_node_id = graph_entity._resolve_current_node_id(simple_story_context)
     assert effective_node_id == "node_b"
 
 
-def test_graph_trait_transition_invalid(simple_project: Project) -> None:
+def test_graph_trait_transition_invalid(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    story_context = StoryContext(simple_project)
 
-    current_node = graph_entity.get_effective_current_node(story_context)
+    current_node = graph_entity._resolve_current_node(simple_story_context)
     valid_targets = [edge.id for edge in current_node.edges]
 
     assert "node_z" not in valid_targets

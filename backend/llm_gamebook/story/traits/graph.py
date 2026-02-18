@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field, PrivateAttr
@@ -6,9 +6,10 @@ from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
 from llm_gamebook.story.actions import Action
+from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.session_state import SessionState
-from llm_gamebook.story.trait_registry import trait_registry
+from llm_gamebook.story.trait_registry import session_field, trait_registry
 from llm_gamebook.story.types import (
     FunctionResult,
     NormalizedPascalCase,
@@ -18,8 +19,6 @@ from llm_gamebook.story.types import (
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.entity import FunctionDefinition
-
-from llm_gamebook.story.context import StoryContext
 
 
 class InvalidTransitionError(Exception):
@@ -62,12 +61,6 @@ class GraphNodeTrait(BaseEntity):
     @property
     def edges(self) -> "list[GraphNodeTrait]":
         return self._edges
-
-    def get_template_context(self) -> Mapping[str, object]:
-        return {
-            **super().get_template_context(),
-            "edges": [node.id for node in self._edges],
-        }
 
     def post_init(self) -> None:
         self._resolve_edge_ids()
@@ -115,26 +108,21 @@ class GraphTrait(BaseEntity):
         """Current graph node (project default)."""
         return self._current_node
 
-    def get_effective_current_node_id(self, story_context: StoryContext) -> str | None:
+    @session_field("current_node_id")
+    def _resolve_current_node_id(self, story_context: StoryContext) -> str | None:
         """Get effective current_node_id from session state or project default."""
         effective = story_context.get_effective_field(self.id, "current_node_id")
         if effective is not None:
             return str(effective)
         return self.current_node_id
 
-    def get_effective_current_node(self, story_context: StoryContext) -> GraphNodeTrait:
+    @session_field("current_node")
+    def _resolve_current_node(self, story_context: StoryContext) -> GraphNodeTrait:
         """Get current node based on session state override or project default."""
-        node_id = self.get_effective_current_node_id(story_context)
+        node_id = self._resolve_current_node_id(story_context)
         if node_id is None:
             return self._current_node
         return next((n for n in self._nodes if n.id == node_id), self._current_node)
-
-    def get_template_context(self) -> Mapping[str, object]:
-        return {
-            **super().get_template_context(),
-            "nodes": [node.get_template_context() for node in self._nodes],
-            "current_node": self.current_node.get_template_context(),
-        }
 
     def get_tools(self) -> Iterable[StoryTool]:
         yield from super().get_tools()
@@ -156,7 +144,7 @@ class GraphTrait(BaseEntity):
                 to: The node to transition to.
             """
             story_ctx = ctx.deps
-            current_node = self.get_effective_current_node(story_ctx)
+            current_node = self._resolve_current_node(story_ctx)
 
             valid_targets = [edge.id for edge in current_node.edges]
             if to not in valid_targets:
@@ -173,7 +161,7 @@ class GraphTrait(BaseEntity):
             ctx: RunContext[StoryContext], tool_def: ToolDefinition
         ) -> ToolDefinition | None:
             story_ctx = ctx.deps
-            current_node = self.get_effective_current_node(story_ctx)
+            current_node = self._resolve_current_node(story_ctx)
             edge_ids = [edge.id for edge in current_node.edges]
 
             if len(edge_ids) == 0:

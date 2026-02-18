@@ -1,47 +1,44 @@
-from llm_gamebook.story.entity import EntityType
+from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.project import Project
+from llm_gamebook.story.template_view import EntityView
 from llm_gamebook.story.traits.described import DescribedTrait
 
 
-def test_described_trait_get_template_context(simple_entity_type: EntityType) -> None:
-    """Test DescribedTrait.get_template_context includes name and description."""
-    entity = simple_entity_type.entity_map["node_a"]
+def test_described_trait_name_description(simple_project: Project) -> None:
+    entity = simple_project.get_entity("node_a", DescribedTrait)
 
-    assert isinstance(entity, DescribedTrait)
-
-    context = entity.get_template_context()
-
-    assert "name" in context
-    assert "description" in context
-    assert "enabled" in context
-    assert context["name"] == "Node A"
-    assert context["description"] == "First node"
+    assert entity.name == "Node A"
+    assert entity.description == "First node"
 
 
-def test_described_trait_enabled_true(simple_entity_type: EntityType) -> None:
-    """Test DescribedTrait with enabled=True evaluates correctly."""
-    entity = simple_entity_type.entity_map["node_a"]
+def test_described_trait_enabled_true(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    entity = simple_project.get_entity("node_a", DescribedTrait)
+    view = EntityView(entity, simple_story_context)
 
-    context = entity.get_template_context()
-
-    assert context["enabled"] is True
-
-
-def test_described_trait_enabled_false(simple_entity_type: EntityType) -> None:
-    """Test DescribedTrait with enabled=False evaluates correctly."""
-    entity = simple_entity_type.entity_map["node_b"]
-
-    context = entity.get_template_context()
-
-    assert context["enabled"] is False
+    enabled = view.enabled
+    assert enabled is True
 
 
-def test_described_trait_enabled_expression(simple_entity_type: EntityType) -> None:
-    """Test DescribedTrait with BoolExprDefinition enabled expression."""
-    entity_c = simple_entity_type.entity_map["node_c"]
-    entity_d = simple_entity_type.entity_map["node_d"]
+def test_described_trait_enabled_false(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    entity = simple_project.get_entity("node_b", DescribedTrait)
+    view = EntityView(entity, simple_story_context)
 
-    context_c = entity_c.get_template_context()
-    context_d = entity_d.get_template_context()
+    enabled = view.enabled
+    assert enabled is False
 
-    assert context_c["enabled"] is True
-    assert context_d["enabled"] is False
+
+def test_described_trait_enabled_expression(
+    simple_project: Project, simple_story_context: StoryContext
+) -> None:
+    entity_c = simple_project.get_entity("node_c", DescribedTrait)
+    entity_d = simple_project.get_entity("node_d", DescribedTrait)
+
+    view_c = EntityView(entity_c, simple_story_context)
+    view_d = EntityView(entity_d, simple_story_context)
+
+    assert view_c.enabled is True
+    assert view_d.enabled is False

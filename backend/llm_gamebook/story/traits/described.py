@@ -1,11 +1,15 @@
-from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from llm_gamebook.schema.expression import BoolExprDefinition
 from llm_gamebook.story.conditions import bool_expr_grammar as g
+from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
 from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.trait_registry import trait_registry
+from llm_gamebook.story.trait_registry import session_field, trait_registry
+
+if TYPE_CHECKING:
+    from llm_gamebook.story.context import StoryContext
 
 
 @trait_registry.register("described")
@@ -23,10 +27,8 @@ class DescribedTrait(BaseEntity):
     )
     """If the entity should be presented to the LLM."""
 
-    def get_template_context(self) -> Mapping[str, object]:
-        return {
-            **super().get_template_context(),
-            "name": self.name,
-            "description": self.description,
-            "enabled": self.enabled.evaluate(self.project),
-        }
+    @session_field("enabled")
+    def _resolve_enabled(self, story_context: "StoryContext") -> bool:
+        """Resolve enabled field with session-aware evaluation."""
+        evaluator = BoolExprEvaluator(story_context.project, story_context)
+        return self.enabled.evaluate(story_context.project, evaluator)

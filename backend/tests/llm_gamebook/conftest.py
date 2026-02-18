@@ -25,6 +25,7 @@ def simple_project() -> Project:
             {
                 "id": "TestGraph",
                 "name": "Test Graph",
+                "instructions": "A directed graph for testing.",
                 "traits": [
                     "described",
                     {"name": "graph", "node_type_id": "TestNode"},
@@ -77,13 +78,18 @@ def simple_project() -> Project:
                         "id": "node_d",
                         "name": "Node D",
                         "description": "Fourth node",
-                        "enabled": "test_graph.current_node_id == 'node_b'",
+                        "enabled": "test_graph.current_node_id == 'node_d'",
                         "edge_ids": [],
                     },
                 ],
             },
         ],
     })
+
+
+@pytest.fixture
+def simple_story_context(simple_project: Project) -> StoryContext:
+    return StoryContext(simple_project)
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterator, Mapping
-from typing import TYPE_CHECKING, ClassVar, NamedTuple
+from typing import TYPE_CHECKING, ClassVar, NamedTuple, ParamSpec, TypeVar
 
 from pydantic import BaseModel
 
@@ -9,7 +9,33 @@ if TYPE_CHECKING:
     from .entity import BaseEntity
     from .store import Reducer
 
-__all__ = ["trait_registry"]
+__all__ = ["reducer", "session_field", "trait_registry"]
+
+_SESSION_FIELD_ATTR = "_session_field_name"
+_REDUCER_ATTR = "_reducer_action_name"
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def session_field(field_name: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """Decorator to mark a method as a session field resolver."""
+
+    def decorator(method: Callable[P, R]) -> Callable[P, R]:
+        setattr(method, _SESSION_FIELD_ATTR, field_name)
+        return method
+
+    return decorator
+
+
+def reducer(action_name: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """Decorator to mark a method as a reducer."""
+
+    def decorator(method: Callable[P, R]) -> Callable[P, R]:
+        setattr(method, _REDUCER_ATTR, action_name)
+        return method
+
+    return decorator
 
 
 class TraitRegistryEntry(NamedTuple):
@@ -21,6 +47,9 @@ class TraitRegistryEntry(NamedTuple):
 
     reducers: Mapping[str, "Reducer"] | None
     """Reducers mapping action names to reducer functions."""
+
+    session_fields: Mapping[str, str] | None
+    """Session fields mapping field names to resolver method names."""
 
 
 class TraitRegistry(Mapping[str, TraitRegistryEntry]):
@@ -50,7 +79,21 @@ class TraitRegistry(Mapping[str, TraitRegistryEntry]):
             raise ValueError(msg)
 
         def wrapper(cls: type) -> type:
-            self._registry[name] = TraitRegistryEntry(cls, options_model, reducers)
+            session_fields: dict[str, str] = {}
+            for attr_name in dir(cls):
+                method = getattr(cls, attr_name, None)
+                if method is None:
+                    continue
+                field_name = getattr(method, _SESSION_FIELD_ATTR, None)
+                if field_name is not None:
+                    session_fields[field_name] = attr_name
+
+            self._registry[name] = TraitRegistryEntry(
+                cls,
+                options_model,
+                reducers,
+                session_fields or None,
+            )
             return cls
 
         return wrapper
