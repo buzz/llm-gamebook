@@ -153,9 +153,13 @@ class GraphTrait(BaseEntity):
                     "reason": f"{to} is not a valid transition from {current_node.id}",
                 }
 
-            action = GraphTransitionAction(entity_id=entity_id, to=to)
-            story_ctx.store.dispatch(action)
-            return {"result": "success"}
+            action = GraphTransitionAction(entity_id, to)
+            try:
+                story_ctx.store.dispatch(action)
+            except (RuntimeError, TypeError) as err:
+                return {"result": "error", "reason": str(err)}
+            else:
+                return {"result": "success"}
 
         async def prepare(
             ctx: RunContext[StoryContext], tool_def: ToolDefinition
