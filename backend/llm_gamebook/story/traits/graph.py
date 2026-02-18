@@ -18,7 +18,8 @@ from llm_gamebook.story.types import (
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.entity import FunctionDefinition
-    from llm_gamebook.story.context import StoryContext
+
+from llm_gamebook.story.context import StoryContext
 
 
 class InvalidTransitionError(Exception):
@@ -98,11 +99,11 @@ class GraphTrait(BaseEntity):
     """List of resolved entities that are part of the graph."""
 
     _current_node: GraphNodeTrait
-    """The current graph node."""
+    """The current graph node (project default)."""
 
     @property
     def current_node_id(self) -> NormalizedSnakeCase:
-        """ID of current graph node."""
+        """ID of current graph node (project default)."""
         return self._current_node.id
 
     @property
@@ -111,7 +112,22 @@ class GraphTrait(BaseEntity):
 
     @property
     def current_node(self) -> GraphNodeTrait:
+        """Current graph node (project default)."""
         return self._current_node
+
+    def get_effective_current_node_id(self, story_context: StoryContext) -> str | None:
+        """Get effective current_node_id from session state or project default."""
+        effective = story_context.get_effective_field(self.id, "current_node_id")
+        if effective is not None:
+            return str(effective)
+        return self.current_node_id
+
+    def get_effective_current_node(self, story_context: StoryContext) -> GraphNodeTrait:
+        """Get current node based on session state override or project default."""
+        node_id = self.get_effective_current_node_id(story_context)
+        if node_id is None:
+            return self._current_node
+        return next((n for n in self._nodes if n.id == node_id), self._current_node)
 
     def get_template_context(self) -> Mapping[str, object]:
         return {
@@ -131,30 +147,39 @@ class GraphTrait(BaseEntity):
         self._resolve_node_ids()
 
     def _make_transition_tool(self, func_spec: "FunctionDefinition") -> StoryTool:
-        def transition(to: str) -> FunctionResult:
+        entity_id = self.id
+
+        def transition(ctx: RunContext[StoryContext], to: str) -> FunctionResult:
             """Transition to another graph node.
 
             Args:
                 to: The node to transition to.
             """
-            try:
-                self.transition(to)
-            except InvalidTransitionError as err:
-                return {"result": "error", "reason": str(err)}
+            story_ctx = ctx.deps
+            current_node = self.get_effective_current_node(story_ctx)
 
+            valid_targets = [edge.id for edge in current_node.edges]
+            if to not in valid_targets:
+                return {
+                    "result": "error",
+                    "reason": f"{to} is not a valid transition from {current_node.id}",
+                }
+
+            action = GraphTransitionAction(entity_id=entity_id, to=to)
+            story_ctx.store.dispatch(action)
             return {"result": "success"}
 
         async def prepare(
-            ctx: "RunContext[StoryContext]", tool_def: ToolDefinition
+            ctx: RunContext[StoryContext], tool_def: ToolDefinition
         ) -> ToolDefinition | None:
-            schema = tool_def.parameters_json_schema
-            edge_ids = [edge.id for edge in self.current_node.edges]
+            story_ctx = ctx.deps
+            current_node = self.get_effective_current_node(story_ctx)
+            edge_ids = [edge.id for edge in current_node.edges]
 
-            # Don't expose transition function if there are no nodes to transition to
             if len(edge_ids) == 0:
                 return None
 
-            # Provide LLM with a list of valid IDs
+            schema = tool_def.parameters_json_schema
             schema["properties"]["to"]["enum"] = edge_ids
 
             if func_spec.properties:
@@ -171,13 +196,6 @@ class GraphTrait(BaseEntity):
             prepare=prepare,
         )
 
-    def transition(self, to: str) -> None:
-        try:
-            self._current_node = next(node for node in self._current_node.edges if node.id == to)
-        except StopIteration as err:
-            msg = f"{to} is not a valid transition for node {self._current_node.id}"
-            raise InvalidTransitionError(msg) from err
-
     def _resolve_node_ids(self) -> None:
         """Resolve node IDs to actual entities."""
         # Get node entity type
@@ -190,10 +208,10 @@ class GraphTrait(BaseEntity):
         ]
 
         # Current node
-        try:
+        initial_node_id = (self.__pydantic_extra__ or {}).get("current_node_id")
+        if initial_node_id:
             self._current_node = next(
-                node for node in self._nodes if node.id == self.current_node_id
+                (n for n in self._nodes if n.id == initial_node_id), self._nodes[0]
             )
-        except StopIteration as err:
-            msg = f"Graph {self.id}: current_node {self.current_node_id} not found"
-            raise ValueError(msg) from err
+        else:
+            self._current_node = self._nodes[0]

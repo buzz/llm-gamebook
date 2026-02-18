@@ -1,6 +1,5 @@
-import pytest
-
 from llm_gamebook.story.actions import Action
+from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.entity import EntityType
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.traits.graph import (
@@ -8,7 +7,6 @@ from llm_gamebook.story.traits.graph import (
     GraphTrait,
     GraphTransitionAction,
     GraphTransitionPayload,
-    InvalidTransitionError,
 )
 
 
@@ -55,14 +53,23 @@ def test_graph_trait_current_node_property(simple_project: Project) -> None:
 
 def test_graph_trait_transition_valid(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    graph_entity.transition("node_b")
-    assert graph_entity.current_node.id == "node_b"
+
+    story_context = StoryContext(simple_project)
+    action = GraphTransitionAction(entity_id="test_graph", to="node_b")
+    story_context.store.dispatch(action)
+
+    effective_node_id = graph_entity.get_effective_current_node_id(story_context)
+    assert effective_node_id == "node_b"
 
 
 def test_graph_trait_transition_invalid(simple_project: Project) -> None:
     graph_entity = simple_project.get_entity("test_graph", GraphTrait)
-    with pytest.raises(InvalidTransitionError):
-        graph_entity.transition("node_z")
+    story_context = StoryContext(simple_project)
+
+    current_node = graph_entity.get_effective_current_node(story_context)
+    valid_targets = [edge.id for edge in current_node.edges]
+
+    assert "node_z" not in valid_targets
 
 
 def test_graph_trait_resolve_node_ids(simple_project: Project) -> None:

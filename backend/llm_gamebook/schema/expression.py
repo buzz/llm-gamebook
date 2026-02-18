@@ -65,11 +65,12 @@ class BoolExprDefinition(BaseModel):
 
         return data
 
-    def evaluate(self, project: "Project") -> bool:
+    def evaluate(self, project: "Project", evaluator: BoolExprEvaluator | None = None) -> bool:
         # If it's a list, we evaluate with AND logic (all must be true)
-        if isinstance(self.value, list):
+        if evaluator is None:
             evaluator = BoolExprEvaluator(project)
+
+        if isinstance(self.value, list):
             return all(evaluator.eval(expr) for expr in self.value)
 
-        evaluator = BoolExprEvaluator(project)
         return evaluator.eval(self.value)

@@ -1,7 +1,4 @@
-import pytest
-
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.errors import EntityNotFoundError
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.session_state import SessionStateData
 
@@ -57,10 +54,9 @@ def test_get_effective_field_returns_project_default(project: Project) -> None:
     assert result is not None
 
 
-def test_set_field_stores_in_session_state(project: Project) -> None:
-    context = StoryContext(project)
-
-    context.set_field("main", "custom_field", 75)
+def test_session_state_stores_field(project: Project) -> None:
+    session_data = SessionStateData(entities={"main": {"custom_field": 75}})
+    context = StoryContext(project, session_data)
 
     assert context.session_state.get_field("main", "custom_field") == 75
 
@@ -88,19 +84,3 @@ def test_invalid_entity_id_returns_none(project: Project) -> None:
     result = context.get_effective_field("nonexistent", "some_field")
 
     assert result is None
-
-
-def test_set_field_validates_entity_exists(project: Project) -> None:
-    context = StoryContext(project)
-
-    context.set_field("main", "custom_field", 100)
-
-    assert context.session_state.get_field("main", "custom_field") == 100
-
-
-def test_set_field_invalid_entity_raises(project: Project) -> None:
-
-    context = StoryContext(project)
-
-    with pytest.raises(EntityNotFoundError):
-        context.set_field("nonexistent", "some_field", 100)

@@ -50,23 +50,23 @@ class StoryContext:
         except EntityNotFoundError:
             return None
 
-    def set_field(self, entity_id: str, field_name: str, value: FieldValue) -> None:
-        self._project.get_entity(entity_id)
-        self._store.get_state().set_field(entity_id, field_name, value)
-
     def get_tools(self) -> "Iterable[StoryTool]":
         for entity_type in self._project.entity_type_map.values():
             yield from entity_type.get_tools()
 
     async def get_system_prompt(self) -> str:
         """Render system prompt."""
-        ctx = self._project.get_template_context()
+        ctx = self.get_template_context()
         return await self._jinja_env.get_template("system_prompt.md.jinja2").render_async(ctx)
 
     async def get_intro_message(self) -> str:
         """Render first message (request for story introduction)."""
-        ctx = self._project.get_template_context()
+        ctx = self.get_template_context()
         return await self._jinja_env.get_template("intro_message.md.jinja2").render_async(ctx)
+
+    def get_template_context(self) -> dict[str, object]:
+        # TODO: implement proper session-aware template context
+        return {}
 
     @cached_property
     def _jinja_env(self) -> jinja2.Environment:

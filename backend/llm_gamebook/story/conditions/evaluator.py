@@ -9,6 +9,7 @@ from llm_gamebook.story.errors import EntityNotFoundError
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.expression import BoolExprDefinition
+    from llm_gamebook.story.context import StoryContext
     from llm_gamebook.story.entity import EntityProperty
     from llm_gamebook.story.project import Project
 
@@ -18,8 +19,9 @@ class ExpressionEvalError(Exception):
 
 
 class BoolExprEvaluator:
-    def __init__(self, project: "Project") -> None:
+    def __init__(self, project: "Project", story_context: "StoryContext | None" = None) -> None:
         self._project = project
+        self._story_context = story_context
 
     def eval(self, expr: g.BoolExpr) -> bool:
         if isinstance(expr, g.Literal):
@@ -113,6 +115,13 @@ class BoolExprEvaluator:
             raise ExpressionEvalError(msg) from err
 
     def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
+        if self._story_context is not None:
+            effective = self._story_context.get_effective_field(entity.id, property_id)
+            if effective is not None:
+                if isinstance(effective, str | bool | int | float):
+                    return effective
+                return str(effective)
+
         is_model_field = property_id in entity.__class__.model_fields
         is_property = isinstance(getattr(entity.__class__, property_id, None), property)
 
