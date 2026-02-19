@@ -2,8 +2,8 @@ import pytest
 
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.errors import EntityFieldNotFoundError
-from llm_gamebook.story.project import Project
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.schemas import Project
+from llm_gamebook.story.state import SessionStateData
 
 
 async def test_story_context_get_system_prompt(story_context: StoryContext) -> None:

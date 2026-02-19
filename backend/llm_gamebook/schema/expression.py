@@ -8,7 +8,7 @@ from llm_gamebook.story.conditions import BoolExprEvaluator
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 
 if TYPE_CHECKING:
-    from llm_gamebook.story.project import Project
+    from llm_gamebook.story.schemas import Project
 
 
 class BoolExprDefinition(BaseModel):

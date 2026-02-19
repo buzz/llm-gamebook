@@ -14,7 +14,7 @@ from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.providers import ModelProvider
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import Project
 
 
 @pytest.fixture

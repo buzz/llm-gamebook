@@ -5,14 +5,12 @@ from typing import TYPE_CHECKING, assert_never, cast
 from pydantic import BaseModel
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
-from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
+from llm_gamebook.story.schemas import BaseEntity, EntityProperty, Project
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.expression import BoolExprDefinition
     from llm_gamebook.story.context import StoryContext
-    from llm_gamebook.story.entity import EntityProperty
-    from llm_gamebook.story.project import Project
 
 
 class ExpressionEvalError(Exception):
@@ -20,7 +18,7 @@ class ExpressionEvalError(Exception):
 
 
 class BoolExprEvaluator:
-    def __init__(self, project: "Project", story_context: "StoryContext | None" = None) -> None:
+    def __init__(self, project: Project, story_context: "StoryContext | None" = None) -> None:
         self._project = project
         self._story_context = story_context
 
@@ -91,10 +89,10 @@ class BoolExprEvaluator:
 
         assert_never(op)
 
-    def resolve_comparison_operand(self, operand: g.DotPath | g.Literal) -> "EntityProperty":
+    def resolve_comparison_operand(self, operand: g.DotPath | g.Literal) -> EntityProperty:
         return self._resolve_dot_path(operand) if isinstance(operand, g.DotPath) else operand.value
 
-    def _resolve_dot_path(self, dot_path: g.DotPath) -> "EntityProperty":
+    def _resolve_dot_path(self, dot_path: g.DotPath) -> EntityProperty:
         entity = self._resolve_entity(dot_path.entity_id.value)
 
         # Resolve property to entity along property chain
@@ -115,7 +113,7 @@ class BoolExprEvaluator:
             msg = f"Invalid entity ID: {entity_id}"
             raise ExpressionEvalError(msg) from err
 
-    def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
+    def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> EntityProperty:
         if self._story_context is not None:
             with suppress(EntityFieldNotFoundError):
                 effective = self._story_context.get_field(entity.id, property_id)

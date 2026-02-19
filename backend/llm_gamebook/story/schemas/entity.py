@@ -5,13 +5,13 @@ from pydantic import BaseModel, PrivateAttr, PydanticUndefinedAnnotation, create
 from pydantic_ai.tools import ObjectJsonSchema
 
 from llm_gamebook.schema.entity import EntityDefinition, EntityTypeDefinition
-
-from .errors import EntityNotFoundError, TraitNotFoundError
-from .trait_registry import trait_registry
+from llm_gamebook.story.errors import EntityNotFoundError, TraitNotFoundError
+from llm_gamebook.story.trait_registry import trait_registry
 
 if TYPE_CHECKING:
+    from llm_gamebook.story.types import StoryTool
+
     from .project import Project
-    from .types import StoryTool
 
 type EntityProperty = Sequence[BaseEntity] | BaseEntity | str | bool | int | float
 

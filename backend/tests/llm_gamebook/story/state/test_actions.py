@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from llm_gamebook.story.actions import Action, EndGameAction, EndGamePayload
+from llm_gamebook.story.state import Action, EndGameAction, EndGamePayload
 
 
 def test_valid_action_name_with_namespace() -> None:

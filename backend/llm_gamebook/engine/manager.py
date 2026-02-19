@@ -18,8 +18,8 @@ from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
 from llm_gamebook.providers import ModelProvider
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.project import Project
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.schemas import Project
+from llm_gamebook.story.state import SessionStateData
 
 from ._model_factory import create_model_from_db_config
 from .engine import StoryEngine

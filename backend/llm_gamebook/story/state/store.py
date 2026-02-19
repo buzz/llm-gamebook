@@ -3,9 +3,10 @@ from typing import cast
 
 from pydantic import BaseModel
 
-from llm_gamebook.story.actions import Action
-from llm_gamebook.story.session_state import SessionState
 from llm_gamebook.story.trait_registry import trait_registry
+
+from .actions import Action
+from .session_state import SessionState
 
 type Middleware = Callable[[Store, Action[BaseModel]], Action[BaseModel]]
 type Reducer = Callable[[SessionState, Action[BaseModel]], SessionState]

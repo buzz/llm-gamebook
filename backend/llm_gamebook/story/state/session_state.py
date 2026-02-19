@@ -5,17 +5,21 @@ from pydantic import BaseModel
 from llm_gamebook.story.errors import EntityFieldNotFoundError
 
 
-class EntityRefSingle(TypedDict):
+class EntityRef(TypedDict):
+    """A reference to a single entity."""
+
     type: str
     target: str
 
 
 class EntityRefList(TypedDict):
+    """A list of references to entities."""
+
     type: str
     target: list[str]
 
 
-type FieldValue = str | bool | int | float | EntityRefSingle | EntityRefList
+type FieldValue = str | bool | int | float | EntityRef | EntityRefList
 
 
 class SessionStateData(BaseModel):

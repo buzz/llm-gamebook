@@ -4,7 +4,7 @@ import pytest
 
 from llm_gamebook.schema.project import ProjectDefinition
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import Project
 
 
 @pytest.fixture

@@ -28,7 +28,7 @@ from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.part import Part
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.state import SessionStateData
 
 logger = getLogger(__name__)
 

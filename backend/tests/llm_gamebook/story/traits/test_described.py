@@ -1,5 +1,5 @@
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import Project
 from llm_gamebook.story.template_view import EntityView
 from llm_gamebook.story.traits.described import DescribedTrait
 

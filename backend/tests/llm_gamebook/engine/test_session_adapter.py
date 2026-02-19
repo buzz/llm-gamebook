@@ -7,7 +7,7 @@ from llm_gamebook.db.models import Session
 from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.session_adapter import SessionAdapter
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.state import SessionStateData
 from llm_gamebook.web.schema.session.message import ModelRequestCreate
 from llm_gamebook.web.schema.session.part import UserPromptPartCreate
 

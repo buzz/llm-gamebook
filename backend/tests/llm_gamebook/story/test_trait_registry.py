@@ -1,10 +1,8 @@
 import pytest
 from pydantic import BaseModel
 
-from llm_gamebook.story.actions import Action
-from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.session_state import SessionState
-from llm_gamebook.story.store import Store
+from llm_gamebook.story.schemas import BaseEntity
+from llm_gamebook.story.state import Action, SessionState, Store
 from llm_gamebook.story.trait_registry import TraitRegistryEntry, reducer, trait_registry
 from llm_gamebook.story.traits.graph import GraphTransitionPayload
 

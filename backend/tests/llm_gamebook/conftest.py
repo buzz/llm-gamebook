@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING
 
 import pytest
 from pydantic_ai import Agent
@@ -10,10 +9,7 @@ from llm_gamebook.engine.manager import EngineManager
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.project import Project
-
-if TYPE_CHECKING:
-    from llm_gamebook.story.entity import EntityType
+from llm_gamebook.story.schemas import EntityType, Project
 
 
 @pytest.fixture
@@ -93,7 +89,7 @@ def simple_story_context(simple_project: Project) -> StoryContext:
 
 
 @pytest.fixture
-def simple_entity_type(simple_project: Project) -> "EntityType":
+def simple_entity_type(simple_project: Project) -> EntityType:
     return simple_project.get_entity_type("TestNode")
 
 

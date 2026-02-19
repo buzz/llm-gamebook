@@ -2,8 +2,8 @@ import logging
 
 from pydantic import BaseModel
 
-from llm_gamebook.story.actions import Action
-from llm_gamebook.story.store import Store
+from .actions import Action
+from .store import Store
 
 logger = logging.getLogger(__name__)
 

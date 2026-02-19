@@ -1,12 +1,7 @@
 import pytest
 
 from llm_gamebook.story.errors import EntityFieldNotFoundError
-from llm_gamebook.story.session_state import (
-    EntityRefList,
-    EntityRefSingle,
-    SessionState,
-    SessionStateData,
-)
+from llm_gamebook.story.state import EntityRef, EntityRefList, SessionState, SessionStateData
 
 
 def test_set_and_get_field() -> None:
@@ -58,7 +53,7 @@ def test_to_json_and_from_json() -> None:
 
 def test_entity_ref_single() -> None:
     state = SessionState()
-    ref: EntityRefSingle = {"type": "entity", "target": "npc_1"}
+    ref: EntityRef = {"type": "entity", "target": "npc_1"}
     state.set_field("player_1", "target", ref)
 
     result = state.get_field("player_1", "target")

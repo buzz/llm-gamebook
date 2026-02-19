@@ -25,7 +25,7 @@ from pydantic_ai import (
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.state import SessionStateData
 
 from .message import ResponseStreamUpdateMessage
 

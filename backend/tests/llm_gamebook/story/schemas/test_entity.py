@@ -2,9 +2,8 @@ from typing import cast
 
 import pytest
 
-from llm_gamebook.story.entity import BaseEntity, EntityType
 from llm_gamebook.story.errors import EntityNotFoundError, TraitNotFoundError
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import BaseEntity, EntityType, Project
 from llm_gamebook.story.traits.graph import GraphNodeTrait, GraphTrait, GraphTraitOptions
 
 

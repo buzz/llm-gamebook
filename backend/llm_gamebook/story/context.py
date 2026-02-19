@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING, cast
 import jinja2
 
 from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import Project
 
-from .session_state import FieldValue, SessionState, SessionStateData
-from .store import Store
+from .state import FieldValue, SessionState, SessionStateData, Store
 from .template_view import TemplateContext
 
 if TYPE_CHECKING:

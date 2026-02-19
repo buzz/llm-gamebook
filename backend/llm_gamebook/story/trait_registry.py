@@ -7,8 +7,8 @@ from llm_gamebook.schema.validators import is_normalized_snake_case
 from llm_gamebook.story.errors import TraitNotFoundError
 
 if TYPE_CHECKING:
-    from .entity import BaseEntity
-    from .store import Reducer
+    from .schemas import BaseEntity
+    from .state import Reducer
 
 __all__ = ["reducer", "session_field", "trait_registry"]
 

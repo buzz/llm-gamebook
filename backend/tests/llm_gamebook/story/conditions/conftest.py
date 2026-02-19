@@ -1,7 +1,7 @@
 import pytest
 
 from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import Project
 
 
 @pytest.fixture

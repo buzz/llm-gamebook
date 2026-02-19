@@ -2,14 +2,12 @@ from collections.abc import Iterator
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.errors import EntityFieldNotFoundError, TraitNotFoundError
-
+from .errors import EntityFieldNotFoundError, TraitNotFoundError
+from .schemas import BaseEntity, EntityType
 from .trait_registry import trait_registry
 
 if TYPE_CHECKING:
     from .context import StoryContext
-    from .entity import EntityType
 
 
 class EntityView:
@@ -90,7 +88,7 @@ class EntityTypeView:
 
     __slots__ = ("_entity_type", "_story_context")
 
-    def __init__(self, entity_type: "EntityType", story_context: "StoryContext") -> None:
+    def __init__(self, entity_type: EntityType, story_context: "StoryContext") -> None:
         self._entity_type = entity_type
         self._story_context = story_context
 

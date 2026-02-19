@@ -1,9 +1,8 @@
 import pytest
 
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.project import Project
-from llm_gamebook.story.session_state import SessionStateData
+from llm_gamebook.story.schemas import BaseEntity, Project
+from llm_gamebook.story.state import SessionStateData
 from llm_gamebook.story.template_view import EntityTypeView, EntityView, TemplateContext
 from llm_gamebook.story.trait_registry import session_field, trait_registry
 

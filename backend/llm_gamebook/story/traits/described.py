@@ -5,7 +5,7 @@ from pydantic import Field
 from llm_gamebook.schema.expression import BoolExprDefinition
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
-from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.schemas import BaseEntity
 from llm_gamebook.story.trait_registry import session_field, trait_registry
 
 if TYPE_CHECKING:

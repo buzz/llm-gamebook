@@ -1,6 +1,5 @@
 from .context import StoryContext
-from .entity import BaseEntity
-from .project import Project
+from .schemas import BaseEntity, Project
 from .trait_registry import reducer, session_field
 from .traits import DescribedTrait, GraphNodeTrait, GraphTrait
 

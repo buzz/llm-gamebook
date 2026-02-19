@@ -6,11 +6,10 @@ from pydantic import BaseModel, Field, PrivateAttr, ValidationError
 from pydantic_ai import RunContext, Tool
 from pydantic_ai.tools import ToolDefinition
 
-from llm_gamebook.story.actions import Action
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.entity import BaseEntity
 from llm_gamebook.story.errors import EntityFieldNotFoundError
-from llm_gamebook.story.session_state import SessionState
+from llm_gamebook.story.schemas import BaseEntity
+from llm_gamebook.story.state import Action, SessionState
 from llm_gamebook.story.trait_registry import reducer, session_field, trait_registry
 from llm_gamebook.story.types import (
     FunctionResult,

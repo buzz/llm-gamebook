@@ -1,10 +1,9 @@
 from pydantic_ai import RunContext, RunUsage
 from pydantic_ai.models.test import TestModel
 
-from llm_gamebook.story.actions import Action
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.entity import EntityType
-from llm_gamebook.story.project import Project
+from llm_gamebook.story.schemas import EntityType, Project
+from llm_gamebook.story.state import Action
 from llm_gamebook.story.template_view import EntityView
 from llm_gamebook.story.traits.graph import (
     GraphNodeTrait,
