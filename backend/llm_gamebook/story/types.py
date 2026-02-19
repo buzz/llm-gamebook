@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 type StoryTool = Tool[StoryContext]
 """An LLM tool function."""
 
-NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
+type NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
 """PascalCase name with non-ASCII characters normalized."""
 
-NormalizedSnakeCase = Annotated[str, AfterValidator(is_normalized_snake_case)]
+type NormalizedSnakeCase = Annotated[str, AfterValidator(is_normalized_snake_case)]
 """snake_case name with non-ASCII characters normalized."""
 
 
@@ -28,4 +28,4 @@ class FunctionErrorResult(TypedDict):
     reason: str | None
 
 
-FunctionResult = FunctionSuccessResult | FunctionErrorResult
+type FunctionResult = FunctionSuccessResult | FunctionErrorResult
