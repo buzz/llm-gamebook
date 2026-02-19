@@ -35,17 +35,17 @@ def test_story_context_jinja_env_cached(story_context: StoryContext) -> None:
     assert env1 is env2
 
 
-def test_get_effective_field_returns_session_override(project: Project) -> None:
+def test_get_field_returns_session_override(project: Project) -> None:
     session_data = SessionStateData(entities={"main": {"custom_field": 50}})
     context = StoryContext(project, session_data)
 
-    result = context.get_effective_field("main", "custom_field")
+    result = context.get_field("main", "custom_field")
 
     assert result == 50
 
 
-def test_get_effective_field_returns_project_default(story_context: StoryContext) -> None:
-    result = story_context.get_effective_field("main", "description")
+def test_get_field_returns_project_default(story_context: StoryContext) -> None:
+    result = story_context.get_field("main", "description")
 
     assert result is not None
 
@@ -61,17 +61,17 @@ def test_orphaned_field_in_session_not_in_project(project: Project) -> None:
     session_data = SessionStateData(entities={"main": {"removed_field": 100}})
     context = StoryContext(project, session_data)
 
-    result = context.get_effective_field("main", "removed_field")
+    result = context.get_field("main", "removed_field")
 
     assert result == 100
 
 
 def test_missing_field_in_session_new_in_project(story_context: StoryContext) -> None:
-    result = story_context.get_effective_field("main", "description")
+    result = story_context.get_field("main", "description")
 
     assert result is not None
 
 
 def test_invalid_entity_id_raises(story_context: StoryContext) -> None:
     with pytest.raises(EntityFieldNotFoundError):
-        story_context.get_effective_field("nonexistent", "some_field")
+        story_context.get_field("nonexistent", "some_field")

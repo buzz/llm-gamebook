@@ -41,7 +41,8 @@ class StoryContext:
     def store(self) -> Store:
         return self._store
 
-    def get_effective_field(self, entity_id: str, field_name: str) -> FieldValue:
+    def get_field(self, entity_id: str, field_name: str) -> FieldValue:
+        """Retrieve an entity field value."""
         # Try state
         with suppress(EntityFieldNotFoundError):
             return self._store.get_state().get_field(entity_id, field_name)

@@ -118,7 +118,7 @@ class BoolExprEvaluator:
     def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
         if self._story_context is not None:
             with suppress(EntityFieldNotFoundError):
-                effective = self._story_context.get_effective_field(entity.id, property_id)
+                effective = self._story_context.get_field(entity.id, property_id)
                 if isinstance(effective, str | bool | int | float):
                     return effective
                 return str(effective)

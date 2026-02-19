@@ -103,7 +103,7 @@ class GraphTrait(BaseEntity):
     def _resolve_current_node_id(self, story_context: StoryContext) -> str | None:
         """Get effective current_node_id from session state or project default."""
         with suppress(EntityFieldNotFoundError):
-            effective = story_context.get_effective_field(self.id, "current_node_id")
+            effective = story_context.get_field(self.id, "current_node_id")
             return str(effective)
         return self.current_node_id
 
