@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field, PrivateAttr, ValidationError
@@ -8,8 +9,9 @@ from pydantic_ai.tools import ToolDefinition
 from llm_gamebook.story.actions import Action
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.errors import EntityFieldNotFoundError
 from llm_gamebook.story.session_state import SessionState
-from llm_gamebook.story.trait_registry import session_field, trait_registry
+from llm_gamebook.story.trait_registry import reducer, session_field, trait_registry
 from llm_gamebook.story.types import (
     FunctionResult,
     NormalizedPascalCase,
@@ -41,13 +43,6 @@ class GraphTransitionAction(Action[GraphTransitionPayload]):
         )
 
 
-def graph_transition_reducer(state: SessionState, action: Action[BaseModel]) -> SessionState:
-    """Reducer for graph/transition action."""
-    payload = GraphTransitionPayload.model_validate(action.payload.model_dump())
-    state.set_field(payload.entity_id, "current_node_id", payload.to)
-    return state
-
-
 @trait_registry.register("graph_node")
 class GraphNodeTrait(BaseEntity):
     """Adds the capability to be used as graph node to an entity."""
@@ -77,11 +72,7 @@ class GraphTraitOptions(BaseModel):
     """The ID of the graph node entity type."""
 
 
-@trait_registry.register(
-    "graph",
-    GraphTraitOptions,
-    reducers={"graph/transition": graph_transition_reducer},
-)
+@trait_registry.register("graph", GraphTraitOptions)
 class GraphTrait(BaseEntity):
     """Adds the capability to be used as graph to an entity."""
 
@@ -111,8 +102,8 @@ class GraphTrait(BaseEntity):
     @session_field("current_node_id")
     def _resolve_current_node_id(self, story_context: StoryContext) -> str | None:
         """Get effective current_node_id from session state or project default."""
-        effective = story_context.get_effective_field(self.id, "current_node_id")
-        if effective is not None:
+        with suppress(EntityFieldNotFoundError):
+            effective = story_context.get_effective_field(self.id, "current_node_id")
             return str(effective)
         return self.current_node_id
 
@@ -123,6 +114,14 @@ class GraphTrait(BaseEntity):
         if node_id is None:
             return self._current_node
         return next((n for n in self._nodes if n.id == node_id), self._current_node)
+
+    @staticmethod
+    @reducer("graph/transition")
+    def graph_transition_reducer(state: SessionState, action: Action[BaseModel]) -> SessionState:
+        """Reducer for graph/transition action."""
+        payload = GraphTransitionPayload.model_validate(action.payload.model_dump())
+        state.set_field(payload.entity_id, "current_node_id", payload.to)
+        return state
 
     def get_tools(self) -> Iterable[StoryTool]:
         yield from super().get_tools()

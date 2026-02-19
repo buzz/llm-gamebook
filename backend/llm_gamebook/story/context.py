@@ -1,9 +1,10 @@
+from contextlib import suppress
 from functools import cached_property
 from typing import TYPE_CHECKING, cast
 
 import jinja2
 
-from llm_gamebook.story.errors import EntityNotFoundError
+from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
 from llm_gamebook.story.project import Project
 
 from .session_state import FieldValue, SessionState, SessionStateData
@@ -40,16 +41,19 @@ class StoryContext:
     def store(self) -> Store:
         return self._store
 
-    def get_effective_field(self, entity_id: str, field_name: str) -> FieldValue | None:
-        session_value = self._store.get_state().get_field(entity_id, field_name)
-        if session_value is not None:
-            return session_value
+    def get_effective_field(self, entity_id: str, field_name: str) -> FieldValue:
+        # Try state
+        with suppress(EntityFieldNotFoundError):
+            return self._store.get_state().get_field(entity_id, field_name)
 
-        try:
+        # Try default from project definition
+        with suppress(AttributeError, EntityNotFoundError):
             entity = self._project.get_entity(entity_id)
-            return cast("FieldValue", getattr(entity, field_name))
-        except (AttributeError, EntityNotFoundError):
-            return None
+            value = getattr(entity, field_name)
+            return cast("FieldValue", value)
+
+        msg = f"Field '{field_name}' not found on entity '{entity_id}'"
+        raise EntityFieldNotFoundError(msg)
 
     def validate_entity_exists(self, entity_id: str) -> bool:
         try:

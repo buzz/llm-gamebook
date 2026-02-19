@@ -1,11 +1,12 @@
 from collections.abc import Sequence
+from contextlib import suppress
 from typing import TYPE_CHECKING, assert_never, cast
 
 from pydantic import BaseModel
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.errors import EntityNotFoundError
+from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
 
 if TYPE_CHECKING:
     from llm_gamebook.schema.expression import BoolExprDefinition
@@ -116,8 +117,8 @@ class BoolExprEvaluator:
 
     def _resolve_entity_property(self, entity: "BaseEntity", property_id: str) -> "EntityProperty":
         if self._story_context is not None:
-            effective = self._story_context.get_effective_field(entity.id, property_id)
-            if effective is not None:
+            with suppress(EntityFieldNotFoundError):
+                effective = self._story_context.get_effective_field(entity.id, property_id)
                 if isinstance(effective, str | bool | int | float):
                     return effective
                 return str(effective)

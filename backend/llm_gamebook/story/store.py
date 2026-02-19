@@ -37,10 +37,9 @@ class Store:
         """Load all registered trait reducers into the store."""
         for action_name, reducers in trait_registry.get_all_reducers().items():
             for reducer in reducers:
-                self.register_reducer(action_name, reducer)
+                self._register_reducer(action_name, reducer)
 
-    def register_reducer(self, action_name: str, reducer: Reducer) -> None:
-        """Register a reducer for an action name."""
+    def _register_reducer(self, action_name: str, reducer: Reducer) -> None:
         if action_name not in self._reducers:
             self._reducers[action_name] = []
         self._reducers[action_name].append(reducer)

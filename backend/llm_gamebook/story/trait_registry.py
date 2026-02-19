@@ -1,9 +1,10 @@
 from collections.abc import Callable, Iterator, Mapping
-from typing import TYPE_CHECKING, ClassVar, NamedTuple, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Final, NamedTuple, ParamSpec, TypeVar
 
 from pydantic import BaseModel
 
 from llm_gamebook.schema.validators import is_normalized_snake_case
+from llm_gamebook.story.errors import TraitNotFoundError
 
 if TYPE_CHECKING:
     from .entity import BaseEntity
@@ -11,8 +12,8 @@ if TYPE_CHECKING:
 
 __all__ = ["reducer", "session_field", "trait_registry"]
 
-_SESSION_FIELD_ATTR = "_session_field_name"
-_REDUCER_ATTR = "_reducer_action_name"
+_SESSION_FIELD_ATTR: Final = "_session_field_name"
+_REDUCER_ATTR: Final = "_reducer_action_name"
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -39,7 +40,7 @@ def reducer(action_name: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
 
 
 class TraitRegistryEntry(NamedTuple):
-    cls: "type[BaseEntity]"
+    cls: type["BaseEntity"]
     """Trait type."""
 
     options_model: type[BaseModel] | None
@@ -66,11 +67,14 @@ class TraitRegistry(Mapping[str, TraitRegistryEntry]):
     def __len__(self) -> int:
         return len(self._registry)
 
+    def get_by_type(self, cls: type["BaseEntity"]) -> TraitRegistryEntry:
+        try:
+            return next(e for e in self.values() if e.cls == cls)
+        except StopIteration as e:
+            raise TraitNotFoundError from e
+
     def register(
-        self,
-        name: str,
-        options_model: type[BaseModel] | None = None,
-        reducers: Mapping[str, "Reducer"] | None = None,
+        self, name: str, options_model: type[BaseModel] | None = None
     ) -> Callable[[type], type]:
         """Class decorator that registers story entity traits."""
 
@@ -80,13 +84,37 @@ class TraitRegistry(Mapping[str, TraitRegistryEntry]):
 
         def wrapper(cls: type) -> type:
             session_fields: dict[str, str] = {}
+            reducers: dict[str, Reducer] = {}
+
+            # Collect session fields & reducers
             for attr_name in dir(cls):
                 method = getattr(cls, attr_name, None)
-                if method is None:
+                if not callable(method):
                     continue
-                field_name = getattr(method, _SESSION_FIELD_ATTR, None)
-                if field_name is not None:
-                    session_fields[field_name] = attr_name
+
+                # session field?
+                try:
+                    method_name = getattr(method, _SESSION_FIELD_ATTR)
+                except AttributeError:
+                    pass
+                else:
+                    if isinstance(method_name, str):
+                        session_fields[method_name] = attr_name
+
+                # reducer method?
+                try:
+                    action_name = getattr(method, _REDUCER_ATTR)
+                except AttributeError:
+                    pass
+                else:
+                    if isinstance(action_name, str):
+                        # Check if it's a staticmethod
+                        raw_attr = cls.__dict__.get(attr_name)
+                        if not isinstance(raw_attr, staticmethod):
+                            msg = f"Reducer '{cls.__name__}::{attr_name}' is not a staticmethod"
+                            raise TypeError(msg)
+
+                        reducers[action_name] = getattr(cls, attr_name)
 
             self._registry[name] = TraitRegistryEntry(
                 cls,

@@ -2,6 +2,8 @@ from typing import TypedDict
 
 from pydantic import BaseModel
 
+from llm_gamebook.story.errors import EntityFieldNotFoundError
+
 
 class EntityRefSingle(TypedDict):
     type: str
@@ -29,8 +31,13 @@ class SessionState:
             self._data.entities[entity_id] = {}
         self._data.entities[entity_id][field_name] = value
 
-    def get_field(self, entity_id: str, field_name: str) -> FieldValue | None:
-        return self._data.entities.get(entity_id, {}).get(field_name)
+    def get_field(self, entity_id: str, field_name: str) -> FieldValue:
+        try:
+            entity = self._data.entities[entity_id]
+            return entity[field_name]
+        except KeyError as e:
+            msg = f"Field state '{field_name}' not found on entity '{entity_id}'"
+            raise EntityFieldNotFoundError(msg) from e
 
     def to_json(self) -> str:
         return self._data.model_dump_json()

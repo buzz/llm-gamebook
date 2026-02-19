@@ -1,8 +1,12 @@
 import pytest
 from pydantic import BaseModel
 
+from llm_gamebook.story.actions import Action
 from llm_gamebook.story.entity import BaseEntity
-from llm_gamebook.story.trait_registry import TraitRegistryEntry, trait_registry
+from llm_gamebook.story.session_state import SessionState
+from llm_gamebook.story.store import Store
+from llm_gamebook.story.trait_registry import TraitRegistryEntry, reducer, trait_registry
+from llm_gamebook.story.traits.graph import GraphTransitionPayload
 
 
 class DummyOptions(BaseModel):
@@ -66,3 +70,51 @@ def test_trait_registry_iter() -> None:
 def test_trait_registry_len() -> None:
     """Test getting registry length."""
     assert len(trait_registry) >= 2
+
+
+def test_trait_registry_reducer_decorator() -> None:
+    @trait_registry.register("test")
+    class TestTrait(BaseEntity):
+        @staticmethod
+        @reducer("test/action")
+        def graph_transition_reducer(
+            state: SessionState, action: Action[BaseModel]
+        ) -> SessionState:
+            return state
+
+    all_reducers = trait_registry.get_all_reducers()
+    assert "test/action" in all_reducers
+
+
+def test_trait_registry_reducer_decorator_fails_with_non_staticmethod() -> None:
+    with pytest.raises(TypeError, match="is not a staticmethod"):
+
+        @trait_registry.register("test")
+        class TestTrait(BaseEntity):
+            @reducer("test/action")
+            def graph_transition_reducer(
+                self, state: SessionState, action: Action[BaseModel]
+            ) -> SessionState:
+                return state
+
+
+def test_trait_registry_register_with_reducers() -> None:
+    entry = trait_registry["graph"]
+    assert entry.reducers is not None
+    assert "graph/transition" in entry.reducers
+
+
+def test_trait_registry_get_all_reducers() -> None:
+    all_reducers = trait_registry.get_all_reducers()
+    assert "graph/transition" in all_reducers
+
+
+def test_store_load_trait_reducers() -> None:
+    store = Store(load_trait_reducers=True)
+    action = Action[GraphTransitionPayload](
+        name="graph/transition",
+        payload=GraphTransitionPayload(entity_id="test_entity", to="new_node"),
+    )
+    new_state = store.dispatch(action)
+
+    assert new_state.get_field("test_entity", "current_node_id") == "new_node"

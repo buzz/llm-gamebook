@@ -1,3 +1,6 @@
+import pytest
+
+from llm_gamebook.story.errors import EntityFieldNotFoundError
 from llm_gamebook.story.session_state import (
     EntityRefList,
     EntityRefSingle,
@@ -14,7 +17,8 @@ def test_set_and_get_field() -> None:
 
 def test_get_field_not_set() -> None:
     state = SessionState()
-    assert state.get_field("player_1", "health") is None
+    with pytest.raises(EntityFieldNotFoundError):
+        state.get_field("player_1", "health")
 
 
 def test_set_multiple_fields_same_entity() -> None:

@@ -64,7 +64,7 @@ def test_store_register_reducer() -> None:
         state.set_field("entity1", "processed", "yes")
         return state
 
-    store.register_reducer("test/action", my_reducer)
+    store._register_reducer("test/action", my_reducer)
 
     action = Action[DictPayload](name="test/action", payload=DictPayload())
     new_state = store.dispatch(action)
@@ -94,8 +94,8 @@ def test_store_multiple_reducers_composition() -> None:
         state.set_field("entity1", "field2", "value2")
         return state
 
-    store.register_reducer("test/action", reducer1)
-    store.register_reducer("test/action", reducer2)
+    store._register_reducer("test/action", reducer1)
+    store._register_reducer("test/action", reducer2)
 
     action = Action[DictPayload](name="test/action", payload=DictPayload())
     new_state = store.dispatch(action)
@@ -134,7 +134,7 @@ def test_store_middleware_can_modify_action() -> None:
         captured_name = action.name
         return state
 
-    store.register_reducer("test/modified", capture_reducer)
+    store._register_reducer("test/modified", capture_reducer)
     store.dispatch(Action[DictPayload](name="test/original", payload=DictPayload()))
 
     assert captured_name == "test/modified"
@@ -164,7 +164,7 @@ def test_full_dispatch_flow_integration() -> None:
         initial_state=initial_state,
         middleware=[logging_middleware],
     )
-    store.register_reducer("test/flow", test_reducer)
+    store._register_reducer("test/flow", test_reducer)
 
     action = Action[DictPayload](
         name="test/flow", payload=DictPayload(data={"entity_id": "entity1", "value": 42})
@@ -184,7 +184,7 @@ def test_store_reducer_must_return_session_state() -> None:
     def bad_reducer(state: SessionState, action: Action[BaseModel]) -> object:
         return {"not": "a session state"}
 
-    store.register_reducer("test/bad", bad_reducer)  # type: ignore[arg-type]
+    store._register_reducer("test/bad", bad_reducer)  # type: ignore[arg-type]
     action = Action[DictPayload](name="test/bad", payload=DictPayload())
 
     with pytest.raises(TypeError, match="must return a SessionState instance"):

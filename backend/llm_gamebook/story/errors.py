@@ -12,3 +12,7 @@ class TraitNotFoundError(StateAccessError):
 
 class EntityNotFoundError(StateAccessError):
     """Raised when an unknown entity was accessed."""
+
+
+class EntityFieldNotFoundError(StateAccessError):
+    """Raised when an unknown entity field was accessed."""

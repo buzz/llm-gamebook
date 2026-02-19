@@ -1,7 +1,9 @@
 from collections.abc import Iterator
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from llm_gamebook.story.entity import BaseEntity
+from llm_gamebook.story.errors import EntityFieldNotFoundError, TraitNotFoundError
 
 from .trait_registry import trait_registry
 
@@ -35,22 +37,34 @@ class EntityView:
         entity = self._entity
         ctx = self._story_context
 
-        for trait_name in type(entity).__mro__:
-            if trait_name.__name__ in {"BaseEntity", "BaseModel"}:
+        # 1. Session field resolver
+
+        for trait_cls in type(entity).__mro__:
+            if trait_cls.__name__ in {"BaseEntity", "BaseModel"}:
                 continue
-            if trait_name.__module__.startswith("pydantic"):
+            if trait_cls.__module__.startswith("pydantic"):
                 continue
-            entry = trait_registry._registry.get(trait_name.__name__.lower().replace("trait", ""))
-            if entry and entry.session_fields and name in entry.session_fields:
-                method_name = entry.session_fields[name]
-                method = getattr(entity, method_name, None)
-                if method is not None:
+
+            try:
+                entry = trait_registry.get_by_type(trait_cls)
+            except TraitNotFoundError:
+                continue
+            else:
+                if entry.session_fields and name in entry.session_fields:
+                    method_name = entry.session_fields[name]
+                    method = getattr(entity, method_name)
+                    if not callable(method):
+                        msg = f"Expected callable: {trait_cls.__name__}::{method_name}"
+                        raise TypeError(msg)
                     result = method(ctx)
                     return self._wrap_if_needed(result)
 
-        session_value = ctx.session_state.get_field(entity.id, name)
-        if session_value is not None:
-            return session_value
+        # 2. Session state
+
+        with suppress(EntityFieldNotFoundError):
+            return ctx.session_state.get_field(entity.id, name)
+
+        # 3. Entity default
 
         try:
             result = getattr(entity, name)

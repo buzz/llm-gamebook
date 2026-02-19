@@ -1,4 +1,7 @@
+import pytest
+
 from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.errors import EntityFieldNotFoundError
 from llm_gamebook.story.project import Project
 from llm_gamebook.story.session_state import SessionStateData
 
@@ -69,7 +72,6 @@ def test_missing_field_in_session_new_in_project(story_context: StoryContext) ->
     assert result is not None
 
 
-def test_invalid_entity_id_returns_none(story_context: StoryContext) -> None:
-    result = story_context.get_effective_field("nonexistent", "some_field")
-
-    assert result is None
+def test_invalid_entity_id_raises(story_context: StoryContext) -> None:
+    with pytest.raises(EntityFieldNotFoundError):
+        story_context.get_effective_field("nonexistent", "some_field")
