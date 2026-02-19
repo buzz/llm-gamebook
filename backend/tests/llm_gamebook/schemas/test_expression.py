@@ -1,8 +1,8 @@
 import pytest
 
-from llm_gamebook.schemas.expression import BoolExprDefinition
 from llm_gamebook.story import Project
 from llm_gamebook.story.conditions import bool_expr_grammar as g
+from llm_gamebook.story.schemas import BoolExprDefinition
 
 
 def test_bool_expr_definition_parse_string() -> None:

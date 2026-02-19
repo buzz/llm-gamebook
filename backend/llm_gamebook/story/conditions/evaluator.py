@@ -6,11 +6,12 @@ from pydantic import BaseModel
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
-from llm_gamebook.story.schemas import BaseEntity, EntityProperty, Project
+from llm_gamebook.story.schemas.entity import BaseEntity, EntityProperty
 
 if TYPE_CHECKING:
-    from llm_gamebook.schemas.expression import BoolExprDefinition
     from llm_gamebook.story.context import StoryContext
+    from llm_gamebook.story.schemas.expression import BoolExprDefinition
+    from llm_gamebook.story.schemas.project import Project
 
 
 class ExpressionEvalError(Exception):
@@ -18,7 +19,7 @@ class ExpressionEvalError(Exception):
 
 
 class BoolExprEvaluator:
-    def __init__(self, project: Project, story_context: "StoryContext | None" = None) -> None:
+    def __init__(self, project: "Project", story_context: "StoryContext | None" = None) -> None:
         self._project = project
         self._story_context = story_context
 

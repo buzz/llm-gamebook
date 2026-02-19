@@ -2,9 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from llm_gamebook.schemas.project import ProjectDefinition
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
-from llm_gamebook.story.schemas import Project
+from llm_gamebook.story.schemas import Project, ProjectDefinition
 
 
 @pytest.fixture

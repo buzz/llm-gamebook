@@ -3,13 +3,31 @@ from pathlib import Path
 from typing import Self, overload
 
 import yaml
-from pydantic import PrivateAttr
+from pydantic import BaseModel, PrivateAttr
 
 from llm_gamebook.constants import PROJECT_NAME
-from llm_gamebook.schemas.project import ProjectDefinition
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
 
-from .entity import BaseEntity, EntityType
+from .entity import BaseEntity, EntityType, EntityTypeDefinition
+
+
+class ProjectDefinition(BaseModel):
+    """Gamebook project definition loaded from external file."""
+
+    title: str
+    """The project title."""
+
+    author: str | None = None
+    """The project author."""
+
+    description: str | None
+    """The project description."""
+
+    entity_types: list[EntityTypeDefinition]
+    """Definition of entity types."""
+
+    def __str__(self) -> str:
+        return f'<{type(self).__name__} title="{self.title}">'
 
 
 class Project(ProjectDefinition):

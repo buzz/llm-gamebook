@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 from contextlib import suppress
-from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field, PrivateAttr, ValidationError
 from pydantic_ai import RunContext, Tool
@@ -8,7 +7,7 @@ from pydantic_ai.tools import ToolDefinition
 
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.errors import EntityFieldNotFoundError
-from llm_gamebook.story.schemas import BaseEntity
+from llm_gamebook.story.schemas import BaseEntity, FunctionDefinition
 from llm_gamebook.story.state import Action, SessionState
 from llm_gamebook.story.trait_registry import reducer, session_field, trait_registry
 from llm_gamebook.story.types import (
@@ -17,9 +16,6 @@ from llm_gamebook.story.types import (
     NormalizedSnakeCase,
     StoryTool,
 )
-
-if TYPE_CHECKING:
-    from llm_gamebook.schemas.entity import FunctionDefinition
 
 
 class InvalidTransitionError(Exception):
@@ -132,7 +128,7 @@ class GraphTrait(BaseEntity):
     def post_init(self) -> None:
         self._resolve_node_ids()
 
-    def _make_transition_tool(self, func_spec: "FunctionDefinition") -> StoryTool:
+    def _make_transition_tool(self, func_spec: FunctionDefinition) -> StoryTool:
         entity_id = self.id
 
         def transition(ctx: RunContext[StoryContext], to: str) -> FunctionResult:

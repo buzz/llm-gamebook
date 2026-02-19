@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING, ClassVar, Final, NamedTuple, ParamSpec, TypeVa
 
 from pydantic import BaseModel
 
-from llm_gamebook.schemas.validators import is_normalized_snake_case
 from llm_gamebook.story.errors import TraitNotFoundError
+
+from .schemas.validators import is_normalized_snake_case
 
 if TYPE_CHECKING:
     from .schemas import BaseEntity
