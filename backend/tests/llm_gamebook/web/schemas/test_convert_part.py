@@ -3,10 +3,10 @@ from uuid import uuid4
 import pytest
 from pydantic_ai.messages import TextPart, ThinkingPart, ToolCallPart
 
-from llm_gamebook.web.schema.session.part import TextPart as AppTextPart
-from llm_gamebook.web.schema.session.part import ThinkingPart as AppThinkingPart
-from llm_gamebook.web.schema.session.part import ToolCallPart as AppToolCallPart
-from llm_gamebook.web.schema.websocket._convert_part import convert_part
+from llm_gamebook.web.schemas.session.part import TextPart as AppTextPart
+from llm_gamebook.web.schemas.session.part import ThinkingPart as AppThinkingPart
+from llm_gamebook.web.schemas.session.part import ToolCallPart as AppToolCallPart
+from llm_gamebook.web.schemas.websocket._convert_part import convert_part
 
 
 def test_convert_part_text() -> None:

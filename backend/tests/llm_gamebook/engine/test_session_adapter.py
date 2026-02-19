@@ -8,8 +8,8 @@ from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.story.state import SessionStateData
-from llm_gamebook.web.schema.session.message import ModelRequestCreate
-from llm_gamebook.web.schema.session.part import UserPromptPartCreate
+from llm_gamebook.web.schemas.session.message import ModelRequestCreate
+from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 
 async def test_session_adapter_get_session(

@@ -1,6 +1,6 @@
 import pytest
 
-from llm_gamebook.schema.validators import (
+from llm_gamebook.schemas.validators import (
     id_from_name,
     is_normalized_pascal_case,
     is_normalized_snake_case,

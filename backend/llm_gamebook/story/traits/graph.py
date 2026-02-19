@@ -19,7 +19,7 @@ from llm_gamebook.story.types import (
 )
 
 if TYPE_CHECKING:
-    from llm_gamebook.schema.entity import FunctionDefinition
+    from llm_gamebook.schemas.entity import FunctionDefinition
 
 
 class InvalidTransitionError(Exception):

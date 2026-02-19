@@ -1,8 +1,8 @@
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.engine.engine import StoryEngine
-from llm_gamebook.web.schema.session.message import ModelRequestCreate
-from llm_gamebook.web.schema.session.part import UserPromptPartCreate
+from llm_gamebook.web.schemas.session.message import ModelRequestCreate
+from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 
 class MockPlayer:

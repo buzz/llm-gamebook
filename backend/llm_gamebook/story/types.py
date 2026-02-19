@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Annotated, Literal, TypedDict
 
 from pydantic import AfterValidator
 
-from llm_gamebook.schema.validators import is_normalized_pascal_case, is_normalized_snake_case
+from llm_gamebook.schemas.validators import is_normalized_pascal_case, is_normalized_snake_case
 
 if TYPE_CHECKING:
     from pydantic_ai.tools import Tool

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from llm_gamebook.engine import EngineManager
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.web.app import create_app
-from llm_gamebook.web.schema.websocket.openapi import add_websocket_schema
+from llm_gamebook.web.schemas.websocket.openapi import add_websocket_schema
 
 
 @pytest.fixture

@@ -20,7 +20,7 @@ from llm_gamebook.engine.message import (
     ResponseStreamUpdateMessage,
     ResponseUserRequestMessage,
 )
-from llm_gamebook.web.schema.websocket.message import WebSocketPingMessage, WebSocketPongMessage
+from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage, WebSocketPongMessage
 from llm_gamebook.web.websocket.handler import WebSocketHandler
 
 

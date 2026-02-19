@@ -12,7 +12,7 @@ from llm_gamebook.db.crud.model_config import (
 )
 from llm_gamebook.db.models import ModelConfig
 from llm_gamebook.providers import ModelProvider
-from llm_gamebook.web.schema.model_config import ModelConfigUpdate
+from llm_gamebook.web.schemas.model_config import ModelConfigUpdate
 
 
 async def test_create_model_config(db_session: AsyncDbSession) -> None:

@@ -3,7 +3,7 @@ from collections.abc import Callable
 from fastapi.testclient import TestClient
 
 from llm_gamebook.db.models import Session
-from llm_gamebook.web.schema.websocket.message import WebSocketPingMessage
+from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage
 
 
 async def test_websocket_endpoint_connection(

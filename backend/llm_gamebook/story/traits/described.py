@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from llm_gamebook.schema.expression import BoolExprDefinition
+from llm_gamebook.schemas.expression import BoolExprDefinition
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
 from llm_gamebook.story.schemas import BaseEntity

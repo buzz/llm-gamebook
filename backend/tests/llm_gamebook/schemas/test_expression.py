@@ -1,6 +1,6 @@
 import pytest
 
-from llm_gamebook.schema.expression import BoolExprDefinition
+from llm_gamebook.schemas.expression import BoolExprDefinition
 from llm_gamebook.story import Project
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 

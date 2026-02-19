@@ -12,15 +12,15 @@ from llm_gamebook.db.crud.session import (
 from llm_gamebook.db.models import Message
 from llm_gamebook.db.models import Session as SqlModelSession
 from llm_gamebook.engine.message import SessionModelConfigChangedMessage
-from llm_gamebook.web.schema.common import ServerMessage
-from llm_gamebook.web.schema.session import (
+from llm_gamebook.web.schemas.common import ServerMessage
+from llm_gamebook.web.schemas.session import (
     Session,
     SessionCreate,
     SessionFull,
     Sessions,
     SessionUpdate,
 )
-from llm_gamebook.web.schema.session.message import ModelRequest, ModelRequestCreate
+from llm_gamebook.web.schemas.session.message import ModelRequest, ModelRequestCreate
 
 from .dependencies import DbSessionDep, MessageBusDep, StoryEngineDep
 

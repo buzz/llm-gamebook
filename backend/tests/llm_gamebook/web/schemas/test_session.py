@@ -2,15 +2,15 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from llm_gamebook.db.models.message import FinishReason
-from llm_gamebook.web.schema.session import (
+from llm_gamebook.web.schemas.session import (
     Session,
     SessionCreate,
     SessionFull,
     Sessions,
     SessionUpdate,
 )
-from llm_gamebook.web.schema.session.message import ModelRequest, ModelResponse, Usage
-from llm_gamebook.web.schema.session.part import TextPart, UserPromptPart
+from llm_gamebook.web.schemas.session.message import ModelRequest, ModelResponse, Usage
+from llm_gamebook.web.schemas.session.part import TextPart, UserPromptPart
 
 
 def test_valid_session_create() -> None:

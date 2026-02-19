@@ -6,7 +6,7 @@ import yaml
 from pydantic import PrivateAttr
 
 from llm_gamebook.constants import PROJECT_NAME
-from llm_gamebook.schema.project import ProjectDefinition
+from llm_gamebook.schemas.project import ProjectDefinition
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
 
 from .entity import BaseEntity, EntityType
