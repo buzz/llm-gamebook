@@ -22,16 +22,13 @@ class Store:
         initial_state: SessionState | None = None,
         middleware: list[Middleware] | None = None,
         reducers: ReducerRegistry | None = None,
-        *,
-        load_trait_reducers: bool = False,
     ) -> None:
         self._state = initial_state or SessionState()
         self._middleware = middleware or []
         self._reducers: ReducerRegistry = reducers or {}
         self._dispatch_depth = 0
 
-        if load_trait_reducers:
-            self._load_trait_reducers()
+        self._load_trait_reducers()
 
     def _load_trait_reducers(self) -> None:
         """Load all registered trait reducers into the store."""

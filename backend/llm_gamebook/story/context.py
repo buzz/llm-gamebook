@@ -27,7 +27,7 @@ class StoryContext:
         super().__init__()
         self._project = project
         initial_state = SessionState(session_state)
-        self._store = Store(initial_state=initial_state, load_trait_reducers=True)
+        self._store = Store(initial_state)
 
     @property
     def project(self) -> "Project":

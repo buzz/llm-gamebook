@@ -110,7 +110,7 @@ def test_trait_registry_get_all_reducers() -> None:
 
 
 def test_store_load_trait_reducers() -> None:
-    store = Store(load_trait_reducers=True)
+    store = Store()
     action = Action[GraphTransitionPayload](
         name="graph/transition",
         payload=GraphTransitionPayload(entity_id="test_entity", to="new_node"),
