@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from llm_gamebook.db.models import ModelConfig, Session
+from llm_gamebook.story import Project
 
 
 def test_read_sessions_empty(client: TestClient) -> None:
@@ -13,8 +14,14 @@ def test_read_sessions_empty(client: TestClient) -> None:
     assert data["count"] == 0
 
 
-def test_read_sessions_with_pagination(client: TestClient, model_config: ModelConfig) -> None:
-    session_data = {"config_id": str(model_config.id), "title": "Test Session"}
+def test_read_sessions_with_pagination(
+    client: TestClient, model_config: ModelConfig, project: Project
+) -> None:
+    session_data = {
+        "config_id": str(model_config.id),
+        "project_id": project.id,
+        "title": "Test Session",
+    }
     response = client.post("/api/sessions/", json=session_data)
     assert response.status_code == 200
 
@@ -28,8 +35,14 @@ def test_read_sessions_with_pagination(client: TestClient, model_config: ModelCo
     assert len(data["data"]) >= 1
 
 
-def test_read_session_found(client: TestClient, model_config: ModelConfig) -> None:
-    session_data = {"config_id": str(model_config.id), "title": "Test Session"}
+def test_read_session_found(
+    client: TestClient, model_config: ModelConfig, project: Project
+) -> None:
+    session_data = {
+        "config_id": str(model_config.id),
+        "project_id": project.id,
+        "title": "Test Session",
+    }
     create_response = client.post("/api/sessions/", json=session_data)
     assert create_response.status_code == 200
     session_id = create_response.json()["id"]
@@ -46,8 +59,14 @@ def test_read_session_not_found(client: TestClient) -> None:
     assert response.status_code == 404
 
 
-def test_create_session_success(client: TestClient, model_config: ModelConfig) -> None:
-    session_data = {"config_id": str(model_config.id), "title": "New Session"}
+def test_create_session_success(
+    client: TestClient, model_config: ModelConfig, project: Project
+) -> None:
+    session_data = {
+        "config_id": str(model_config.id),
+        "project_id": project.id,
+        "title": "New Session",
+    }
     response = client.post("/api/sessions/", json=session_data)
     assert response.status_code == 200
     data = response.json()
@@ -56,10 +75,32 @@ def test_create_session_success(client: TestClient, model_config: ModelConfig) -
     assert data["config_id"] == str(model_config.id)
 
 
-def test_create_session_model_config_not_found(client: TestClient) -> None:
-    session_data = {"config_id": "00000000-0000-0000-0000-000000000000", "title": "Invalid Session"}
+def test_create_session_model_config_not_found(client: TestClient, project: Project) -> None:
+    session_data = {
+        "config_id": "00000000-0000-0000-0000-000000000000",
+        "project_id": project.id,
+        "title": "Invalid Session",
+    }
     response = client.post("/api/sessions/", json=session_data)
+
     assert response.status_code == 404
+    content = response.json()
+    assert isinstance(content, dict)
+    assert "Model config not found" in content["detail"]
+
+
+def test_create_session_project_not_found(client: TestClient, model_config: ModelConfig) -> None:
+    session_data = {
+        "config_id": str(model_config.id),
+        "project_id": "llm-gamebook/does-not-exist",
+        "title": "Invalid Session",
+    }
+    response = client.post("/api/sessions/", json=session_data)
+
+    assert response.status_code == 404
+    content = response.json()
+    assert isinstance(content, dict)
+    assert "Project not found" in content["detail"]
 
 
 def test_update_session(client: TestClient, model_config: ModelConfig, session: Session) -> None:

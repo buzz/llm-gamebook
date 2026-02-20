@@ -9,9 +9,9 @@ from llm_gamebook.db.models.model_config import ModelConfig
 
 
 async def create_session(
-    db_session: AsyncDbSession, model_config: ModelConfig, title: str | None = None
+    db_session: AsyncDbSession, model_config: ModelConfig, project_id: str, title: str | None = None
 ) -> Session:
-    session = Session(title=title, config=model_config)
+    session = Session(title=title, project_id=project_id, config=model_config)
     db_session.add(session)
     await db_session.commit()
     await db_session.refresh(session)

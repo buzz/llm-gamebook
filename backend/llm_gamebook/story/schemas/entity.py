@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Self, overload
 
 from pydantic import (
@@ -18,14 +18,24 @@ from llm_gamebook.story.trait_registry import trait_registry
 from llm_gamebook.story.types import NormalizedPascalCase, NormalizedSnakeCase
 from llm_gamebook.utils import normalized_pascal_case, normalized_snake_case
 
-from .validators import id_from_name
-
 if TYPE_CHECKING:
     from llm_gamebook.story.types import StoryTool
 
     from .project import Project
 
 type EntityProperty = Sequence[BaseEntity] | BaseEntity | str | bool | int | float
+
+
+def id_from_name(data: object, generate_id: Callable[[str], str]) -> object:
+    if isinstance(data, dict):
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
+        else:
+            if isinstance(name, str) and "id" not in data:
+                data["id"] = generate_id(name)
+    return data
 
 
 class TraitDefinition(BaseModel):

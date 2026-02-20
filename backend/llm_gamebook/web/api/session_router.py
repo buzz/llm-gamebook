@@ -12,6 +12,7 @@ from llm_gamebook.db.crud.session import (
 from llm_gamebook.db.models import Message
 from llm_gamebook.db.models import Session as SqlModelSession
 from llm_gamebook.engine.message import SessionModelConfigChangedMessage
+from llm_gamebook.story.errors import ProjectNotFoundError
 from llm_gamebook.web.schemas.common import ServerMessage
 from llm_gamebook.web.schemas.session import (
     Session,
@@ -22,15 +23,16 @@ from llm_gamebook.web.schemas.session import (
 )
 from llm_gamebook.web.schemas.session.message import ModelRequest, ModelRequestCreate
 
-from .dependencies import DbSessionDep, MessageBusDep, StoryEngineDep
+from .dependencies import DbSessionDep, MessageBusDep, ProjectManagerDep, StoryEngineDep
 
 session_router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 @session_router.get("/")
 async def read_sessions(db_session: DbSessionDep, skip: int = 0, limit: int = 100) -> Sessions:
+    sessions = await get_sessions(db_session, skip, limit)
     return Sessions(
-        data=[Session(**s.model_dump()) for s in await get_sessions(db_session, skip, limit)],
+        data=[Session.model_validate(s, from_attributes=True) for s in sessions],
         count=await get_session_count(db_session),
     )
 
@@ -47,12 +49,19 @@ async def read_session(engine: StoryEngineDep, db_session: DbSessionDep) -> SqlM
 
 
 @session_router.post("/", response_model=Session)
-async def create_session(db_session: DbSessionDep, session_in: SessionCreate) -> SqlModelSession:
+async def create_session(
+    db_session: DbSessionDep, project_manager: ProjectManagerDep, session_in: SessionCreate
+) -> SqlModelSession:
     model_config = await get_model_config(db_session, session_in.config_id)
     if not model_config:
         raise HTTPException(status_code=404, detail="Model config not found")
 
-    return await crud_create_session(db_session, model_config, session_in.title)
+    try:
+        project = project_manager.get_project(session_in.project_id)
+    except ProjectNotFoundError as err:
+        raise HTTPException(status_code=404, detail="Project not found") from err
+
+    return await crud_create_session(db_session, model_config, project.id, session_in.title)
 
 
 @session_router.patch("/{session_id}")

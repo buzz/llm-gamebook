@@ -14,6 +14,7 @@ class SessionBase(SQLModel):
 class Session(SessionBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str | None
+    project_id: str
     config: ModelConfig | None = Relationship(back_populates="sessions")
     config_id: UUID | None = Field(default=None, foreign_key="modelconfig.id")
     messages: list[Message] = Relationship(

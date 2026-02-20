@@ -1,7 +1,6 @@
 import asyncio
 import time
 from contextlib import suppress
-from pathlib import Path
 from types import TracebackType
 from typing import Self
 from uuid import UUID
@@ -18,7 +17,8 @@ from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
 from llm_gamebook.providers import ModelProvider
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.schemas import Project
+from llm_gamebook.story.project_manager import ProjectManager
+from llm_gamebook.story.schemas.project import Project
 from llm_gamebook.story.state import SessionStateData
 
 from ._model_factory import create_model_from_db_config
@@ -61,12 +61,14 @@ class EngineManager(BusSubscriber):
         self,
         session_id: UUID,
         db_session: AsyncDbSession,
+        project_manager: ProjectManager,
     ) -> StoryEngine:
         created: bool = False
         try:
             engine, _ = self._engines[session_id]
         except KeyError:
-            model, context = await self._create_model_and_context(session_id, db_session)
+            result = await self._create_model_and_context(session_id, db_session, project_manager)
+            model, context = result
             engine = StoryEngine(session_id, model, context, self._bus)
             created = True
 
@@ -81,6 +83,7 @@ class EngineManager(BusSubscriber):
         self,
         session_id: UUID,
         db_session: AsyncDbSession,
+        project_manager: ProjectManager,
     ) -> tuple[Model | None, StoryContext]:
         statement = select(Session).where(Session.id == session_id)
         statement = statement.options(selectinload(Session.config))  # type: ignore[arg-type]
@@ -90,8 +93,6 @@ class EngineManager(BusSubscriber):
         if not session:
             msg = f"Session {session_id} not found"
             raise ValueError(msg)
-
-        project_path = Path(Path.home() / "llm/llm-gamebook/llm-gamebook/examples/broken-bulb")
 
         message_with_state = await get_latest_message_with_state(db_session, session_id)
         session_state_data = None
@@ -103,7 +104,9 @@ class EngineManager(BusSubscriber):
                     "Invalid session state for session %s, ignoring: %s", session_id, err.errors()
                 )
 
-        context = StoryContext(Project.from_path(project_path), session_state_data)
+        project_def = project_manager.get_project(session.project_id)
+        project = Project.from_definition(project_def)
+        context = StoryContext(project, session_state_data)
 
         model = (
             create_model_from_db_config(

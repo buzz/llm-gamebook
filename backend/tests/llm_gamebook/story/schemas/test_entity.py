@@ -1,10 +1,46 @@
+from collections.abc import Callable
 from typing import cast
 
 import pytest
 
 from llm_gamebook.story.errors import EntityNotFoundError, TraitNotFoundError
 from llm_gamebook.story.schemas import BaseEntity, EntityType, Project
+from llm_gamebook.story.schemas.entity import id_from_name
 from llm_gamebook.story.traits.graph import GraphNodeTrait, GraphTrait, GraphTraitOptions
+
+
+@pytest.fixture
+def generate_id() -> Callable[[str], str]:
+    return lambda name: f"id_{name.lower().replace(' ', '_')}"
+
+
+def test_id_from_name_with_name(generate_id: Callable[[str], str]) -> None:
+    """Test auto-generating ID from name field."""
+    data = {"name": "Test Entity"}
+    result = id_from_name(data, generate_id)
+
+    assert isinstance(result, dict)
+    assert result["id"] == "id_test_entity"
+    assert result["name"] == "Test Entity"
+
+
+def test_id_from_name_without_name(generate_id: Callable[[str], str]) -> None:
+    """Test leaving data unchanged when name field is missing."""
+    data = {"other_field": "value"}
+    result = id_from_name(data, generate_id)
+
+    assert isinstance(result, dict)
+    assert "id" not in result
+    assert result["other_field"] == "value"
+
+
+def test_id_from_name_with_existing_id(generate_id: Callable[[str], str]) -> None:
+    """Test leaving existing ID unchanged."""
+    data = {"name": "Test", "id": "existing_id"}
+    result = id_from_name(data, generate_id)
+
+    assert isinstance(result, dict)
+    assert result["id"] == "existing_id"
 
 
 def test_base_entity_get_template_context(simple_entity_type: EntityType) -> None:

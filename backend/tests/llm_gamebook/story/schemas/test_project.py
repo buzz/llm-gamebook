@@ -3,12 +3,14 @@ from pathlib import Path
 import pytest
 
 from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
-from llm_gamebook.story.schemas import Project, ProjectDefinition
+from llm_gamebook.story.schemas import Project, ProjectDefinition, ProjectSource
 
 
 @pytest.fixture
 def project_data() -> dict[str, object]:
     return {
+        "id": "test/project",
+        "source": ProjectSource.LOCAL,
         "title": "Test Project",
         "description": "A test project",
         "entity_types": [

@@ -114,6 +114,7 @@ class GraphTrait(BaseEntity):
     @reducer("graph/transition")
     def graph_transition_reducer(state: SessionState, action: Action[BaseModel]) -> SessionState:
         """Reducer for graph/transition action."""
+        # TODO: validate in caller
         payload = GraphTransitionPayload.model_validate(action.payload.model_dump())
         state.set_field(payload.entity_id, "current_node_id", payload.to)
         return state

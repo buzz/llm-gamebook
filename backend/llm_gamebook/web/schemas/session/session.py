@@ -18,6 +18,9 @@ class SessionCreate(BaseSession):
     config_id: UUID
     """The ID of the model config associated with this session."""
 
+    project_id: str
+    """The ID of the project associated with this session."""
+
 
 class Session(BaseSession):
     """A chat session with an LLM."""
@@ -26,6 +29,9 @@ class Session(BaseSession):
 
     config_id: UUID | None = None
     """The ID of the model config associated with this session."""
+
+    project_id: str
+    """The ID of the project associated with this session."""
 
     timestamp: datetime = Field(default_factory=datetime.now)
     """The timestamp of the session."""

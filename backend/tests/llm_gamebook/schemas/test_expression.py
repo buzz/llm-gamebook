@@ -3,6 +3,7 @@ import pytest
 from llm_gamebook.story import Project
 from llm_gamebook.story.conditions import bool_expr_grammar as g
 from llm_gamebook.story.schemas import BoolExprDefinition
+from llm_gamebook.story.schemas.project import ProjectSource
 
 
 def test_bool_expr_definition_parse_string() -> None:
@@ -108,6 +109,8 @@ def test_bool_expr_definition_invalid_expression(value: str) -> None:
 
 def test_bool_expr_circular_reference() -> None:
     project = Project.from_data({
+        "id": "llm-gamebook/circref",
+        "source": ProjectSource.LOCAL,
         "title": "Test Project",
         "description": "A test project",
         "entity_types": [

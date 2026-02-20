@@ -232,7 +232,6 @@ def test_registry_collects_session_fields_for_described() -> None:
 
 
 def test_decorator_preserves_function() -> None:
-
     class TestClass:
         @session_field("field")
         def _method(self) -> str:

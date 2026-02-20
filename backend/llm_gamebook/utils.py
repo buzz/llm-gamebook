@@ -8,6 +8,10 @@ def normalize(text: str) -> str:
     return text.encode("ascii", "ignore").decode("ascii")
 
 
+def normalized_kebab_case(text: str) -> str:
+    return casefy.kebabcase(normalize(text))
+
+
 def normalized_snake_case(text: str) -> str:
     return casefy.snakecase(normalize(text))
 

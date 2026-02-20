@@ -7,11 +7,12 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from starlette.types import Lifespan
 
-from llm_gamebook.constants import PROJECT_NAME, USER_DATA_DIR
+from llm_gamebook.constants import PROJECT_NAME, PROJECTS_PATH, USER_DATA_PATH
 from llm_gamebook.db import create_async_db_engine
 from llm_gamebook.engine import EngineManager
 from llm_gamebook.logger import setup_logger
 from llm_gamebook.message_bus import MessageBus
+from llm_gamebook.story.project_manager import ProjectManager
 
 from .api import api_router
 from .schemas.websocket.openapi import add_websocket_schema
@@ -22,7 +23,8 @@ from .websocket import websocket_router
 async def app_lifespan(app: FastAPI) -> AsyncIterator[None]:
     add_websocket_schema(app.openapi())
 
-    USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    USER_DATA_PATH.mkdir(parents=True, exist_ok=True)
+    PROJECTS_PATH.mkdir(parents=True, exist_ok=True)
 
     async with (
         create_async_db_engine() as db_engine,
@@ -32,6 +34,7 @@ async def app_lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.db_engine = db_engine
         app.state.bus = bus
         app.state.engine_mgr = engine_mgr
+        app.state.project_mgr = ProjectManager()
         yield
 
 

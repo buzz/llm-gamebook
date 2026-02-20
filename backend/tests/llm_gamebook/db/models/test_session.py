@@ -7,12 +7,13 @@ from llm_gamebook.db.models.message import Message, MessageKind
 
 
 async def test_session_creation(db_session: AsyncDbSession, model_config: ModelConfig) -> None:
-    session_obj = Session(title="New Test Session", config=model_config)
+    session_obj = Session(title="New Test Session", project_id="foo/bar", config=model_config)
     db_session.add(session_obj)
     await db_session.commit()
 
     assert session_obj.id is not None
     assert session_obj.title == "New Test Session"
+    assert session_obj.project_id == "foo/bar"
     assert session_obj.config_id == model_config.id
     assert session_obj.timestamp is not None
 

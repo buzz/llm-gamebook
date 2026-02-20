@@ -1,7 +1,6 @@
 from .entity import BaseEntity, EntityProperty, EntityType, FunctionDefinition
 from .expression import BoolExprDefinition
-from .project import Project, ProjectDefinition
-from .validators import id_from_name, is_normalized_pascal_case, is_normalized_snake_case
+from .project import Project, ProjectDefinition, ProjectId, ProjectSource
 
 __all__ = [
     "BaseEntity",
@@ -11,7 +10,6 @@ __all__ = [
     "FunctionDefinition",
     "Project",
     "ProjectDefinition",
-    "id_from_name",
-    "is_normalized_pascal_case",
-    "is_normalized_snake_case",
+    "ProjectId",
+    "ProjectSource",
 ]

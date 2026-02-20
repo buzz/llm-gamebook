@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from llm_gamebook.engine import EngineManager
 from llm_gamebook.message_bus import MessageBus
+from llm_gamebook.story.project_manager import ProjectManager
 from llm_gamebook.web.app import create_app
 from llm_gamebook.web.schemas.websocket.openapi import add_websocket_schema
 
@@ -15,6 +16,7 @@ from llm_gamebook.web.schemas.websocket.openapi import add_websocket_schema
 @pytest.fixture
 def client(
     db_engine: AsyncEngine,
+    project_manager: ProjectManager,
     message_bus: MessageBus,
     engine_manager: EngineManager,
     unused_tcp_port_factory: Callable[[], int],
@@ -25,6 +27,7 @@ def client(
         app.state.db_engine = db_engine
         app.state.bus = message_bus
         app.state.engine_mgr = engine_manager
+        app.state.project_mgr = project_manager
         yield
 
     app = create_app(lifespan=_test_lifespan)

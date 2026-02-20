@@ -10,11 +10,14 @@ from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.schemas import EntityType, Project
+from llm_gamebook.story.schemas.project import ProjectSource
 
 
 @pytest.fixture
 def simple_project() -> Project:
     return Project.from_data({
+        "id": "llm-gamebook/test",
+        "source": ProjectSource.LOCAL,
         "title": "Test Project",
         "description": "A test project",
         "entity_types": [

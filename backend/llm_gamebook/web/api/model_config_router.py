@@ -31,7 +31,8 @@ async def read_model_configs(
 ) -> ModelConfigs:
     return ModelConfigs(
         data=[
-            ModelConfig(**c.model_dump()) for c in await get_model_configs(db_session, skip, limit)
+            ModelConfig.model_validate(c, from_attributes=True)
+            for c in await get_model_configs(db_session, skip, limit)
         ],
         count=await get_model_config_count(db_session),
     )
@@ -49,7 +50,7 @@ async def read_model_config(db_session: DbSessionDep, config_id: UUID) -> SqlMod
 async def create_model_config(
     db_session: DbSessionDep, config_in: ModelConfigCreate
 ) -> SqlModelModelConfig:
-    db_config = SqlModelModelConfig(**config_in.model_dump())
+    db_config = SqlModelModelConfig.model_validate(config_in, from_attributes=True)
     return await crud_create_model_config(db_session, db_config)
 
 

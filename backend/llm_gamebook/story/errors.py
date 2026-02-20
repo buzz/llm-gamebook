@@ -1,3 +1,15 @@
+class ProjectError(Exception):
+    pass
+
+
+class ProjectNotFoundError(ProjectError):
+    """Raised when a project could not be found."""
+
+
+class ProjectExistsError(ProjectError):
+    """Raised when a project already exists."""
+
+
 class StateAccessError(Exception):
     """Raised when an unknown state was accessed."""
 

@@ -100,9 +100,6 @@ class WebSocketHandler(BusSubscriber):
             )
             await self._send_message(msg)
 
-    async def _get_engine(self, session_id: UUID) -> "StoryEngine":
-        return await self._engine_mgr.get_or_create(session_id, self._db_session)
-
     async def _send_message(self, message: WebSocketServerMessage) -> None:
         """Send a WebSocket message."""
         if self._websocket.client_state == WebSocketState.CONNECTED:

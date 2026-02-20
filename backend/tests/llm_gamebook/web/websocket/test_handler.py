@@ -20,6 +20,7 @@ from llm_gamebook.engine.message import (
     ResponseStreamUpdateMessage,
     ResponseUserRequestMessage,
 )
+from llm_gamebook.story import ProjectManager
 from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage, WebSocketPongMessage
 from llm_gamebook.web.websocket.handler import WebSocketHandler
 
@@ -71,10 +72,11 @@ async def test_send_introduction_if_needed_new_session(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     handler._websocket = mock_websocket
 
-    await engine_manager.get_or_create(session.id, db_session)
+    await engine_manager.get_or_create(session.id, db_session, project_manager)
 
 
 async def test_send_introduction_if_needed_existing_session(
@@ -83,10 +85,11 @@ async def test_send_introduction_if_needed_existing_session(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     handler._websocket = mock_websocket
 
-    await engine_manager.get_or_create(session.id, db_session)
+    await engine_manager.get_or_create(session.id, db_session, project_manager)
 
 
 async def test_handle_messages_ping(handler: WebSocketHandler, mock_websocket: AsyncMock) -> None:
@@ -129,10 +132,11 @@ async def test_generate_response_success(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     handler._websocket = mock_websocket
 
-    engine = await engine_manager.get_or_create(session.id, db_session)
+    engine = await engine_manager.get_or_create(session.id, db_session, project_manager)
 
     with patch.object(engine, "generate_response", new_callable=AsyncMock):
         await handler._generate_response(engine)
@@ -144,10 +148,11 @@ async def test_generate_response_api_error(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     handler._websocket = mock_websocket
 
-    engine = await engine_manager.get_or_create(session.id, db_session)
+    engine = await engine_manager.get_or_create(session.id, db_session, project_manager)
 
     with patch.object(
         engine,
@@ -168,10 +173,11 @@ async def test_on_engine_created(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     handler._websocket = mock_websocket
 
-    await engine_manager.get_or_create(session.id, db_session)
+    await engine_manager.get_or_create(session.id, db_session, project_manager)
     engine = engine_manager.get(session.id)
 
     with patch.object(engine, "generate_response", new_callable=AsyncMock):
@@ -268,11 +274,12 @@ async def test_on_engine_response_user_request(
     session: Session,
     engine_manager: EngineManager,
     db_session: AsyncDbSession,
+    project_manager: ProjectManager,
 ) -> None:
     """Test handling ResponseUserRequestMessage to trigger response generation."""
     handler._websocket = mock_websocket
 
-    engine = await engine_manager.get_or_create(session.id, db_session)
+    engine = await engine_manager.get_or_create(session.id, db_session, project_manager)
 
     with patch.object(handler, "_generate_response", new_callable=AsyncMock) as mock_generate:
         message = ResponseUserRequestMessage(session_id=session.id)

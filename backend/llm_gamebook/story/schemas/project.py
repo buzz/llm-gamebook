@@ -1,18 +1,38 @@
 from collections.abc import Mapping
+from enum import StrEnum, auto
 from pathlib import Path
-from typing import Self, overload
+from typing import Annotated, Self, overload
 
 import yaml
-from pydantic import BaseModel, PrivateAttr
+from pydantic import AfterValidator, BaseModel, Field, PrivateAttr
 
-from llm_gamebook.constants import PROJECT_NAME
-from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
+from llm_gamebook.constants import PROJECT_FILENAME
+from llm_gamebook.story.errors import (
+    EntityNotFoundError,
+    EntityTypeNotFoundError,
+    ProjectExistsError,
+)
+from llm_gamebook.story.schemas.entity import BaseEntity, EntityType, EntityTypeDefinition
 
-from .entity import BaseEntity, EntityType, EntityTypeDefinition
+from .validators import is_valid_project_id
+
+
+class ProjectSource(StrEnum):
+    EXAMPLE = auto()
+    LOCAL = auto()
+
+
+type ProjectId = Annotated[str, AfterValidator(is_valid_project_id)]
 
 
 class ProjectDefinition(BaseModel):
     """Gamebook project definition loaded from external file."""
+
+    id: ProjectId = Field(exclude=True)
+    """The project ID in the format `namespace/name`."""
+
+    source: ProjectSource = Field(exclude=True)
+    """The project source type."""
 
     title: str
     """The project title."""
@@ -23,11 +43,50 @@ class ProjectDefinition(BaseModel):
     description: str | None
     """The project description."""
 
-    entity_types: list[EntityTypeDefinition]
+    entity_types: list[EntityTypeDefinition] = Field(default_factory=list)
     """Definition of entity types."""
 
     def __str__(self) -> str:
-        return f'<{type(self).__name__} title="{self.title}">'
+        return f'<{type(self).__name__} id="{self.id}" title="{self.title}" source="{self.source}">'
+
+    @property
+    def namespace(self) -> str:
+        return self.id.split("/", 1)[0]
+
+    @property
+    def name(self) -> str:
+        return self.id.split("/", 1)[1]
+
+    def save(self, save_path: Path) -> None:
+        try:
+            save_path.mkdir(parents=True)
+        except FileExistsError as e:
+            msg = f"Project '{self.id}' already exists"
+            raise ProjectExistsError(msg) from e
+
+        yaml_path = save_path / PROJECT_FILENAME
+        yaml_path.write_text(yaml.dump(self.model_dump()))
+
+    @classmethod
+    def from_path(cls, project_path: Path) -> Self:
+        namespace = project_path.parts[-2]
+        name = project_path.parts[-1]
+        project_filepath = project_path / PROJECT_FILENAME
+
+        try:
+            data = yaml.safe_load(project_filepath.read_text())
+        except FileNotFoundError as err:
+            msg = f"Project file not found: {project_filepath}"
+            raise FileNotFoundError(msg) from err
+
+        return cls.model_validate(
+            {
+                **data,
+                "id": f"{namespace}/{name}",
+                "source": ProjectSource.LOCAL,
+            },
+            strict=True,
+        )
 
 
 class Project(ProjectDefinition):
@@ -80,27 +139,20 @@ class Project(ProjectDefinition):
 
     @classmethod
     def from_path(cls, project_path: Path) -> Self:
-        project_filepath = project_path / f"{PROJECT_NAME}.yaml"
-
-        try:
-            data = yaml.safe_load(project_filepath.read_text())
-        except FileNotFoundError as err:
-            msg = f"Project file not found: {project_filepath}"
-            raise FileNotFoundError(msg) from err
-
-        return cls.from_data(data)
+        project_def = super().from_path(project_path)
+        return cls.from_definition(project_def)
 
     @classmethod
     def from_data(cls, data: object) -> Self:
-        project_def = ProjectDefinition.model_validate(data, strict=True)
+        project_def = super().model_validate(data, strict=True)
         return cls.from_definition(project_def)
 
     @classmethod
     def from_definition(cls, project_def: ProjectDefinition) -> Self:
-        project = cls(**project_def.model_dump())
-        entity_types = (
-            EntityType.from_definition(def_, project) for def_ in project_def.entity_types
-        )
+        """Initialize runtime project from definition."""
+        project = cls.model_validate(project_def, from_attributes=True)
+
+        entity_types = (EntityType.from_definition(et, project) for et in project_def.entity_types)
         project._entity_type_map = {et.id: et for et in entity_types}
 
         for entity_type in project.entity_type_map.values():

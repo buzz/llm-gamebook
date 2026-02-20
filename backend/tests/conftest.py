@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator
-from pathlib import Path
 
 import pytest
 from pydantic_ai.models import Model
@@ -13,18 +12,7 @@ from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.providers import ModelProvider
-from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.schemas import Project
-
-
-@pytest.fixture
-def examples_path() -> Path:
-    return Path(__file__).parent.parent.parent / "examples"
-
-
-@pytest.fixture
-def project(examples_path: Path) -> Project:
-    return Project.from_path(examples_path / "broken-bulb")
+from llm_gamebook.story import Project, ProjectManager, StoryContext
 
 
 @pytest.fixture
@@ -66,8 +54,22 @@ async def model_config(db_session: AsyncDbSession) -> ModelConfig:
 
 
 @pytest.fixture
-async def session(db_session: AsyncDbSession, model_config: ModelConfig) -> Session:
-    session_obj = Session(title="Test Session", config=model_config)
+def project_manager(tmp_path_factory: pytest.TempPathFactory) -> ProjectManager:
+    tmp_path = tmp_path_factory.mktemp("local_projects")
+    return ProjectManager(local_projects_path=tmp_path)
+
+
+@pytest.fixture
+def project(project_manager: ProjectManager) -> Project:
+    project_def = project_manager.get_project("llm-gamebook/broken-bulb")
+    return Project.from_definition(project_def)
+
+
+@pytest.fixture
+async def session(
+    db_session: AsyncDbSession, model_config: ModelConfig, project: Project
+) -> Session:
+    session_obj = Session(title="Test Session", project_id=project.id, config=model_config)
     db_session.add(session_obj)
     await db_session.commit()
     await db_session.refresh(session_obj)

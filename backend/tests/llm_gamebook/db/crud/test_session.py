@@ -8,11 +8,12 @@ from llm_gamebook.db.models import ModelConfig, Session
 
 async def test_create_session(db_session: AsyncDbSession, model_config: ModelConfig) -> None:
     created_session = await session_crud.create_session(
-        db_session, model_config, title="New Test Session"
+        db_session, model_config, "foo/bar", "New Test Session"
     )
 
     assert created_session is not None
     assert created_session.id is not None
+    assert created_session.project_id == "foo/bar"
     assert created_session.title == "New Test Session"
     assert created_session.config_id == model_config.id
 
@@ -26,8 +27,8 @@ async def test_get_sessions_empty(db_session: AsyncDbSession) -> None:
 async def test_get_sessions_with_data(
     db_session: AsyncDbSession, model_config: ModelConfig
 ) -> None:
-    await session_crud.create_session(db_session, model_config, title="Session 1")
-    await session_crud.create_session(db_session, model_config, title="Session 2")
+    await session_crud.create_session(db_session, model_config, "foo/bar", "Session 1")
+    await session_crud.create_session(db_session, model_config, "baz/quz", "Session 2")
 
     sessions = await session_crud.get_sessions(db_session, skip=0, limit=10)
 
@@ -39,7 +40,7 @@ async def test_get_sessions_with_data(
 async def test_get_session_count(db_session: AsyncDbSession, model_config: ModelConfig) -> None:
     initial_count = await session_crud.get_session_count(db_session)
 
-    await session_crud.create_session(db_session, model_config, title="Test Session")
+    await session_crud.create_session(db_session, model_config, "foo/bar", "Test Session")
 
     new_count = await session_crud.get_session_count(db_session)
 

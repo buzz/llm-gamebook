@@ -15,7 +15,7 @@ from llm_gamebook.web.schemas.session.part import TextPart, UserPromptPart
 
 def test_valid_session_create() -> None:
     config_id = uuid4()
-    data = SessionCreate(config_id=config_id)
+    data = SessionCreate(config_id=config_id, project_id="foo/bar")
     assert data.config_id == config_id
     assert data.title is None
 
@@ -23,7 +23,7 @@ def test_valid_session_create() -> None:
 def test_valid_session_create_with_title() -> None:
     config_id = uuid4()
     title = "My Session"
-    data = SessionCreate(config_id=config_id, title=title)
+    data = SessionCreate(config_id=config_id, project_id="foo/bar", title=title)
     assert data.config_id == config_id
     assert data.title == title
 
@@ -62,20 +62,13 @@ def test_session_full_with_messages() -> None:
     message_id = uuid4()
     part_id = uuid4()
 
-    user_prompt = UserPromptPart(
-        id=part_id,
-        content="Hello",
-        timestamp=datetime.now(UTC),
-    )
-    model_request = ModelRequest(
-        id=message_id,
-        parts=[user_prompt],
-        instructions=None,
-    )
+    user_prompt = UserPromptPart(id=part_id, content="Hello", timestamp=datetime.now(UTC))
+    model_request = ModelRequest(id=message_id, parts=[user_prompt], instructions=None)
 
     session = SessionFull(
         id=session_id,
         config_id=config_id,
+        project_id="foo/bar",
         title="Test",
         messages=[model_request],
     )
@@ -88,10 +81,7 @@ def test_session_full_with_empty_messages() -> None:
     config_id = uuid4()
 
     session = SessionFull(
-        id=session_id,
-        config_id=config_id,
-        title="Test",
-        messages=[],
+        id=session_id, config_id=config_id, project_id="foo/bar", title="Test", messages=[]
     )
     assert session.messages == []
     assert len(session.messages) == 0
@@ -107,27 +97,11 @@ def test_session_full_with_request_and_response() -> None:
     part_id1 = uuid4()
     part_id2 = uuid4()
 
-    user_prompt = UserPromptPart(
-        id=part_id1,
-        content="What is 2+2?",
-        timestamp=timestamp,
-    )
-    request = ModelRequest(
-        id=request_id,
-        parts=[user_prompt],
-        instructions=None,
-    )
+    user_prompt = UserPromptPart(id=part_id1, content="What is 2+2?", timestamp=timestamp)
+    request = ModelRequest(id=request_id, parts=[user_prompt], instructions=None)
 
-    text_part = TextPart(
-        id=part_id2,
-        content="2+2 equals 4",
-    )
-    usage = Usage(
-        input_tokens=10,
-        output_tokens=20,
-        cache_write_tokens=0,
-        cache_read_tokens=0,
-    )
+    text_part = TextPart(id=part_id2, content="2+2 equals 4")
+    usage = Usage(input_tokens=10, output_tokens=20, cache_write_tokens=0, cache_read_tokens=0)
     response = ModelResponse(
         id=response_id,
         parts=[text_part],
@@ -141,6 +115,7 @@ def test_session_full_with_request_and_response() -> None:
     session = SessionFull(
         id=session_id,
         config_id=config_id,
+        project_id="foo/bar",
         title="Math Session",
         messages=[request, response],
     )
@@ -155,37 +130,19 @@ def test_session_full_message_discriminator() -> None:
     request_id = uuid4()
     response_id = uuid4()
 
-    user_prompt = UserPromptPart(
-        id=uuid4(),
-        content="Test",
-        timestamp=timestamp,
-    )
-    request = ModelRequest(
-        id=request_id,
-        parts=[user_prompt],
-        instructions=None,
-    )
+    user_prompt = UserPromptPart(id=uuid4(), content="Test", timestamp=timestamp)
+    request = ModelRequest(id=request_id, parts=[user_prompt], instructions=None)
 
-    text_part = TextPart(
-        id=uuid4(),
-        content="Response",
-    )
+    text_part = TextPart(id=uuid4(), content="Response")
     response = ModelResponse(
         id=response_id,
         parts=[text_part],
-        usage=Usage(
-            input_tokens=1,
-            output_tokens=1,
-            cache_write_tokens=0,
-            cache_read_tokens=0,
-        ),
+        usage=Usage(input_tokens=1, output_tokens=1, cache_write_tokens=0, cache_read_tokens=0),
         timestamp=timestamp,
     )
 
     session = SessionFull(
-        id=session_id,
-        config_id=config_id,
-        messages=[request, response],
+        id=session_id, config_id=config_id, project_id="foo/bar", messages=[request, response]
     )
 
     messages = session.messages
@@ -204,9 +161,7 @@ def test_sessions_with_single_session() -> None:
     config_id = uuid4()
 
     session = Session(
-        id=session_id,
-        config_id=config_id,
-        title="Test Session",
+        id=session_id, config_id=config_id, project_id="foo/bar", title="Test Session"
     )
 
     sessions = Sessions(data=[session], count=1)
@@ -217,11 +172,7 @@ def test_sessions_with_single_session() -> None:
 
 def test_sessions_with_multiple_sessions() -> None:
     sessions_list = [
-        Session(
-            id=uuid4(),
-            config_id=uuid4(),
-            title=f"Session {i}",
-        )
+        Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar", title=f"Session {i}")
         for i in range(3)
     ]
 
@@ -232,11 +183,7 @@ def test_sessions_with_multiple_sessions() -> None:
 
 def test_sessions_count_matches_data_length() -> None:
     sessions_list = [
-        Session(
-            id=uuid4(),
-            config_id=uuid4(),
-            title=f"Session {i}",
-        )
+        Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar", title=f"Session {i}")
         for i in range(5)
     ]
 
@@ -245,10 +192,7 @@ def test_sessions_count_matches_data_length() -> None:
 
 
 def test_sessions_with_no_title() -> None:
-    session = Session(
-        id=uuid4(),
-        config_id=uuid4(),
-    )
+    session = Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar")
 
     sessions = Sessions(data=[session], count=1)
     assert sessions.data[0].title is None

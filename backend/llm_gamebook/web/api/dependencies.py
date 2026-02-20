@@ -8,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.engine import EngineManager, StoryEngine
 from llm_gamebook.message_bus import MessageBus
+from llm_gamebook.story.project_manager import ProjectManager
 
 
 def _get_db_engine(request: Request) -> AsyncEngine:
@@ -30,8 +31,22 @@ async def _get_db_session(db_engine: DbEngineDep) -> AsyncIterator[AsyncDbSessio
 DbSessionDep = Annotated[AsyncDbSession, Depends(_get_db_session)]
 
 
+def _get_project_manager(request: Request) -> ProjectManager:
+    project_manager = request.app.state.project_mgr
+    if not isinstance(project_manager, ProjectManager):
+        msg = "ProjectManager not found"
+        raise TypeError(msg)
+    return project_manager
+
+
+ProjectManagerDep = Annotated[ProjectManager, Depends(_get_project_manager)]
+
+
 async def _get_story_engine(
-    request: Request, session_id: UUID, db_session: DbSessionDep
+    request: Request,
+    session_id: UUID,
+    db_session: DbSessionDep,
+    project_manager: ProjectManagerDep,
 ) -> StoryEngine:
     engine_manager = request.app.state.engine_mgr
     if not isinstance(engine_manager, EngineManager):
@@ -39,7 +54,7 @@ async def _get_story_engine(
         raise TypeError(msg)
 
     try:
-        return await engine_manager.get_or_create(session_id, db_session)
+        return await engine_manager.get_or_create(session_id, db_session, project_manager)
     except ValueError as err:
         raise HTTPException(status_code=404, detail=str(err)) from err
 
