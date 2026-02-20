@@ -2,7 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from llm_gamebook.story.errors import EntityNotFoundError, EntityTypeNotFoundError
+from llm_gamebook.story import ProjectManager
+from llm_gamebook.story.errors import (
+    EntityNotFoundError,
+    EntityTypeNotFoundError,
+    ProjectExistsError,
+)
 from llm_gamebook.story.schemas import Project, ProjectDefinition, ProjectSource
 
 
@@ -108,3 +113,67 @@ def test_project_entity_type_map_property(simple_project: Project) -> None:
     assert "TestGraph" in entity_type_map
     assert "TestNode" in entity_type_map
     assert len(entity_type_map) == 2
+
+
+def test_project_definition_namespace(project_data: dict[str, object]) -> None:
+    project_def = ProjectDefinition.model_validate(project_data, strict=True)
+
+    assert project_def.namespace == "test"
+
+
+def test_project_definition_name(project_data: dict[str, object]) -> None:
+    project_def = ProjectDefinition.model_validate(project_data, strict=True)
+
+    assert project_def.name == "project"
+
+
+def test_project_definition_str(project_data: dict[str, object]) -> None:
+    project_def = ProjectDefinition.model_validate(project_data, strict=True)
+
+    result = str(project_def)
+
+    assert "ProjectDefinition" in result
+    assert 'id="test/project"' in result
+    assert 'title="Test Project"' in result
+    assert 'source="local"' in result
+
+
+def test_project_definition_save(project_data: dict[str, object], tmp_path: Path) -> None:
+    project_def = ProjectDefinition.model_validate(project_data, strict=True)
+    save_path = tmp_path / "test" / "project"
+
+    project_def.save(save_path)
+
+    yaml_path = save_path / "llm-gamebook.yaml"
+    assert yaml_path.exists()
+    content = yaml_path.read_text()
+    assert "title: Test Project" in content
+    assert "description: A test project" in content
+
+
+def test_project_definition_save_already_exists(
+    project_data: dict[str, object], tmp_path: Path
+) -> None:
+    project_def = ProjectDefinition.model_validate(project_data, strict=True)
+    save_path = tmp_path / "test" / "project"
+    save_path.mkdir(parents=True)
+
+    with pytest.raises(ProjectExistsError) as exc_info:
+        project_def.save(save_path)
+
+    assert "already exists" in str(exc_info.value)
+
+
+def test_project_definition_from_path(project_manager: ProjectManager) -> None:
+    project_def = project_manager.get_project("llm-gamebook/broken-bulb")
+
+    assert project_def.id == "llm-gamebook/broken-bulb"
+    assert project_def.title == "Broken Bulb"
+    assert project_def.source == ProjectSource.EXAMPLE
+
+
+def test_project_source_enum() -> None:
+    assert ProjectSource.EXAMPLE.value == "example"
+    assert ProjectSource.LOCAL.value == "local"
+    assert str(ProjectSource.EXAMPLE) == "example"
+    assert str(ProjectSource.LOCAL) == "local"
