@@ -40,6 +40,19 @@ class ProjectManager:
             raise ValueError(msg)
         shutil.rmtree(self._local_projects_path / project.namespace / project.name)
 
+    def get_image_path(self, project_id: str) -> Path | None:
+        project_def = self.get_project(project_id)
+        if project_def.image is None:
+            return None
+
+        base_path = (
+            EXAMPLES_PATH
+            if project_def.source == ProjectSource.EXAMPLE
+            else self._local_projects_path
+        )
+
+        return base_path / project_def.namespace / project_def.name / project_def.image
+
     @classmethod
     def _discover_from_directory(
         cls, base_dir: Path, source: ProjectSource

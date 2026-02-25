@@ -43,6 +43,9 @@ class ProjectDefinition(BaseModel):
     description: str | None
     """The project description."""
 
+    image: str | None = Field(exclude=True, default=None)
+    """The project image."""
+
     entity_types: list[EntityTypeDefinition] = Field(default_factory=list)
     """Definition of entity types."""
 

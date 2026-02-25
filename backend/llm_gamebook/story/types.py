@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Annotated, Literal, TypedDict
 from pydantic import AfterValidator
 
 from llm_gamebook.story.schemas.validators import (
+    is_normalized_kebab_case,
     is_normalized_pascal_case,
     is_normalized_snake_case,
 )
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
 
 type StoryTool = Tool[StoryContext]
 """An LLM tool function."""
+
+type NormalizedKebabCase = Annotated[str, AfterValidator(is_normalized_kebab_case)]
+"""kebab-case name with non-ASCII characters normalized."""
 
 type NormalizedPascalCase = Annotated[str, AfterValidator(is_normalized_pascal_case)]
 """PascalCase name with non-ASCII characters normalized."""

@@ -22,6 +22,9 @@ class ProjectBasic(BaseModel):
     description: str | None = None
     """Optional project description."""
 
+    image: str | None = None
+    """Optional image filename."""
+
 
 class ProjectDetail(ProjectBasic):
     entity_types: list[EntityTypeDefinition]
