@@ -1,8 +1,8 @@
 title: Broken Bulb
 description: >
-  Steve, 30 years old, isolated and weary. He lives alone in the city, struggling with loneliness
-  and often drinks to numb his thoughts.
-
+  Numbed nights in an indifferent world; silence presses in like rain against the window. Yet
+  somewhere, perhaps beneath the gloom, a fragile hope stirs.
+image: broken-bulb.webp
 entity_types:
   - name: Story Arc
     instructions: |
