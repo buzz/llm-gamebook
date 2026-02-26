@@ -1,0 +1,41 @@
+.title {
+  color: var(--mantine-color-text);
+  font-family: Spectral, serif;
+  font-weight: bold;
+  font-size: var(--mantine-font-size-xl);
+}
+
+.description {
+  color: var(--mantine-color-dimmed);
+  font-family: Spectral, serif;
+}
+
+.projectId {
+  text-wrap: nowrap;
+}
+
+.textShadow {
+  text-shadow: var(--llmg-text-shadow);
+}
+
+.detailsButton {
+  background-color: color-mix(in srgb, var(--mantine-color-default), transparent 50%);
+}
+
+.cardRoot > * {
+  z-index: 1;
+}
+
+.blurredBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  opacity: 0.1;
+  z-index: 0;
+  transform: scale(1.25) rotate(90deg);
+}

@@ -12,9 +12,12 @@ function useCreateSession() {
 
   return {
     createSession: useCallback(
-      async (modelConfigId: string) => {
+      async (projectId: string, modelConfigId: string) => {
         try {
-          const { id } = await createSession({ config_id: modelConfigId }).unwrap()
+          const { id } = await createSession({
+            project_id: projectId,
+            config_id: modelConfigId,
+          }).unwrap()
           navigate(`/player/${id}`)
         } catch (error) {
           showError('Failed to create story session!', error)

@@ -22,6 +22,12 @@ type ModelConfigs = components['schemas']['ModelConfigs']
 type ModelProvider = components['schemas']['ModelProvider']
 type ModelProviders = components['schemas']['ModelProviders']
 
+type ProjectCreate = components['schemas']['ProjectCreate']
+type ProjectBasic = components['schemas']['ProjectBasic']
+type ProjectDetail = components['schemas']['ProjectDetail']
+type Projects = components['schemas']['Projects']
+type ProjectSource = components['schemas']['ProjectSource']
+
 interface ApiQueryError {
   data: {
     detail: unknown
@@ -62,6 +68,11 @@ export type {
   ModelProviders,
   ModelRequest,
   ModelRequestCreate,
+  ProjectBasic,
+  ProjectCreate,
+  ProjectDetail,
+  Projects,
+  ProjectSource,
   ServerMessage,
   Session,
   SessionCreate,

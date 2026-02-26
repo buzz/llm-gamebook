@@ -58,6 +58,59 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/projects/': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Projects */
+    get: operations['list_projects_api_projects__get']
+    put?: never
+    /** Create Project */
+    post: operations['create_project_api_projects__post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/projects/{project_namespace}/{project_name}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Project */
+    get: operations['get_project_api_projects__project_namespace___project_name__get']
+    put?: never
+    post?: never
+    /** Delete Project */
+    delete: operations['delete_project_api_projects__project_namespace___project_name__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/projects/{project_namespace}/{project_name}/image': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Project Image */
+    get: operations['get_project_image_api_projects__project_namespace___project_name__image_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/sessions/': {
     parameters: {
       query?: never
@@ -116,6 +169,35 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /**
+     * EntityDefinition
+     * @description The base class to all story entities.
+     */
+    EntityDefinition: {
+      id: components['schemas']['NormalizedSnakeCase']
+      /** Functions */
+      functions?: components['schemas']['FunctionDefinition'][] | null
+    } & {
+      [key: string]: unknown
+    }
+    /**
+     * EntityTypeDefinition
+     * @description A definition of a story entity type.
+     */
+    EntityTypeDefinition: {
+      id: components['schemas']['NormalizedPascalCase']
+      /** Name */
+      name: string
+      /** Instructions */
+      instructions?: string | null
+      /**
+       * Traits
+       * @default []
+       */
+      traits: components['schemas']['TraitDefinition'][]
+      /** Entities */
+      entities: components['schemas']['EntityDefinition'][]
+    }
     /** ErrorDetails */
     ErrorDetails: {
       /** Type */
@@ -138,6 +220,22 @@ export interface components {
      * @enum {string}
      */
     FinishReason: 'stop' | 'length' | 'content_length' | 'tool_call' | 'error'
+    /**
+     * FunctionDefinition
+     * @description A definition of an LLM-called function for the entity.
+     */
+    FunctionDefinition: {
+      /** Target */
+      target: string
+      /** Name */
+      name?: string | null
+      /** Description */
+      description?: string | null
+      /** Properties */
+      properties?: {
+        [key: string]: string
+      } | null
+    }
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -359,6 +457,69 @@ export interface components {
       | components['schemas']['TextPart']
       | components['schemas']['ToolCallPart']
       | components['schemas']['ThinkingPart']
+    NormalizedKebabCase: string
+    NormalizedPascalCase: string
+    NormalizedSnakeCase: string
+    /** ProjectBasic */
+    ProjectBasic: {
+      id: components['schemas']['ProjectId']
+      source: components['schemas']['ProjectSource']
+      /** Title */
+      title: string
+      /** Author */
+      author?: string | null
+      /** Description */
+      description?: string | null
+      /** Image */
+      image?: string | null
+    }
+    /**
+     * ProjectCreate
+     * @description Create fields for a project.
+     */
+    ProjectCreate: {
+      id: components['schemas']['ProjectId']
+      source: components['schemas']['ProjectSource']
+      /** Title */
+      title: string
+      /** Author */
+      author?: string | null
+      /** Description */
+      description?: string | null
+      /** Image */
+      image?: string | null
+    }
+    /** ProjectDetail */
+    ProjectDetail: {
+      id: components['schemas']['ProjectId']
+      source: components['schemas']['ProjectSource']
+      /** Title */
+      title: string
+      /** Author */
+      author?: string | null
+      /** Description */
+      description?: string | null
+      /** Image */
+      image?: string | null
+      /** Entity Types */
+      entity_types: components['schemas']['EntityTypeDefinition'][]
+    }
+    ProjectId: string
+    /**
+     * ProjectSource
+     * @enum {string}
+     */
+    ProjectSource: 'example' | 'local'
+    /**
+     * Projects
+     * @description A list of projects.
+     */
+    Projects: {
+      /** Data */
+      data: components['schemas']['ProjectBasic'][]
+      /** Count */
+      count: number
+    }
     /**
      * RetryPromptPart
      * @description A message sent back to an LLM asking it to try again.
@@ -405,6 +566,8 @@ export interface components {
       id: string
       /** Config Id */
       config_id?: string | null
+      /** Project Id */
+      project_id: string
       /**
        * Timestamp
        * Format: date-time
@@ -423,6 +586,8 @@ export interface components {
        * Format: uuid
        */
       config_id: string
+      /** Project Id */
+      project_id: string
     }
     /**
      * SessionFull
@@ -438,6 +603,8 @@ export interface components {
       id: string
       /** Config Id */
       config_id?: string | null
+      /** Project Id */
+      project_id: string
       /**
        * Timestamp
        * Format: date-time
@@ -560,6 +727,14 @@ export interface components {
       tool_call_id: string | null
       /** Timestamp */
       timestamp: string | null
+    }
+    /** TraitDefinition */
+    TraitDefinition: {
+      name: components['schemas']['NormalizedSnakeCase']
+      /** Options */
+      options?: {
+        [key: string]: unknown
+      }
     }
     /** Usage */
     Usage: {
@@ -904,6 +1079,166 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ModelProviders']
+        }
+      }
+    }
+  }
+  list_projects_api_projects__get: {
+    parameters: {
+      query?: {
+        source?: components['schemas']['ProjectSource'] | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Projects']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_project_api_projects__post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProjectCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProjectBasic']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_project_api_projects__project_namespace___project_name__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        project_namespace: components['schemas']['NormalizedKebabCase']
+        project_name: components['schemas']['NormalizedKebabCase']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProjectDetail']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_project_api_projects__project_namespace___project_name__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        project_namespace: components['schemas']['NormalizedKebabCase']
+        project_name: components['schemas']['NormalizedKebabCase']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_project_image_api_projects__project_namespace___project_name__image_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        project_namespace: components['schemas']['NormalizedKebabCase']
+        project_name: components['schemas']['NormalizedKebabCase']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }

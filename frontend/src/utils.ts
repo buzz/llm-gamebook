@@ -1,4 +1,5 @@
 import { assertNever } from './types/common'
+import type { ProjectBasic } from './types/api'
 
 interface IconProps {
   size: number
@@ -22,4 +23,8 @@ function iconSizeProps(size: 'lg' | 'md' | 'sm'): IconProps {
   }
 }
 
-export { iconSizeProps }
+function projectImageSrc(project: ProjectBasic) {
+  return project.image ? `/api/projects/${project.id}/image` : undefined
+}
+
+export { iconSizeProps, projectImageSrc }
