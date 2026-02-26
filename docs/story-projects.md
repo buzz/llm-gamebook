@@ -15,11 +15,11 @@ Both stories and libraries use the same directory structure. They are distinguis
 
 ### Naming System
 
-Names use namespaces to prevent collisions: `@user/my-story` or `@foo/my-lib`
+Names use namespaces to prevent collisions: `user/my-story` or `foo/my-lib`
 
-- **Namespace**: `@user`, `@foo`, etc. (1-39 alphanumeric/hyphen chars, starting with alphanumeric)
+- **Namespace**: `user`, `foo`, etc. (1-39 alphanumeric/hyphen chars, starting with alphanumeric)
 - **Project name**: `my-story`, `my-lib` (1-39 alphanumeric/hyphen chars, starting with alphanumeric)
-- **Full name**: `@user/my-story` (namespace + `/` + name)
+- **Full name**: `user/my-story` (namespace + `/` + name)
 
 *Namespaces are mandatory.*
 
@@ -27,17 +27,14 @@ Names use namespaces to prevent collisions: `@user/my-story` or `@foo/my-lib`
 
 Names are mapped to filesystem for storage:
 
-- `@user/my-story` → (stored in `$USER_DATA_DIR/stories/@user/my-story/`)
+- `user/my-story` → (stored in `$USER_DATA_DIR/stories/user/my-story/`)
 
 ## Directory Structure
 
 ```
 ~/.local/share/llm-gamebook/
 ├── stories/          # User's editable stories
-├── imports/          # Imported stories (read-only mirrors)
-├── libraries/        # Reusable libraries (read-only mirros)
-├── user-libraries/   # User's editable libraries (less common, for library developers)
-├── config.yaml       # Global configuration (sync settings, etc.)
+├── libraries/        # Reusable libraries
 └── llm-gamebook.db   # App state database
 
 examples/             # Application-provided examples (read-only)
@@ -70,13 +67,15 @@ Each story/library uses the same structure:
 
 ```yaml
 type: story
-name: '@user/foo'
+name: user/foo
 version: x.y.z
+dependencies?:
+  foo/baz>=1.2.3
+  bar/quz>=6.0.0,<7.0.0
 source?:                        # Present for imported stories
   source_type: git|zip|directory
-  source_url: https://github.com/user/repo.git
+  source: https://github.com/user/repo.git # or "/path/to/original"
   imported_at: "2026-02-06T..."
-  original_path: /path/to/original
 forked_from?: id                # Present for forked stories
 ```
 
@@ -84,12 +83,11 @@ forked_from?: id                # Present for forked stories
 
 ```yaml
 type: library
-name: '@user/bar'
+name: user/bar
 version: x.y.z
-is_reusable: true
 dependencies?:
-  "@foo/baz>=1.2.3"
-  "@bar/quz>=6.0.0,<7.0.0"
+  foo/baz>=1.2.3
+  bar/quz>=6.0.0,<7.0.0
 ```
 
 ## Lifecycle
@@ -97,18 +95,17 @@ dependencies?:
 ```
 1. Discovery
    ├─ examples/ (application)
-   ├─ imports/ (external sources)
    └─ stories/ (user's personal)
 
 2. Import (from external source)
    git clone / zip extract / copy directory
    ↓
-   imports/{import-ns}/{import-id}/ with .import-meta.yaml
+   imports/{import-ns}/{import-id}/ with .story-meta.yaml
 
 3. Fork/Clone (make editable)
-   Copy files to stories/{ns}/{story-id}/
+   Copy files from stories/{ns}/{story-id}/
    ↓
-   stories/{ns}/{story-id}/ with .story-meta.yaml
+   stories/{user_ns}/{story-id}/ with .story-meta.yaml
 
 4. Edit (user modifies)
    llm-gamebook.yaml + assets
@@ -120,7 +117,7 @@ dependencies?:
 ### Additional Operations
 
 - **Sync**: Update imported story from source (git pull / re-extract)
-- **Delete**: Remove from `stories/` or `imports/`
+- **Delete**: Remove from `stories/`
 - **Library import**: Copy library to `libraries/`
 
 ## Import Mechanisms
@@ -129,18 +126,18 @@ dependencies?:
 
 - Full repository clone (keeps history, allows updates)
 - Supports URLs like `https://github.com/user/repo.git` or `git@github.com:user/repo.git`
-- Stores full repo in `imports/{ns}/{import-id}/.git/`
+- Stores full repo in `stories/{ns}/{import-id}/.git/`
 
 ### Zip
 
 - Flat structure only (must contain `llm-gamebook.yaml` at root)
-- Extracts to `imports/{ns}/{import-id}/`
+- Extracts to `stories/{ns}/{import-id}/`
 - No metadata preserved beyond import info
 
 ### Directory
 
-- Copy external directory to `imports/`
-- Stores source path in `.import-meta.yaml`
+- Copy external directory to `stroies/`
+- Stores source path in `.story-meta.yaml`
 - For read-only access or development
 
 ## API Endpoints
@@ -159,7 +156,7 @@ POST   /api/stories/import
   └─ Body: { source_type, source_url, name?, auth? }
 
 POST   /api/stories/{id}/fork
-  └─ Fork imported story into user stories
+  └─ Fork story into user namespace
 
 POST   /api/stories/{id}/sync
   └─ Sync imported story from source
@@ -172,14 +169,6 @@ DELETE /api/stories/{id}
 
 Same endpoints as stories, but under `/api/libraries/`
 
-### Sessions (Extended)
-
-```
-POST   /api/sessions
-  └─ Body: { story_id, title?, config_id?, library_ids[] }
-  └─ Create session with story + libraries
-```
-
 ## Frontend Display
 
 ### Unified Story List
@@ -187,19 +176,17 @@ POST   /api/sessions
 All stories from all sources displayed together:
 
 - **Examples**: Application-provided, read-only
-- **Imported**: From external source, read-only, syncable
-- **My Stories**: User's editable stories
+- **Stories**: User's editable stories
 
 ### Story Card
 
 Each card shows:
 
-- Name with namespace (e.g., `@user/my-story`)
+- Name with namespace (e.g., `user/my-story`)
 - Source badge (examples/imported/local)
-- Editable/read-only indicator
 - Sync availability (for imports)
 - Play button (for editable stories)
-- Fork button (for read-only stories)
+- Fork button
 
 ## Implementation Plan
 
@@ -226,7 +213,7 @@ Each card shows:
 - Backend: `story_fork.py` (copy to stories/)
 - Backend: `story_sync.py` (git pull/re-extract)
 - Backend: Metadata management
-- Frontend: `ForkButton.tsx` (for imported stories)
+- Frontend: `ForkButton.tsx`
 - Frontend: `SyncButton.tsx` (for imports with source)
 - API: `POST /api/stories/{id}/fork`, `POST /api/stories/{id}/sync`
 
@@ -248,7 +235,7 @@ Each card shows:
 
 The namespace system is designed to facilitate future public registries:
 
-- `@user/...`, `@orga/....`
+- `user/...`, `orga/....`
 
 Registry integration would add:
 
