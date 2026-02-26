@@ -8,7 +8,7 @@ import {
   IconSettings,
 } from '@tabler/icons-react'
 
-import { BasicNavLink, RouterNavLink } from '@/components/common/NavLink'
+import { CollapsibleNavLink, RouterNavLink } from '@/components/common/NavLink'
 import modelConfigApi from '@/services/model-config'
 import projectApi from '@/services/project'
 
@@ -33,14 +33,24 @@ function Navbar() {
     <>
       <ScrollArea>
         <RouterNavLink label="Home" icon={IconHome} to="/" />
-        <BasicNavLink label="Gamebooks" icon={IconBooks} childrenOffset={OFFSET}>
+        <CollapsibleNavLink
+          childrenOffset={OFFSET}
+          icon={IconBooks}
+          label="Gamebooks"
+          matchRoute={['/gamebook/*', '/player/new/*']}
+        >
           <RouterNavLink label="New Gamebook" icon={IconPlus} to="/gamebook/new" />
           {projectLinks}
-        </BasicNavLink>
-        <BasicNavLink label="Models" icon={IconCategory} childrenOffset={OFFSET}>
+        </CollapsibleNavLink>
+        <CollapsibleNavLink
+          childrenOffset={OFFSET}
+          icon={IconCategory}
+          label="Models"
+          matchRoute="/model-config/*"
+        >
           <RouterNavLink label="New Model" icon={IconCategoryPlus} to="/model-config/new" />
           {modelConfigLinks}
-        </BasicNavLink>
+        </CollapsibleNavLink>
       </ScrollArea>
       <AppShell.Section grow />
       <RouterNavLink label="Settings" icon={IconSettings} to="/settings" />

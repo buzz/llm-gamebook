@@ -1,2 +1,2 @@
-export { default as BasicNavLink } from './BasicNavLink'
+export { default as CollapsibleNavLink } from './CollapsibleNavLink'
 export { default as RouterNavLink } from './RouterNavLink'

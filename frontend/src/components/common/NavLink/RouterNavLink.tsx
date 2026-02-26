@@ -1,15 +1,15 @@
 import { Link, useRoute } from 'wouter'
 import type { LinkProps } from 'wouter'
 
-import BasicNavLink from './BasicNavLink'
-import type { BasicNavLinkProps } from './BasicNavLink'
+import CollapsibleNavLink from './CollapsibleNavLink'
+import type { CollapsibleNavLinkProps } from './CollapsibleNavLink'
 
-type RouterNavLinkProps = BasicNavLinkProps & LinkProps
+type RouterNavLinkProps = CollapsibleNavLinkProps & LinkProps
 
 function RouterNavLink(props: RouterNavLinkProps) {
   const [isActive] = useRoute(props.to ?? '')
 
-  return <BasicNavLink active={isActive} component={Link} {...props} />
+  return <CollapsibleNavLink active={isActive} component={Link} {...props} />
 }
 
 export default RouterNavLink
