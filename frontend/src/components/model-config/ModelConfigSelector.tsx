@@ -1,6 +1,6 @@
 import { Group, Select, Skeleton } from '@mantine/core'
 
-import modelConfigApi from '@/services/modelConfig'
+import modelConfigApi from '@/services/model-config'
 
 function ModelConfigSelector({
   selectedModelConfigId,
@@ -40,13 +40,8 @@ function ModelConfigSelector({
           }
         }}
         placeholder={noConfigs ? 'No model…' : undefined}
-        searchable
+        searchable={selectData.length > 12}
         size="sm"
-        styles={{
-          input: {
-            minWidth: 180,
-          },
-        }}
         value={selectedModelConfigId}
       />
     </Group>

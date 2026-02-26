@@ -1,17 +1,16 @@
 import { Box, Stack } from '@mantine/core'
-import { skipToken } from '@reduxjs/toolkit/query'
 import { useCallback, useState } from 'react'
 import { useParams } from 'wouter'
 
 import QueryHandler from '@/components/common/QueryHandler'
-import ModelConfigSelector from '@/components/modelConfig/ModelConfigSelector'
+import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
 import sessionApi from '@/services/session'
 import type { SessionFull } from '@/types/api'
 
 import Controls from './Controls'
 import Messages from './Messages/Messages'
 import classes from './Player.module.css'
-import useMessages from './useMessages'
+import useMessages from './use-messages'
 
 interface PlayerLoadedProps {
   session: SessionFull
@@ -52,8 +51,8 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
 }
 
 function Player() {
-  const { sessionId } = useParams()
-  const result = sessionApi.useGetSessionByIdQuery(sessionId ?? skipToken)
+  const { sessionId } = useParams<{ sessionId: string }>()
+  const result = sessionApi.useGetSessionByIdQuery(sessionId)
 
   return (
     <QueryHandler

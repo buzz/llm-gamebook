@@ -1,7 +1,7 @@
 import { Button, Collapse } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconBrain, IconChevronDown } from '@tabler/icons-react'
-import { clsx } from 'clsx'
+import cx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { Streamdown } from 'streamdown'
 
@@ -71,7 +71,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
         leftSection={<IconBrain {...iconSizeProps('sm')} />}
         rightSection={
           <IconChevronDown
-            className={clsx(classes.chevron, classes[thinkingOpened ? 'rot-180' : 'rot-0'])}
+            className={cx(classes.chevron, classes[thinkingOpened ? 'rot-180' : 'rot-0'])}
             {...iconSizeProps('sm')}
           />
         }
@@ -82,7 +82,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
         {label}
       </Button>
       <Collapse in={thinkingOpened}>
-        <Streamdown className={clsx(classes.thinkingText, classes.text)}>{part.content}</Streamdown>
+        <Streamdown className={cx(classes.thinkingText, classes.text)}>{part.content}</Streamdown>
       </Collapse>
     </div>
   )

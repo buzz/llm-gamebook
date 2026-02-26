@@ -1,12 +1,12 @@
 import { ActionIcon, Group } from '@mantine/core'
-import { IconBook, IconTrash } from '@tabler/icons-react'
+import { IconCategory, IconTrash } from '@tabler/icons-react'
 
 import { RouterNavLink } from '@/components/common/NavLink'
-import { useDeleteModelConfig } from '@/hooks/modelConfig'
+import { useDeleteModelConfig } from '@/hooks/model-config'
 import { iconSizeProps } from '@/utils'
 import type { ModelConfig } from '@/types/api'
 
-import classes from './AppShell.module.css'
+import classes from './Link.module.css'
 
 function ActionIcons({ modelConfigId }: ActionIconsProps) {
   const { deleteModelConfig, isLoading } = useDeleteModelConfig()
@@ -34,7 +34,7 @@ function ModelConfigLink({ modelConfig }: ModelConfigLinkProps) {
     <Group className={classes.navLinkWrapper}>
       <RouterNavLink
         className={classes.navLink}
-        icon={IconBook}
+        icon={IconCategory}
         label={modelConfig.name}
         to={`/model-config/${modelConfig.id}`}
       />

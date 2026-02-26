@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useShowErrorModal } from '@/hooks/modals'
-import useWebSocketConnection from '@/hooks/useWebSocketConnection'
+import useWebSocketConnection from '@/hooks/websocket'
 import sessionApi from '@/services/session'
 import { assertNever } from '@/types/common'
 import type { ModelMessage, SessionFull } from '@/types/api'

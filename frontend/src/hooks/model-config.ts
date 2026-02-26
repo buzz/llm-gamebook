@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useLocation } from 'wouter'
 
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
-import modelConfigApi from '@/services/modelConfig'
+import modelConfigApi from '@/services/model-config'
 import type { ModelProvider } from '@/types/api'
 
 interface ModelConfigInput {

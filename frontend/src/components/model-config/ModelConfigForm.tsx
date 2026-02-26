@@ -12,18 +12,24 @@ import {
 import { useForm } from '@mantine/form'
 import { useDisclosure } from '@mantine/hooks'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { IconCategoryPlus, IconDeviceFloppy, IconPlus, IconTrash } from '@tabler/icons-react'
+import {
+  IconCategory,
+  IconCategoryPlus,
+  IconDeviceFloppy,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react'
 import { useEffect } from 'react'
 import { useParams } from 'wouter'
 
 import InputSlider from '@/components/common/InputSlider'
-import StandardCard from '@/components/common/StandardCard'
+import PageShell from '@/components/layout/PageShell'
 import {
   useCreateModelConfig,
   useDeleteModelConfig,
   useUpdateModelConfig,
-} from '@/hooks/modelConfig'
-import modelConfigApi from '@/services/modelConfig'
+} from '@/hooks/model-config'
+import modelConfigApi from '@/services/model-config'
 import { iconSizeProps } from '@/utils'
 import type { ModelProvider } from '@/types/api'
 
@@ -157,38 +163,42 @@ function ModelConfigForm() {
     form.setFieldValue('frequencyPenalty', EMPTY_FORM.frequencyPenalty)
   }
 
+  const footer = (
+    <Group justify="flex-end">
+      {isEditing ? (
+        <Button
+          bg="red"
+          leftSection={<IconTrash {...iconSizeProps('md')} />}
+          loading={isLoading}
+          onClick={() => void deleteModelConfig(modelConfigId)}
+          size="lg"
+        >
+          Delete
+        </Button>
+      ) : null}
+      <Button
+        loading={isLoading}
+        leftSection={
+          isEditing ? (
+            <IconDeviceFloppy {...iconSizeProps('md')} />
+          ) : (
+            <IconPlus {...iconSizeProps('md')} />
+          )
+        }
+        size="lg"
+        type="submit"
+      >
+        {isEditing ? 'Save' : 'Create'}
+      </Button>
+    </Group>
+  )
+
   return (
     <form aria-disabled={isLoading} onSubmit={handleSubmit}>
-      <StandardCard
-        icon={IconCategoryPlus}
-        title={isEditing ? 'Update Model' : 'Create Model'}
-        actionButtons={
-          <>
-            {isEditing ? (
-              <Button
-                bg="red"
-                loading={isLoading}
-                onClick={() => void deleteModelConfig(modelConfigId)}
-                leftSection={<IconTrash {...iconSizeProps('md')} />}
-              >
-                Delete Model
-              </Button>
-            ) : null}
-            <Button
-              loading={isLoading}
-              leftSection={
-                isEditing ? (
-                  <IconDeviceFloppy {...iconSizeProps('md')} />
-                ) : (
-                  <IconPlus {...iconSizeProps('md')} />
-                )
-              }
-              type="submit"
-            >
-              {isEditing ? 'Update Model' : 'Create Model'}
-            </Button>
-          </>
-        }
+      <PageShell
+        footer={footer}
+        icon={isEditing ? IconCategory : IconCategoryPlus}
+        title={isEditing ? 'Edit Model' : 'Create Model'}
       >
         <Stack gap="md">
           <TextInput disabled={isLoading} label="Name" required {...form.getInputProps('name')} />
@@ -256,7 +266,7 @@ function ModelConfigForm() {
             value={formValues.contextWindow}
           />
 
-          <Paper p="sm">
+          <Paper bg="dark.8" p="sm">
             <Stack>
               <Group justify="space-between">
                 <Switch
@@ -392,7 +402,7 @@ function ModelConfigForm() {
             </Stack>
           </Paper>
         </Stack>
-      </StandardCard>
+      </PageShell>
     </form>
   )
 }

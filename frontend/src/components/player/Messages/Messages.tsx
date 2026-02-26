@@ -1,6 +1,6 @@
 import { Box, Code, ScrollArea, Stack } from '@mantine/core'
 import { IconArrowForward, IconTool } from '@tabler/icons-react'
-import { clsx } from 'clsx'
+import cx from 'clsx'
 import { Streamdown } from 'streamdown'
 
 import type { ModelMessage } from '@/types/api'
@@ -66,7 +66,7 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
     }
   })
 
-  const className = clsx(classes.message, {
+  const className = cx(classes.message, {
     [classes.userPrompt]:
       message.kind === 'request' && message.parts.some((p) => p.part_kind === 'user-prompt'),
   })

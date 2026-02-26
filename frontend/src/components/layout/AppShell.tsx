@@ -8,7 +8,7 @@ import { useShowErrorModal } from '@/hooks/modals'
 import { iconSizeProps } from '@/utils'
 
 import classes from './AppShell.module.css'
-import Navbar from './Navbar'
+import Navbar from './NavBar/Navbar'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const context = use(WebSocketContext)

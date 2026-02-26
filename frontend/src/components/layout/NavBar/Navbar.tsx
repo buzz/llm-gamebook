@@ -4,27 +4,28 @@ import {
   IconCategory,
   IconCategoryPlus,
   IconHome,
+  IconPlus,
   IconSettings,
-  IconTextPlus,
 } from '@tabler/icons-react'
 
 import { BasicNavLink, RouterNavLink } from '@/components/common/NavLink'
-import modelConfigApi from '@/services/modelConfig'
-import sessionApi from '@/services/session'
+import modelConfigApi from '@/services/model-config'
+import projectApi from '@/services/project'
 
 import ModelConfigLink from './ModelConfigLink'
-import StoryLink from './StoryLink'
+import ProjectLink from './ProjectLink'
 
-const OFFSET = 8
+const OFFSET = 16
 
 function Navbar() {
-  const { data: sessionsData } = sessionApi.useGetSessionsQuery()
-  const sessions = sessionsData?.data ?? []
-  const sessionLinks = sessions.map((session) => <StoryLink session={session} key={session.id} />)
-
+  const { data: projectsData } = projectApi.useGetProjectsQuery()
   const { data: modelConfigsData } = modelConfigApi.useGetModelConfigsQuery()
-  const modelConfigs = modelConfigsData?.data ?? []
-  const modelConfigLinks = modelConfigs.map((config) => (
+
+  const projectLinks = projectsData?.data.map((project) => (
+    <ProjectLink project={project} key={project.id} />
+  ))
+
+  const modelConfigLinks = modelConfigsData?.data.map((config) => (
     <ModelConfigLink modelConfig={config} key={config.id} />
   ))
 
@@ -33,10 +34,8 @@ function Navbar() {
       <ScrollArea>
         <RouterNavLink label="Home" icon={IconHome} to="/" />
         <BasicNavLink label="Gamebooks" icon={IconBooks} childrenOffset={OFFSET}>
-          <BasicNavLink label="Broken Bulb" childrenOffset={OFFSET}>
-            <RouterNavLink label="New Story" icon={IconTextPlus} to="/player/new" />
-            {sessionLinks}
-          </BasicNavLink>
+          <RouterNavLink label="New Gamebook" icon={IconPlus} to="/gamebook/new" />
+          {projectLinks}
         </BasicNavLink>
         <BasicNavLink label="Models" icon={IconCategory} childrenOffset={OFFSET}>
           <RouterNavLink label="New Model" icon={IconCategoryPlus} to="/model-config/new" />

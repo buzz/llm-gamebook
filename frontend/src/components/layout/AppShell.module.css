@@ -9,28 +9,3 @@
     vertical-align: middle;
   }
 }
-
-.navLinkWrapper {
-  align-items: center;
-  column-gap: var(--mantine-spacing-xs);
-  width: 100%;
-  flex-wrap: nowrap;
-
-  .navLink {
-    flex-grow: 1;
-    min-width: 0;
-  }
-
-  .actionIcons {
-    flex-grow: 0;
-    padding-right: var(--mantine-spacing-xs);
-  }
-}
-
-.actionIcons {
-  display: none;
-
-  .navLinkWrapper:hover & {
-    display: inherit;
-  }
-}

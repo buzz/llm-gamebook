@@ -1,16 +1,17 @@
 import { Stack, Text } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { useCallback } from 'react'
+import type { ReactNode } from 'react'
 
 import ErrorAlert from '@/components/common/ErrorAlert'
 
 function useShowConfirmationModal() {
   return useCallback(
-    (title: string, message: string) =>
+    (title: string, message: ReactNode) =>
       new Promise<boolean>((resolve) =>
         modals.openConfirmModal({
           title,
-          children: <Text>{message}</Text>,
+          children: typeof message === 'string' ? <Text>{message}</Text> : message,
           labels: { confirm: 'Confirm', cancel: 'Cancel' },
           onConfirm: () => {
             resolve(true)
