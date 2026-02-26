@@ -9,13 +9,13 @@ interface IconProps {
 function iconSizeProps(size: 'lg' | 'md' | 'sm'): IconProps {
   switch (size) {
     case 'lg': {
-      return { size: 30, stroke: 2 }
+      return { size: 32, stroke: 1.1 }
     }
     case 'md': {
-      return { size: 24, stroke: 1.5 }
+      return { size: 24, stroke: 1.4 }
     }
     case 'sm': {
-      return { size: 20, stroke: 1 }
+      return { size: 20, stroke: 1.5 }
     }
     default: {
       assertNever(size)

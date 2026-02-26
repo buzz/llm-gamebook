@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 
-import { MantineProvider } from '@mantine/core'
+import { localStorageColorSchemeManager, MantineProvider } from '@mantine/core'
 import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -14,12 +14,20 @@ import AppShell from './components/layout/AppShell'
 import { WebSocketProvider } from './contexts/WebSocketContext'
 import routes from './routes'
 import store from './store'
+import { cssVariablesResolver, themeOverride } from './theme/theme'
+
+const colorSchemeManager = localStorageColorSchemeManager({ key: 'llm-gamebook-color-scheme' })
 
 function App() {
   return (
     <ReactReduxProvider store={store}>
       <WebSocketProvider>
-        <MantineProvider defaultColorScheme="dark">
+        <MantineProvider
+          colorSchemeManager={colorSchemeManager}
+          cssVariablesResolver={cssVariablesResolver}
+          defaultColorScheme="auto"
+          theme={themeOverride}
+        >
           <ModalsProvider>
             <Notifications />
             <AppShell>

@@ -1,0 +1,12 @@
+:root[data-mantine-color-scheme='dark'] {
+  --mantine-color-text: color-mix(in srgb, var(--mantine-color-dark-6) 15%, white);
+  --mantine-color-dimmed: color-mix(in srgb, var(--mantine-color-dark-6) 30%, white);
+
+  .mantine-AppShell-root {
+    --app-shell-border-color: var(--mantine-color-dark-5);
+  }
+
+  .mantine-Paper-root {
+    --paper-border-color: var(--mantine-color-dark-5);
+  }
+}
