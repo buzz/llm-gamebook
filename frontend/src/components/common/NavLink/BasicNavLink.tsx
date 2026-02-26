@@ -6,7 +6,7 @@ import { iconSizeProps } from '@/utils'
 
 import classes from './BasicNavLink.module.css'
 
-interface BasicNavLinkProps extends Omit<NavLinkProps, 'leftSection'> {
+interface BasicNavLinkProps extends NavLinkProps {
   icon?: Icon
 }
 
