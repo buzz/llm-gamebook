@@ -8,12 +8,11 @@ import ProjectDetails from './components/project/ProjectDetails'
 import ProjectForm from './components/project/ProjectForm'
 import ProjectList from './components/project/ProjectList'
 import Settings from './components/settings/Settings'
+import { KEBAB_CASE_PATTERN, UUID_PATTERN } from './constants'
 
 const re = (pattern: string) => new RegExp(`^${pattern}$`)
-const KEBAB_CASE = '[a-z0-9]+(?:-[a-z0-9]+)*'
-const UUID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
-const PROJECT_ID = `(?<namespace>${KEBAB_CASE})/(?<name>${KEBAB_CASE})`
-const MODEL_CONFIG_ID = `(?<modelConfigId>${UUID})`
+const PROJECT_ID = `(?<namespace>${KEBAB_CASE_PATTERN})/(?<name>${KEBAB_CASE_PATTERN})`
+const MODEL_CONFIG_ID = `(?<modelConfigId>${UUID_PATTERN})`
 
 interface RouteDef {
   path: string | RegExp

@@ -6,6 +6,42 @@ import { useShowError, useShowSuccess } from '@/hooks/notifications'
 import projectApi from '@/services/project'
 import type { ProjectBasic } from '@/types/api'
 
+interface ProjectInput {
+  id: string
+  title: string
+  description?: string | null
+  author?: string | null
+}
+
+function useCreateProject() {
+  const [, navigate] = useLocation()
+  const [createProject, { isLoading }] = projectApi.useCreateProjectMutation()
+  const showError = useShowError()
+  const showSuccess = useShowSuccess()
+
+  return {
+    createProject: useCallback(
+      async (project: ProjectInput) => {
+        try {
+          const createdProject = await createProject({
+            id: project.id,
+            source: 'local',
+            title: project.title,
+            description: project.description ?? undefined,
+            author: project.author ?? undefined,
+          }).unwrap()
+          navigate(`/gamebook/${createdProject.id}`)
+          showSuccess('Gamebook was created.')
+        } catch (error) {
+          showError('Failed to create gamebook!', error)
+        }
+      },
+      [createProject, navigate, showError, showSuccess]
+    ),
+    isLoading,
+  }
+}
+
 function useDeleteProject() {
   const [location, navigate] = useLocation()
   const [deleteProject, { isLoading }] = projectApi.useDeleteProjectMutation()
@@ -45,4 +81,4 @@ function useDeleteProject() {
   }
 }
 
-export { useDeleteProject }
+export { useCreateProject, useDeleteProject }
