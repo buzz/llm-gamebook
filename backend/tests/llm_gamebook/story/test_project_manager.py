@@ -135,3 +135,51 @@ def test_project_manager_iterdir(tmp_path: Path) -> None:
 
     assert len(dirs) == 1
     assert dirs[0].name == "valid-name"
+
+
+def test_project_manager_get_image_path_example_with_image(
+    project_manager: ProjectManager,
+) -> None:
+    image_path = project_manager.get_image_path("llm-gamebook/broken-bulb")
+
+    assert image_path is not None
+    assert image_path.name == "broken-bulb.webp"
+    assert image_path.exists()
+
+
+def test_project_manager_get_image_path_local_with_image(
+    project_manager: ProjectManager,
+) -> None:
+    project_def = ProjectDefinition(
+        id="test-namespace/test-project",
+        source=ProjectSource.LOCAL,
+        title="Test Project",
+        description="A test project",
+        image="test-image.png",
+    )
+    project_manager.create_project(project_def)
+
+    image_path = project_manager.get_image_path("test-namespace/test-project")
+
+    assert image_path is None
+
+
+def test_project_manager_get_image_path_no_image(project_manager: ProjectManager) -> None:
+    project_def = ProjectDefinition(
+        id="test-namespace/no-image-project",
+        source=ProjectSource.LOCAL,
+        title="No Image Project",
+        description="A project without image",
+    )
+    project_manager.create_project(project_def)
+
+    image_path = project_manager.get_image_path("test-namespace/no-image-project")
+
+    assert image_path is None
+
+
+def test_project_manager_get_image_path_not_found(
+    project_manager: ProjectManager,
+) -> None:
+    with pytest.raises(ProjectNotFoundError):
+        project_manager.get_image_path("nonexistent/project")

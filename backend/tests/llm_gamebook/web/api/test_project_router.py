@@ -131,3 +131,31 @@ def test_delete_project_not_local(client: TestClient) -> None:
     response = client.delete("/api/projects/llm-gamebook/broken-bulb")
     assert response.status_code == 400
     assert "Can only delete local projects" in response.json()["detail"]
+
+
+def test_get_project_image_found(client: TestClient) -> None:
+    response = client.get("/api/projects/llm-gamebook/broken-bulb/image")
+    assert response.status_code == 200
+    assert response.content is not None
+    assert len(response.content) > 0
+
+
+def test_get_project_image_not_found(client: TestClient) -> None:
+    response = client.get("/api/projects/namespace/nonexistent/image")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Project not found"
+
+
+def test_get_project_image_no_image(client: TestClient) -> None:
+    project_data = {
+        "id": "test-namespace/no-image-project",
+        "source": "local",
+        "title": "No Image Project",
+        "description": "A project without image",
+    }
+    response = client.post("/api/projects/", json=project_data)
+    assert response.status_code == 201
+
+    response = client.get("/api/projects/test-namespace/no-image-project/image")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Project has no image"
