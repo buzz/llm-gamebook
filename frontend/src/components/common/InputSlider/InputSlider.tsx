@@ -1,5 +1,5 @@
 import { Box, Group, Input, Slider } from '@mantine/core'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import type { BoxProps, SliderProps } from '@mantine/core'
 
 import classes from './InputSlider.module.css'
@@ -179,4 +179,4 @@ function InputSlider({
   )
 }
 
-export default InputSlider
+export default memo(InputSlider)

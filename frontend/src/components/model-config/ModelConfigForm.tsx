@@ -19,7 +19,7 @@ import {
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useParams } from 'wouter'
 
 import InputSlider from '@/components/common/InputSlider'
@@ -62,7 +62,7 @@ interface ConfigFormData {
 }
 
 function ModelConfigForm() {
-  const { modelConfigId } = useParams()
+  const { id: modelConfigId } = useParams()
   const isEditing = modelConfigId !== undefined
 
   const [advancedOpened, advancedHandlers] = useDisclosure(false)
@@ -86,7 +86,8 @@ function ModelConfigForm() {
       modelId: (value) => (value.length === 0 ? 'Model ID is required' : null),
     },
   })
-  const formValues = form.getValues()
+
+  const formValues = useMemo(() => form.getValues(), [form])
 
   // Avoid passing form to deps as it's unstable
   const { reset, setFieldValue, setValues } = form
@@ -116,6 +117,7 @@ function ModelConfigForm() {
       return
     }
 
+    const formValues = form.getValues()
     const config = {
       name: formValues.name,
       provider: formValues.provider,
@@ -135,33 +137,85 @@ function ModelConfigForm() {
       : createModelConfig(config))
   })
 
-  const providerSelectData = providers
-    ? Object.entries(providers).map(([value, info]) => ({
-        value,
-        label: info.label,
-      }))
-    : []
+  const providerSelectData = useMemo(
+    () =>
+      providers
+        ? Object.entries(providers).map(([value, info]) => ({
+            value,
+            label: info.label,
+          }))
+        : [],
+    [providers]
+  )
 
-  const { provider } = formValues
-  const providerInfo = providers ? providers[provider] : undefined
-  const baseUrlPlaceHolder = providerInfo?.supports_base_url
-    ? providerInfo.default_base_url
-    : undefined
+  const providerInfo = useMemo(() => {
+    const provider = form.getValues().provider
+    return providers ? providers[provider] : undefined
+  }, [providers, form])
 
-  function handleProviderChange(newProvider: ModelProvider) {
-    const newProviderInfo = providers ? providers[newProvider] : undefined
-    if (newProviderInfo && !newProviderInfo.supports_base_url) {
-      setFieldValue('baseUrl', newProviderInfo.default_base_url ?? '')
-    }
-  }
+  const baseUrlPlaceHolder = useMemo(() => {
+    return providerInfo?.supports_base_url ? providerInfo.default_base_url : undefined
+  }, [providerInfo])
 
-  function resetAdvanced() {
+  const handleProviderChange = useCallback(
+    (newProvider: ModelProvider) => {
+      const newProviderInfo = providers ? providers[newProvider] : undefined
+      if (newProviderInfo && !newProviderInfo.supports_base_url) {
+        setFieldValue('baseUrl', newProviderInfo.default_base_url ?? '')
+      }
+    },
+    [providers, setFieldValue]
+  )
+
+  const resetAdvanced = useCallback(() => {
     form.setFieldValue('maxTokens', EMPTY_FORM.maxTokens)
     form.setFieldValue('temperature', EMPTY_FORM.temperature)
     form.setFieldValue('topP', EMPTY_FORM.topP)
     form.setFieldValue('presencePenalty', EMPTY_FORM.presencePenalty)
     form.setFieldValue('frequencyPenalty', EMPTY_FORM.frequencyPenalty)
-  }
+  }, [form])
+
+  const contextWindowHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('contextWindow', value)
+    },
+    [form]
+  )
+
+  const maxTokensHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('maxTokens', value)
+    },
+    [form]
+  )
+
+  const temperatureHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('temperature', value)
+    },
+    [form]
+  )
+
+  const topPHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('topP', value)
+    },
+    [form]
+  )
+
+  const presencePenaltyHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('presencePenalty', value)
+    },
+    [form]
+  )
+
+  const frequencyPenaltyHandler = useCallback(
+    (value: number) => {
+      form.setFieldValue('frequencyPenalty', value)
+    },
+    [form]
+  )
 
   const footer = (
     <Group justify="flex-end">
@@ -259,9 +313,7 @@ function ModelConfigForm() {
               { value: 229_376, label: '224k' },
               { value: 262_144, label: '256k' },
             ]}
-            onChange={(value) => {
-              form.setFieldValue('contextWindow', value)
-            }}
+            onChange={contextWindowHandler}
             snapToMarks
             value={formValues.contextWindow}
           />
@@ -306,9 +358,7 @@ function ModelConfigForm() {
                       { value: 40_000, label: '40,000' },
                       { value: 50_000, label: '50,000' },
                     ]}
-                    onChange={(value) => {
-                      form.setFieldValue('maxTokens', value)
-                    }}
+                    onChange={maxTokensHandler}
                     snapToMarks
                     value={formValues.maxTokens}
                   />
@@ -327,9 +377,7 @@ function ModelConfigForm() {
                       { value: 1.5, label: '1.5' },
                       { value: 2, label: '2' },
                     ]}
-                    onChange={(value) => {
-                      form.setFieldValue('temperature', value)
-                    }}
+                    onChange={temperatureHandler}
                     step={0.01}
                     value={formValues.temperature}
                   />
@@ -349,9 +397,7 @@ function ModelConfigForm() {
                       { value: 0.8, label: '0.8' },
                       { value: 1, label: '1' },
                     ]}
-                    onChange={(value) => {
-                      form.setFieldValue('topP', value)
-                    }}
+                    onChange={topPHandler}
                     step={0.01}
                     value={formValues.topP}
                   />
@@ -370,9 +416,7 @@ function ModelConfigForm() {
                       { value: 1, label: '1' },
                       { value: 2, label: '2' },
                     ]}
-                    onChange={(value) => {
-                      form.setFieldValue('presencePenalty', value)
-                    }}
+                    onChange={presencePenaltyHandler}
                     step={0.01}
                     value={formValues.presencePenalty}
                   />
@@ -391,9 +435,7 @@ function ModelConfigForm() {
                       { value: 1, label: '1' },
                       { value: 2, label: '2' },
                     ]}
-                    onChange={(value) => {
-                      form.setFieldValue('frequencyPenalty', value)
-                    }}
+                    onChange={frequencyPenaltyHandler}
                     step={0.01}
                     value={formValues.frequencyPenalty}
                   />
