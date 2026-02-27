@@ -1,3 +1,5 @@
+import mimetypes
+
 from fastapi import APIRouter, HTTPException, Response
 
 from llm_gamebook.story.errors import ProjectExistsError, ProjectNotFoundError
@@ -60,8 +62,8 @@ async def get_project_image(
     except OSError as e:
         raise HTTPException(status_code=404, detail="Could not read project image") from e
 
-    # TODO: media-type
-    return Response(image_bytes)
+    media_type, _ = mimetypes.guess_type(image_path)
+    return Response(image_bytes, media_type=media_type or "application/octet-stream")
 
 
 @project_router.post("/", status_code=201)
