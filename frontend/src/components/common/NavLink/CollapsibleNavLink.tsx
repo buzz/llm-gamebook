@@ -1,65 +1,45 @@
-import { createPolymorphicComponent, NavLink } from '@mantine/core'
+import { createPolymorphicComponent } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { useEffect, useMemo } from 'react'
-import { useLocation } from 'wouter'
-import type { NavLinkProps } from '@mantine/core'
-import type { Icon } from '@tabler/icons-react'
+import { use, useCallback } from 'react'
 
-import { iconSizeProps } from '@/utils'
+import CollapseContext from '@/contexts/CollapseContext'
 
-import classes from './CollapsibleNavLink.module.css'
+import BasicNavLink, { type BasicNavLinkProps } from './BasicNavLink'
 
-interface CollapsibleNavLinkProps extends NavLinkProps {
-  icon?: Icon
-  matchRoute?: string | string[]
-}
-
-function routeMatches(path: string, pattern: string): boolean {
-  const regexPattern = pattern.replaceAll('*', '.*').replaceAll(':', String.raw`\w+`)
-  const regex = new RegExp(`^${regexPattern}$`)
-  return regex.test(path)
-}
-
-const CollapsibleNavLink = createPolymorphicComponent<'a', CollapsibleNavLinkProps>(
+const CollapsibleNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(
   function CollapsibleNavLink({
     children,
-    icon: Icon,
-    matchRoute,
     ref,
     ...otherProps
-  }: CollapsibleNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
-    const [isOpen, handlers] = useDisclosure(false)
-    const [location] = useLocation()
+  }: BasicNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
+    const [isOpen, { toggle, open }] = useDisclosure(false)
+    const parentContext = use(CollapseContext)
 
-    const isAnyMatch = useMemo(() => {
-      const routes = Array.isArray(matchRoute) ? matchRoute : matchRoute ? [matchRoute] : []
-      return routes.some((route) => routeMatches(location, route))
-    }, [location, matchRoute])
+    const onChildActive = useCallback(() => {
+      open()
 
-    useEffect(() => {
-      if (isAnyMatch) {
-        handlers.open()
+      // Bubble upward
+      if (parentContext) {
+        parentContext.onChildActive()
       }
-    }, [isAnyMatch, handlers])
+    }, [open, parentContext])
 
     return (
-      <NavLink
-        classNames={{ label: classes.label, root: classes.navLink }}
-        leftSection={Icon ? <Icon {...iconSizeProps('md')} /> : null}
-        noWrap
-        opened={isOpen}
-        onClick={(event) => {
-          handlers.toggle()
-          otherProps.onClick?.(event)
-        }}
-        ref={ref}
-        {...otherProps}
-      >
-        {children}
-      </NavLink>
+      <CollapseContext value={{ onChildActive }}>
+        <BasicNavLink
+          opened={isOpen}
+          onClick={(event) => {
+            toggle()
+            otherProps.onClick?.(event)
+          }}
+          ref={ref}
+          {...otherProps}
+        >
+          {children}
+        </BasicNavLink>
+      </CollapseContext>
     )
   }
 )
 
-export type { CollapsibleNavLinkProps }
 export default CollapsibleNavLink

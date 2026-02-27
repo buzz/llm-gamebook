@@ -7,9 +7,11 @@ import {
   IconPlus,
   IconSettings,
 } from '@tabler/icons-react'
+import { ErrorBoundary } from 'react-error-boundary'
 
+import ErrorAlert from '@/components/common/ErrorAlert'
 import { CollapsibleNavLink, RouterNavLink } from '@/components/common/NavLink'
-import { buildUrl } from '@/routes/routes'
+import { url } from '@/routes'
 import modelConfigApi from '@/services/model-config'
 import projectApi from '@/services/project'
 
@@ -31,38 +33,21 @@ function Navbar() {
   ))
 
   return (
-    <>
+    <ErrorBoundary FallbackComponent={ErrorAlert}>
       <ScrollArea>
-        <RouterNavLink label="Home" icon={IconHome} to={buildUrl('home')} />
-        <CollapsibleNavLink
-          childrenOffset={OFFSET}
-          icon={IconBooks}
-          label="Gamebooks"
-          matchRoute={[
-            buildUrl('gamebook.view', { namespace: '*', name: '*' }),
-            buildUrl('player.new', { namespace: '*', name: '*' }),
-          ]}
-        >
-          <RouterNavLink label="New Gamebook" icon={IconPlus} to={buildUrl('gamebook.new')} />
+        <RouterNavLink label="Home" icon={IconHome} to={url('home')} />
+        <CollapsibleNavLink childrenOffset={OFFSET} icon={IconBooks} label="Gamebooks">
+          <RouterNavLink label="New Gamebook" icon={IconPlus} to={url('gamebook.new')} />
           {projectLinks}
         </CollapsibleNavLink>
-        <CollapsibleNavLink
-          childrenOffset={OFFSET}
-          icon={IconCategory}
-          label="Models"
-          matchRoute={buildUrl('model-config.view', { id: '*' })}
-        >
-          <RouterNavLink
-            label="New Model"
-            icon={IconCategoryPlus}
-            to={buildUrl('model-config.new')}
-          />
+        <CollapsibleNavLink childrenOffset={OFFSET} icon={IconCategory} label="Models">
+          <RouterNavLink label="New Model" icon={IconCategoryPlus} to={url('model-config.new')} />
           {modelConfigLinks}
         </CollapsibleNavLink>
       </ScrollArea>
       <AppShell.Section grow />
-      <RouterNavLink label="Settings" icon={IconSettings} to={buildUrl('settings')} />
-    </>
+      <RouterNavLink label="Settings" icon={IconSettings} to={url('settings')} />
+    </ErrorBoundary>
   )
 }
 
