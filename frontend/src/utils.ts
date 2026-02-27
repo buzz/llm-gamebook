@@ -27,4 +27,15 @@ function projectImageSrc(project: ProjectBasic) {
   return project.image ? `/api/projects/${project.id}/image` : undefined
 }
 
-export { iconSizeProps, projectImageSrc }
+/**
+ * Split a project ID into namespace and name
+ */
+function splitProjectId(projectId: string) {
+  const [namespace, name] = projectId.split('/', 2)
+  if (!namespace || !name) {
+    throw new Error(`Invalid project ID format: ${projectId}. Expected "namespace/name"`)
+  }
+  return { namespace, name }
+}
+
+export { iconSizeProps, projectImageSrc, splitProjectId }

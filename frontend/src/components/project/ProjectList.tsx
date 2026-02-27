@@ -5,6 +5,7 @@ import { Link } from 'wouter'
 import QueryHandler from '@/components/common/QueryHandler'
 import PageShell from '@/components/layout/PageShell'
 import ProjectCard from '@/components/project/ProjectCard'
+import { url } from '@/routes'
 import projectApi from '@/services/project'
 import type { Projects } from '@/types/api'
 
@@ -28,7 +29,7 @@ function ProjectListDisplay({ data }: ProjectListDisplayProps) {
   )
 
   const createButton = (
-    <Button component={Link} leftSection={<IconPlus />} to="/gamebook/new" variant="light">
+    <Button component={Link} leftSection={<IconPlus />} to={url('gamebook.new')} variant="light">
       Create Gamebook
     </Button>
   )

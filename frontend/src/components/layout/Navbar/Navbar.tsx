@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react'
 
 import { CollapsibleNavLink, RouterNavLink } from '@/components/common/NavLink'
+import { buildUrl } from '@/routes/routes'
 import modelConfigApi from '@/services/model-config'
 import projectApi from '@/services/project'
 
@@ -32,28 +33,35 @@ function Navbar() {
   return (
     <>
       <ScrollArea>
-        <RouterNavLink label="Home" icon={IconHome} to="/" />
+        <RouterNavLink label="Home" icon={IconHome} to={buildUrl('home')} />
         <CollapsibleNavLink
           childrenOffset={OFFSET}
           icon={IconBooks}
           label="Gamebooks"
-          matchRoute={['/gamebook/*', '/player/new/*']}
+          matchRoute={[
+            buildUrl('gamebook.view', { namespace: '*', name: '*' }),
+            buildUrl('player.new', { namespace: '*', name: '*' }),
+          ]}
         >
-          <RouterNavLink label="New Gamebook" icon={IconPlus} to="/gamebook/new" />
+          <RouterNavLink label="New Gamebook" icon={IconPlus} to={buildUrl('gamebook.new')} />
           {projectLinks}
         </CollapsibleNavLink>
         <CollapsibleNavLink
           childrenOffset={OFFSET}
           icon={IconCategory}
           label="Models"
-          matchRoute="/model-config/*"
+          matchRoute={buildUrl('model-config.view', { id: '*' })}
         >
-          <RouterNavLink label="New Model" icon={IconCategoryPlus} to="/model-config/new" />
+          <RouterNavLink
+            label="New Model"
+            icon={IconCategoryPlus}
+            to={buildUrl('model-config.new')}
+          />
           {modelConfigLinks}
         </CollapsibleNavLink>
       </ScrollArea>
       <AppShell.Section grow />
-      <RouterNavLink label="Settings" icon={IconSettings} to="/settings" />
+      <RouterNavLink label="Settings" icon={IconSettings} to={buildUrl('settings')} />
     </>
   )
 }

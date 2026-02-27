@@ -7,14 +7,16 @@ import PageShell from '@/components/layout/PageShell'
 import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
 import ProjectCard from '@/components/project/ProjectCard'
 import { useCreateSession } from '@/hooks/session'
+import { url } from '@/routes'
 import modelConfigApi from '@/services/model-config'
 import projectApi from '@/services/project'
 import { iconSizeProps } from '@/utils'
+import type { RouteParams } from '@/types/routes'
 
 import classes from './NewStory.module.css'
 
 function NewStory() {
-  const { namespace, name } = useParams<{ namespace: string; name: string }>()
+  const { namespace, name } = useParams<RouteParams<'player.new'>>()
   const projectId = `${namespace}/${name}`
 
   const { createSession, isLoading } = useCreateSession()
@@ -79,7 +81,7 @@ function NewStory() {
             component={Link}
             color="green"
             leftSection={<IconCategoryPlus {...iconSizeProps('md')} />}
-            to="/model-config/new"
+            to={url('model-config.new')}
             variant="filled"
           >
             Configure Model

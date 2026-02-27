@@ -6,6 +6,7 @@ import QueryHandler from '@/components/common/QueryHandler'
 import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
 import sessionApi from '@/services/session'
 import type { SessionFull } from '@/types/api'
+import type { RouteParams } from '@/types/routes'
 
 import Controls from './Controls'
 import Messages from './Messages/Messages'
@@ -51,8 +52,8 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
 }
 
 function Player() {
-  const { sessionId } = useParams<{ sessionId: string }>()
-  const result = sessionApi.useGetSessionByIdQuery(sessionId)
+  const { id } = useParams<RouteParams<'player.view'>>()
+  const result = sessionApi.useGetSessionByIdQuery(id)
 
   return (
     <QueryHandler

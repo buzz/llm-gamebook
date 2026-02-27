@@ -7,7 +7,8 @@ import type { CardProps } from '@mantine/core'
 import StandardCard from '@/components/common/StandardCard'
 import ProjectSourceBadge from '@/components/project/ProjectSourceBadge'
 import { useDeleteProject } from '@/hooks/project'
-import { iconSizeProps, projectImageSrc } from '@/utils'
+import { url } from '@/routes'
+import { iconSizeProps, projectImageSrc, splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'
 
 import classes from './ProjectCard.module.css'
@@ -29,7 +30,7 @@ function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
           className={classes.detailsButton}
           component={Link}
           size="lg"
-          to={`/gamebook/${project.id}`}
+          to={url('gamebook.view', splitProjectId(project.id))}
           variant="default"
         >
           <IconZoom {...iconSizeProps('sm')} />
@@ -39,7 +40,7 @@ function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
           color="blue"
           component={Link}
           size="lg"
-          to={`/editor/${project.id}`}
+          to={url('editor.edit', splitProjectId(project.id))}
         >
           <IconEdit {...iconSizeProps('sm')} />
         </ActionIcon>
@@ -61,7 +62,7 @@ function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
             color="teal"
             component={Link}
             size="lg"
-            to={`/player/new/${project.id}`}
+            to={url('player.new', splitProjectId(project.id))}
           >
             <IconPlayerPlay {...iconSizeProps('sm')} />
           </ActionIcon>
@@ -86,7 +87,7 @@ function ProjectCard({ enablePlayAction = false, project, ...cardProps }: Projec
         <Anchor
           className={cx(classes.title, classes.textShadow)}
           component={Link}
-          to={`/gamebook/${project.id}`}
+          to={url('gamebook.view', splitProjectId(project.id))}
           truncate="end"
         >
           {project.title}

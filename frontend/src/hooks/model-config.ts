@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useLocation } from 'wouter'
 
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
+import { url } from '@/routes'
 import modelConfigApi from '@/services/model-config'
 import type { ModelProvider } from '@/types/api'
 
@@ -42,7 +43,7 @@ function useCreateModelConfig() {
             presence_penalty: config.presencePenalty,
             frequency_penalty: config.frequencyPenalty,
           }).unwrap()
-          navigate(`/model-config/${createdModel.id}`)
+          navigate(url('model-config.view', { id: createdModel.id }))
           showSuccess('Model config was created.')
         } catch (error) {
           showError('Failed to create model config!', error)
@@ -101,8 +102,8 @@ function useDeleteModelConfig() {
       async (id: string) => {
         try {
           await deleteModelConfig(id).unwrap()
-          if (location === `/model-config/${id}`) {
-            navigate('/')
+          if (location === url('model-config.view', { id })) {
+            navigate(url('home'))
             showSuccess('Model config was deleted.')
           }
         } catch (error) {

@@ -3,6 +3,7 @@ import { useLocation } from 'wouter'
 
 import { useShowConfirmationModal } from '@/hooks/modals'
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
+import { url } from '@/routes'
 import sessionApi from '@/services/session'
 
 function useCreateSession() {
@@ -18,7 +19,7 @@ function useCreateSession() {
             project_id: projectId,
             config_id: modelConfigId,
           }).unwrap()
-          navigate(`/player/${id}`)
+          navigate(url('player.view', { id }))
         } catch (error) {
           showError('Failed to create story session!', error)
         }
@@ -47,8 +48,8 @@ function useDeleteSession() {
             )
           ) {
             await deleteSession(sessionId).unwrap()
-            if (location === `/player/${sessionId}`) {
-              navigate('/')
+            if (location === url('player.view', { id: sessionId })) {
+              navigate(url('home'))
               showSuccess('Story session was deleted.')
             }
           }

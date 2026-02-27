@@ -4,7 +4,8 @@ import { Link } from 'wouter'
 
 import { RouterNavLink } from '@/components/common/NavLink'
 import { useDeleteProject } from '@/hooks/project'
-import { iconSizeProps, projectImageSrc } from '@/utils'
+import { url } from '@/routes'
+import { iconSizeProps, projectImageSrc, splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'
 
 import classes from './Link.module.css'
@@ -18,7 +19,12 @@ function ActionIcons({ project }: ActionIconsProps) {
 
   return (
     <ActionIcon.Group className={classes.actionIcons}>
-      <ActionIcon component={Link} aria-label="Edit" to={`/editor/${project.id}`} variant="default">
+      <ActionIcon
+        component={Link}
+        aria-label="Edit"
+        to={url('editor.edit', splitProjectId(project.id))}
+        variant="default"
+      >
         <IconPencil {...iconSizeProps('sm')} />
       </ActionIcon>
       <ActionIcon
@@ -57,14 +63,8 @@ function ProjectLink({ project }: ProjectLinkProps) {
         className={classes.navLink}
         leftSection={icon}
         label={project.title}
-        to={`/player/new/${project.id}`}
+        to={url('player.new', splitProjectId(project.id))}
       />
-      {/* <RouterNavLink
-        className={classes.navLink}
-        icon={IconBook}
-        label={project.title}
-        to={`/player/new/${project.id}`}
-      /> */}
       <ActionIcons project={project} />
     </Group>
   )

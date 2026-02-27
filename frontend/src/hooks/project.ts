@@ -3,7 +3,9 @@ import { useLocation } from 'wouter'
 
 import { useShowConfirmationModal } from '@/hooks/modals'
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
+import { url } from '@/routes'
 import projectApi from '@/services/project'
+import { splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'
 
 interface ProjectInput {
@@ -30,7 +32,7 @@ function useCreateProject() {
             description: project.description ?? undefined,
             author: project.author ?? undefined,
           }).unwrap()
-          navigate(`/gamebook/${createdProject.id}`)
+          navigate(url('gamebook.view', splitProjectId(createdProject.id)))
           showSuccess('Gamebook was created.')
         } catch (error) {
           showError('Failed to create gamebook!', error)
@@ -62,12 +64,12 @@ function useDeleteProject() {
             await deleteProject(project.id).unwrap()
             if (
               [
-                `/gamebook/${project.id}`,
-                `/player/new/${project.id}`,
-                `/editor/${project.id}`,
+                url('gamebook.view', splitProjectId(project.id)),
+                url('player.new', splitProjectId(project.id)),
+                url('editor.edit', splitProjectId(project.id)),
               ].includes(location)
             ) {
-              navigate('/')
+              navigate(url('home'))
             }
             showSuccess('Gamebook was deleted.')
           }

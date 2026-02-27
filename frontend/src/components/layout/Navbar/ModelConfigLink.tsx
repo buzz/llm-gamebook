@@ -3,6 +3,7 @@ import { IconCategory, IconTrash } from '@tabler/icons-react'
 
 import { RouterNavLink } from '@/components/common/NavLink'
 import { useDeleteModelConfig } from '@/hooks/model-config'
+import { url } from '@/routes'
 import { iconSizeProps } from '@/utils'
 import type { ModelConfig } from '@/types/api'
 
@@ -36,7 +37,7 @@ function ModelConfigLink({ modelConfig }: ModelConfigLinkProps) {
         className={classes.navLink}
         icon={IconCategory}
         label={modelConfig.name}
-        to={`/model-config/${modelConfig.id}`}
+        to={url('model-config.view', { id: modelConfig.id })}
       />
       <ActionIcons modelConfigId={modelConfig.id} />
     </Group>
