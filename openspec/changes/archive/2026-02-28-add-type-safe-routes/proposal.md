@@ -4,9 +4,10 @@ The frontend currently constructs route paths using template literals scattered 
 
 ## What Changes
 
-- **New centralized route definitions** in `frontend/src/routes.ts` using `regexparam` (already installed via wouter)
-- **Type-safe URL building** via `buildUrl(routeName, params)` helper function
-- **Auto-generated wouter routes** derived from central definitions (no manual sync)
+- **Single source of truth**: ONE array defining routes with `{ name, path, component }`
+- **Hierarchical route names**: `'gamebook.view'`, `'modelConfig.edit'` (dot-separated)
+- **Type-safe URL building** via `buildUrl(routeName, params)` using route name lookup
+- **Auto-generated wouter routes** derived from the same array using `parse()` for regex conversion
 - **Replace all template literal paths** in components with calls to `buildUrl()`
 - **No breaking changes** - wouter's API remains unchanged
 
