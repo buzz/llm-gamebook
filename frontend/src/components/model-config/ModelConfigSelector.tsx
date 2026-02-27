@@ -2,6 +2,12 @@ import { Group, Select, Skeleton } from '@mantine/core'
 
 import modelConfigApi from '@/services/model-config'
 
+interface ModelConfigSelectorProps {
+  selectedModelConfigId: string | null
+  onModelConfigChange: (configId: string) => void
+  disabled?: boolean
+}
+
 function ModelConfigSelector({
   selectedModelConfigId,
   onModelConfigChange: onConfigChange,
@@ -46,12 +52,6 @@ function ModelConfigSelector({
       />
     </Group>
   )
-}
-
-interface ModelConfigSelectorProps {
-  selectedModelConfigId: string | null
-  onModelConfigChange: (configId: string) => void
-  disabled?: boolean
 }
 
 export default ModelConfigSelector

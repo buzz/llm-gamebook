@@ -9,6 +9,10 @@ import type { ModelConfig } from '@/types/api'
 
 import classes from './Link.module.css'
 
+interface ActionIconsProps {
+  modelConfigId: string
+}
+
 function ActionIcons({ modelConfigId }: ActionIconsProps) {
   const { deleteModelConfig, isLoading } = useDeleteModelConfig()
 
@@ -26,8 +30,8 @@ function ActionIcons({ modelConfigId }: ActionIconsProps) {
   )
 }
 
-interface ActionIconsProps {
-  modelConfigId: string
+interface ModelConfigLinkProps {
+  modelConfig: ModelConfig
 }
 
 function ModelConfigLink({ modelConfig }: ModelConfigLinkProps) {
@@ -42,10 +46,6 @@ function ModelConfigLink({ modelConfig }: ModelConfigLinkProps) {
       <ActionIcons modelConfigId={modelConfig.id} />
     </Group>
   )
-}
-
-interface ModelConfigLinkProps {
-  modelConfig: ModelConfig
 }
 
 export default ModelConfigLink
