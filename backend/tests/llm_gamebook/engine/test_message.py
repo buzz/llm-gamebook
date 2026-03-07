@@ -2,9 +2,12 @@ from dataclasses import FrozenInstanceError
 from uuid import uuid4
 
 import pytest
-from pydantic_ai import ModelResponse, RequestUsage, TextPart
 
+from llm_gamebook.db.models import Message, Part
+from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.message import (
+    ContentDelta,
     EngineCreated,
     ResponseErrorMessage,
     ResponseStartedMessage,
@@ -12,9 +15,11 @@ from llm_gamebook.engine.message import (
     ResponseUserRequestMessage,
     SessionDeleted,
     SessionModelConfigChangedMessage,
-    StreamResponseMessage,
-    StreamToolCallMessage,
-    StreamToolResultMessage,
+    StreamMessageMessage,
+    StreamPartDeltaMessage,
+    StreamPartMessage,
+    ToolArgsDelta,
+    ToolNameDelta,
 )
 from llm_gamebook.message_bus.messages import BaseMessage
 from llm_gamebook.providers import ModelProvider
@@ -65,81 +70,153 @@ def test_response_stopped_message() -> None:
     assert msg.session_id == session_id
 
 
-def test_response_stream_update_message() -> None:
-    """Test StreamResponseMessage construction."""
+def test_stream_message_message() -> None:
+    """Test StreamMessageMessage construction."""
     session_id = uuid4()
-    response_id = uuid4()
-    part_ids = [uuid4(), uuid4()]
-    response = ModelResponse(
-        parts=[TextPart(content="Hello")],
-        model_name="gpt-4",
-        usage=RequestUsage(input_tokens=5, output_tokens=3),
-    )
-    msg = StreamResponseMessage(
+    msg = StreamMessageMessage(
         session_id=session_id,
-        response=response,
-        response_id=response_id,
-        part_ids=part_ids,
+        message=Message(
+            id=uuid4(),
+            session_id=session_id,
+            kind=MessageKind.RESPONSE,
+            finish_reason=None,
+        ),
     )
 
     assert isinstance(msg, BaseMessage)
     assert msg.session_id == session_id
-    assert msg.response == response
-    assert msg.response_id == response_id
-    assert msg.part_ids == part_ids
+    assert msg.message.id is not None
 
 
-def test_tool_call_started_message_creation() -> None:
+def test_stream_part_message() -> None:
+    """Test StreamPartMessage construction."""
     session_id = uuid4()
-    msg = StreamToolCallMessage(
+    message_id = uuid4()
+    msg = StreamPartMessage(
         session_id=session_id,
-        tool_name="search",
-        tool_call_id="call_123",
-        args={"query": "test"},
+        message_id=message_id,
+        part=Part(
+            id=uuid4(),
+            message_id=message_id,
+            kind=PartKind.TEXT,
+            content="Hello",
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        ),
     )
 
+    assert isinstance(msg, BaseMessage)
     assert msg.session_id == session_id
-    assert msg.tool_name == "search"
-    assert msg.tool_call_id == "call_123"
-    assert msg.args == {"query": "test"}
+    assert msg.message_id == message_id
+    assert msg.part.id is not None
 
 
-def test_tool_call_started_message_immutable() -> None:
+def test_stream_part_delta_message() -> None:
+    """Test StreamPartDeltaMessage construction."""
     session_id = uuid4()
-    msg = StreamToolCallMessage(
+    message_id = uuid4()
+    part_id = uuid4()
+    delta = ContentDelta(content="Hello world")
+    msg = StreamPartDeltaMessage(
         session_id=session_id,
-        tool_name="search",
-        tool_call_id="call_123",
-        args={"query": "test"},
+        message_id=message_id,
+        part_id=part_id,
+        delta=delta,
     )
 
-    with pytest.raises(AttributeError):
-        msg.tool_name = "new_name"  # type: ignore[misc]
-
-
-def test_tool_result_message_creation() -> None:
-    session_id = uuid4()
-    msg = StreamToolResultMessage(
-        session_id=session_id,
-        tool_call_id="call_123",
-        content="result data",
-    )
-
+    assert isinstance(msg, BaseMessage)
     assert msg.session_id == session_id
-    assert msg.tool_call_id == "call_123"
-    assert msg.content == "result data"
+    assert msg.message_id == message_id
+    assert msg.part_id == part_id
+    content_delta: ContentDelta = msg.delta  # type: ignore[assignment]
+    assert content_delta.content == "Hello world"
 
 
-def test_tool_result_message_immutable() -> None:
+def test_content_delta() -> None:
+    """Test ContentDelta creation."""
+    delta = ContentDelta(content="Hello")
+    assert delta.content == "Hello"
+    assert delta.kind == "content"
+
+
+def test_tool_args_delta() -> None:
+    """Test ToolArgsDelta creation."""
+    delta = ToolArgsDelta(args='{"key": "value"}')
+    assert delta.args == '{"key": "value"}'
+    assert delta.kind == "tool_args"
+
+
+def test_tool_name_delta() -> None:
+    """Test ToolNameDelta creation."""
+    delta = ToolNameDelta(tool_name="search")
+    assert delta.tool_name == "search"
+    assert delta.kind == "tool_name"
+
+
+def test_delta_discriminator() -> None:
+    """Test that Delta discriminator works correctly."""
+    content = ContentDelta(content="test")
+    tool_args = ToolArgsDelta(args="args")
+    tool_name = ToolNameDelta(tool_name="test")
+
+    assert content.kind == "content"
+    assert tool_args.kind == "tool_args"
+    assert tool_name.kind == "tool_name"
+
+
+def test_new_messages_are_immutable() -> None:
+    """Test immutability of new message types."""
     session_id = uuid4()
-    msg = StreamToolResultMessage(
-        session_id=session_id,
-        tool_call_id="call_123",
-        content="result data",
-    )
 
-    with pytest.raises(AttributeError):
-        msg.content = "new content"  # type: ignore[misc]
+    msg1 = StreamMessageMessage(
+        session_id=session_id,
+        message=Message(
+            id=uuid4(),
+            session_id=session_id,
+            kind=MessageKind.RESPONSE,
+            finish_reason=None,
+        ),
+    )
+    with pytest.raises(FrozenInstanceError):
+        msg1.session_id = uuid4()  # type: ignore[misc]
+
+    msg2 = StreamPartMessage(
+        session_id=session_id,
+        message_id=uuid4(),
+        part=Part(
+            id=uuid4(),
+            message_id=uuid4(),
+            kind=PartKind.TEXT,
+            content="test",
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        ),
+    )
+    with pytest.raises(FrozenInstanceError):
+        msg2.session_id = uuid4()  # type: ignore[misc]
+
+    msg3 = StreamPartDeltaMessage(
+        session_id=session_id,
+        message_id=uuid4(),
+        part_id=uuid4(),
+        delta=ContentDelta(content="test"),
+    )
+    with pytest.raises(FrozenInstanceError):
+        msg3.session_id = uuid4()  # type: ignore[misc]
+
+    delta1 = ContentDelta(content="test")
+    with pytest.raises(FrozenInstanceError):
+        delta1.content = "new"  # type: ignore[misc]
+
+    delta2 = ToolArgsDelta(args="test")
+    with pytest.raises(FrozenInstanceError):
+        delta2.args = "new"  # type: ignore[misc]
+
+    delta3 = ToolNameDelta(tool_name="test")
+    with pytest.raises(FrozenInstanceError):
+        delta3.tool_name = "new"  # type: ignore[misc]
 
 
 def test_response_error_message() -> None:

@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Final, Self
 from uuid import UUID, uuid4
 
+from pydantic import TypeAdapter
 from pydantic_ai import ModelRequestPart, RetryPromptPart
 from pydantic_ai.messages import (
     ModelResponsePart,
@@ -18,6 +19,9 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from llm_gamebook.db.models.message import Message
+
+ModelRequestPartTypeAdapter: TypeAdapter[ModelRequestPart] = TypeAdapter(ModelRequestPart)
+ModelResponsePartTypeAdapter: TypeAdapter[ModelResponsePart] = TypeAdapter(ModelResponsePart)
 
 SUPPORTED_PARTS: Final = (
     UserPromptPart,
@@ -37,9 +41,22 @@ class PartKind(enum.StrEnum):
     RETRY_PROMPT = "retry-prompt"
 
 
+REQUEST_PART_KINDS: Final[set[PartKind]] = {
+    PartKind.USER_PROMPT,
+    PartKind.TOOL_RETURN,
+    PartKind.RETRY_PROMPT,
+}
+
+RESPONSE_PART_KINDS: Final[set[PartKind]] = {
+    PartKind.TEXT,
+    PartKind.TOOL_CALL,
+    PartKind.THINKING,
+}
+
+
 class PartBase(SQLModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    part_kind: PartKind = Field(sa_column=Column(Enum(PartKind)))
+    kind: PartKind = Field(sa_column=Column(Enum(PartKind)))
     content: str | None
     tool_name: str | None
     tool_call_id: str | None
@@ -60,7 +77,7 @@ class Part(PartBase, table=True):
 
         part = cls(
             timestamp=request_part.timestamp,
-            part_kind=PartKind(request_part.part_kind),
+            kind=PartKind(request_part.part_kind),
             content=None,
             tool_name=None,
             tool_call_id=None,
@@ -103,7 +120,7 @@ class Part(PartBase, table=True):
             raise TypeError(msg)
 
         part = cls(
-            part_kind=PartKind(response_part.part_kind),
+            kind=PartKind(response_part.part_kind),
             content=None,
             tool_name=None,
             tool_call_id=None,
@@ -123,3 +140,25 @@ class Part(PartBase, table=True):
                 part.args = response_part.args
 
         return part
+
+    def to_model_request_part(self) -> ModelRequestPart:
+        if self.kind not in REQUEST_PART_KINDS:
+            msg = f"Expected kind '{self.kind}' to be one of: {REQUEST_PART_KINDS}"
+            raise ValueError(msg)
+
+        return ModelRequestPartTypeAdapter.validate_python({
+            **self.model_dump(exclude={"id", "kind"}),
+            "id": str(self.id),
+            "part_kind": self.kind,
+        })
+
+    def to_model_response_part(self) -> ModelResponsePart:
+        if self.kind not in RESPONSE_PART_KINDS:
+            msg = f"Expected kind '{self.kind}' to be one of: {RESPONSE_PART_KINDS}"
+            raise ValueError(msg)
+
+        return ModelResponsePartTypeAdapter.validate_python({
+            **self.model_dump(exclude={"id", "kind"}),
+            "id": str(self.id),
+            "part_kind": self.kind,
+        })

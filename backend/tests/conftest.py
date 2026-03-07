@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 
 import pytest
 from pydantic_ai.models import Model
@@ -81,8 +82,6 @@ async def message(db_session: AsyncDbSession, session: Session) -> Message:
     msg = Message(
         kind=MessageKind.REQUEST,
         session=session,
-        model_name=None,
-        finish_reason=None,
     )
     db_session.add(msg)
     await db_session.commit()
@@ -113,25 +112,24 @@ async def sample_message_with_parts(db_session: AsyncDbSession, session: Session
     msg = Message(
         kind=MessageKind.REQUEST,
         session=session,
-        model_name=None,
-        finish_reason=None,
     )
     db_session.add(msg)
     await db_session.flush()
 
+    now = datetime.now(UTC)
     parts = [
         Part(
-            part_kind=PartKind.USER_PROMPT,
+            kind=PartKind.USER_PROMPT,
             content="Hello, world!",
-            timestamp=None,
+            timestamp=now,
             tool_name=None,
             tool_call_id=None,
             args=None,
         ),
         Part(
-            part_kind=PartKind.TEXT,
+            kind=PartKind.TEXT,
             content="This is a test message.",
-            timestamp=None,
+            timestamp=now,
             tool_name=None,
             tool_call_id=None,
             args=None,

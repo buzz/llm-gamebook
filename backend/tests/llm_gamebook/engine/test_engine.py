@@ -19,23 +19,32 @@ from pydantic_ai.models.test import TestModel
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Session
+from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.engine import StoryEngine
+from llm_gamebook.engine.message import (
+    ContentDelta,
+    ResponseStartedMessage,
+    ResponseStoppedMessage,
+    StreamMessageMessage,
+    StreamPartDeltaMessage,
+    StreamPartMessage,
+)
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.traits.graph import GraphTransitionAction
 
-from .conftest import EngineEvents, StreamEvents
+from .conftest import EngineErrorMessages, EngineMessages, StreamMessages
 
 
 async def test_story_engine_generate_response_streaming(
     story_engine: StoryEngine,
     db_session: AsyncDbSession,
-    engine_events: EngineEvents,
-    stream_events: StreamEvents,
+    engine_messages: EngineMessages,
+    engine_error_messages: EngineErrorMessages,
+    stream_messages: StreamMessages,
     session: Session,
 ) -> None:
-    events, error_events = engine_events
-
-    chunks = ("Stream", "ing", " re", "sponse", " from", " Functio", "Model")
+    chunks = ("Stream", "ing", " re", "sponse", " from", " Function", "Model")
 
     async def stream_function(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
         for chunk in chunks:
@@ -46,155 +55,90 @@ async def test_story_engine_generate_response_streaming(
 
     await story_engine.generate_response(db_session)
 
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 0
-    assert len(stream_events) == 8
+    assert len(engine_messages) == 2
+    start_message, stop_message = engine_messages
+    assert isinstance(start_message, ResponseStartedMessage)
+    assert start_message.session_id == session.id
+    assert isinstance(stop_message, ResponseStoppedMessage)
+    assert stop_message.session_id == session.id
+    assert len(engine_error_messages) == 0
 
-    for stream_event in stream_events:
-        assert stream_event.session_id == story_engine.session_adapter.session_id
-        assert stream_event.response_id is not None
-        assert len(stream_event.part_ids) > 0
+    # 1 request
+    # 1 response
+    # 1 part
+    # 6 deltas
+    assert len(stream_messages) == 9
 
-    assert stream_events[0].response.text == "Stream"
-    assert stream_events[1].response.text == "Streaming"
-    assert stream_events[2].response.text == "Streaming re"
-    assert stream_events[3].response.text == "Streaming response"
-    assert stream_events[4].response.text == "Streaming response from"
-    assert stream_events[5].response.text == "Streaming response from Functio"
-    assert stream_events[6].response.text == "Streaming response from FunctioModel"
-    assert stream_events[7].response.text == "Streaming response from FunctioModel"
+    # Request
+    req_message = stream_messages[0]
+    assert isinstance(req_message, StreamMessageMessage)
+    req = req_message.message
+    assert req.session_id == session.id
+    assert req.kind == MessageKind.REQUEST
+
+    # Response
+    resp_message = stream_messages[1]
+    assert isinstance(resp_message, StreamMessageMessage)
+    resp = resp_message.message
+    assert resp.session_id == session.id
+    assert resp.kind == MessageKind.RESPONSE
+
+    # Part
+    part_message = stream_messages[2]
+    assert isinstance(part_message, StreamPartMessage)
+    part = part_message.part
+    assert part.message_id == resp.id
+    assert part.kind == PartKind.TEXT
+    assert part.content == chunks[0]
+
+    # Deltas
+    for idx in range(3, len(chunks) + 1):
+        delta_message = stream_messages[idx]
+        assert isinstance(delta_message, StreamPartDeltaMessage)
+        assert delta_message.session_id == session.id
+        assert delta_message.message_id == resp.id
+        assert delta_message.part_id == part.id
+        delta = delta_message.delta
+        assert isinstance(delta, ContentDelta)
+        assert delta.content == chunks[idx - 2]
 
 
-async def test_story_engine_generate_response_non_streaming(
-    story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
-) -> None:
-    events, error_events = engine_events
-    await story_engine.generate_response(db_session)
-
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 0
-
-
-async def test_story_engine_generate_response_error_httpx(
+@pytest.mark.parametrize(
+    "error",
+    [
+        httpx.RequestError("Network error", request=None),
+        OpenAIError(),
+        AgentRunError("Agent run failed"),
+        ModelAPIError("test", "Model API error"),
+        ModelHTTPError(500, "ModelName", body={"message": "HTTP error"}),
+    ],
+)
+async def test_story_engine_generate_response_error(
     story_engine: StoryEngine,
     db_session: AsyncDbSession,
-    engine_events: EngineEvents,
+    engine_messages: EngineMessages,
+    engine_error_messages: EngineErrorMessages,
     session: Session,
+    error: Exception,
 ) -> None:
-    events, error_events = engine_events
-
     async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
         yield "error"  # Yield first to make it a proper async generator
-        msg = "Network error"
-        raise httpx.RequestError(msg, request=None)
+        raise error
 
     error_model = FunctionModel(stream_function=mock_fail_stream)
     story_engine.set_model(error_model)
 
     await story_engine.generate_response(db_session)
 
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 1
-    assert isinstance(error_events[0].error, httpx.RequestError)
+    assert len(engine_messages) == 2
+    start_message, stop_message = engine_messages
+    assert isinstance(start_message, ResponseStartedMessage)
+    assert start_message.session_id == session.id
+    assert isinstance(stop_message, ResponseStoppedMessage)
+    assert stop_message.session_id == session.id
 
-
-async def test_story_engine_generate_response_error_openai(
-    story_engine: StoryEngine,
-    db_session: AsyncDbSession,
-    engine_events: EngineEvents,
-    session: Session,
-) -> None:
-    events, error_events = engine_events
-
-    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
-        yield "error"
-        raise OpenAIError
-
-    error_model = FunctionModel(stream_function=mock_fail_stream)
-    story_engine.set_model(error_model)
-
-    await story_engine.generate_response(db_session)
-
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 1
-    assert isinstance(error_events[0].error, OpenAIError)
-
-
-async def test_story_engine_generate_response_error_agent_run(
-    story_engine: StoryEngine,
-    db_session: AsyncDbSession,
-    engine_events: EngineEvents,
-    session: Session,
-) -> None:
-    events, error_events = engine_events
-
-    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
-        yield "error"
-        msg = "Agent run failed"
-        raise AgentRunError(msg)
-        msg = "Agent run failed"
-        raise AgentRunError(msg)
-
-    error_model = FunctionModel(stream_function=mock_fail_stream)
-    story_engine.set_model(error_model)
-
-    await story_engine.generate_response(db_session)
-
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 1
-    assert isinstance(error_events[0].error, AgentRunError)
-
-
-async def test_story_engine_generate_response_error_model_api(
-    story_engine: StoryEngine,
-    db_session: AsyncDbSession,
-    engine_events: EngineEvents,
-    session: Session,
-) -> None:
-    events, error_events = engine_events
-
-    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
-        yield "error"
-        model_name = "test"
-        raise ModelAPIError(model_name, "Model API error")
-
-    error_model = FunctionModel(stream_function=mock_fail_stream)
-    story_engine.set_model(error_model)
-
-    await story_engine.generate_response(db_session)
-
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 1
-    assert isinstance(error_events[0].error, ModelAPIError)
-
-
-async def test_story_engine_generate_response_error_model_http(
-    story_engine: StoryEngine,
-    db_session: AsyncDbSession,
-    engine_events: EngineEvents,
-    session: Session,
-) -> None:
-    events, error_events = engine_events
-
-    async def mock_fail_stream(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
-        yield "error"
-        raise ModelHTTPError(500, "ModelName", body={"message": "HTTP error"})
-
-    error_model = FunctionModel(stream_function=mock_fail_stream)
-    story_engine.set_model(error_model)
-
-    await story_engine.generate_response(db_session)
-
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 1
-    assert isinstance(error_events[0].error, ModelHTTPError)
+    assert len(engine_error_messages) == 1
+    assert isinstance(engine_error_messages[0].error, type(error))
 
 
 async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: TestModel) -> None:
@@ -247,17 +191,24 @@ async def test_set_model_creates_new_agent_instance(story_engine: StoryEngine) -
 
 
 async def test_set_model_allows_subsequent_requests_with_new_model(
-    story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    engine_messages: EngineMessages,
+    engine_error_messages: EngineErrorMessages,
+    session: Session,
 ) -> None:
     new_model = TestModel(custom_output_text="Response from new model")
     story_engine.set_model(new_model)
 
-    events, error_events = engine_events
     await story_engine.generate_response(db_session)
 
-    assert "started" in events
-    assert "stopped" in events
-    assert len(error_events) == 0
+    assert len(engine_messages) == 2
+    start_message, stop_message = engine_messages
+    assert isinstance(start_message, ResponseStartedMessage)
+    assert start_message.session_id == session.id
+    assert isinstance(stop_message, ResponseStoppedMessage)
+    assert stop_message.session_id == session.id
+    assert len(engine_error_messages) == 0
 
 
 @pytest.mark.parametrize(
@@ -303,10 +254,10 @@ async def test_prepare_tools_returns_tools_for_conversation(
 
 
 async def test_state_persists_after_response(
-    story_engine: StoryEngine, db_session: AsyncDbSession, engine_events: EngineEvents
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    engine_error_messages: EngineErrorMessages,
 ) -> None:
-    _, error_events = engine_events
-
     action = GraphTransitionAction(entity_id="main", to="spark_of_hope")
     story_engine._context.store.dispatch(action)
 
@@ -318,7 +269,7 @@ async def test_state_persists_after_response(
 
     await story_engine.generate_response(db_session)
 
-    assert len(error_events) == 0
+    assert len(engine_error_messages) == 0
 
     loaded_state = await story_engine.session_adapter.load_state(db_session)
     assert loaded_state is not None

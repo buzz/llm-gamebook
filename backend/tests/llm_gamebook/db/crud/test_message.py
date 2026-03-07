@@ -13,13 +13,11 @@ async def test_get_message_count(db_session: AsyncDbSession, session: Session) -
         kind=MessageKind.REQUEST,
         session_id=session.id,
         timestamp=datetime.now(UTC),
-        model_name=None,
     )
     msg2 = Message(
         kind=MessageKind.RESPONSE,
         session_id=session.id,
         timestamp=datetime.now(UTC),
-        model_name=None,
     )
 
     await message_crud.create_message(db_session, msg1)
@@ -46,10 +44,11 @@ async def test_get_messages(db_session: AsyncDbSession, session: Session) -> Non
         kind=MessageKind.REQUEST,
         session_id=session.id,
         timestamp=timestamp_earlier,
-        model_name=None,
     )
     msg2 = Message(
-        kind=MessageKind.RESPONSE, session_id=session.id, timestamp=timestamp_later, model_name=None
+        kind=MessageKind.RESPONSE,
+        session_id=session.id,
+        timestamp=timestamp_later,
     )
 
     await message_crud.create_message(db_session, msg1)
@@ -71,7 +70,7 @@ async def test_get_messages_empty(db_session: AsyncDbSession, session: Session) 
 
 async def test_create_message(db_session: AsyncDbSession, session: Session) -> None:
     """Test creating a single message."""
-    msg = Message(kind=MessageKind.REQUEST, session_id=session.id, model_name="gpt-4")
+    msg = Message(kind=MessageKind.REQUEST, session_id=session.id)
 
     created = await message_crud.create_message(db_session, msg)
 
@@ -79,15 +78,14 @@ async def test_create_message(db_session: AsyncDbSession, session: Session) -> N
     assert created.id is not None
     assert created.kind == MessageKind.REQUEST
     assert created.session_id == session.id
-    assert created.model_name == "gpt-4"
 
 
 async def test_create_messages_batch(db_session: AsyncDbSession, session: Session) -> None:
     """Test creating multiple messages in batch."""
     messages = [
-        Message(kind=MessageKind.REQUEST, session_id=session.id, model_name=None),
-        Message(kind=MessageKind.RESPONSE, session_id=session.id, model_name=None),
-        Message(kind=MessageKind.REQUEST, session_id=session.id, model_name=None),
+        Message(kind=MessageKind.REQUEST, session_id=session.id),
+        Message(kind=MessageKind.RESPONSE, session_id=session.id),
+        Message(kind=MessageKind.REQUEST, session_id=session.id),
     ]
 
     await message_crud.create_messages(db_session, messages)

@@ -6,9 +6,9 @@ from pydantic_ai.messages import TextPart, UserPromptPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.crud import message as message_crud
-from llm_gamebook.db.models import Message, Session
+from llm_gamebook.db.models import Message, Part, Session
 from llm_gamebook.db.models.message import FinishReason, MessageKind
-from llm_gamebook.db.models.part import Part, PartKind
+from llm_gamebook.db.models.part import PartKind
 
 
 async def test_get_message_count(db_session: AsyncDbSession, session: Session) -> None:
@@ -17,11 +17,10 @@ async def test_get_message_count(db_session: AsyncDbSession, session: Session) -
     message = Message(
         session_id=session.id,
         kind=MessageKind.REQUEST,
-        model_name=None,
         finish_reason=None,
         parts=[
             Part(
-                part_kind=PartKind.USER_PROMPT,
+                kind=PartKind.USER_PROMPT,
                 content="Hello",
                 timestamp=datetime.now(UTC),
                 tool_name=None,
@@ -47,11 +46,10 @@ async def test_get_messages_with_data(db_session: AsyncDbSession, session: Sessi
     msg1 = Message(
         session_id=session.id,
         kind=MessageKind.REQUEST,
-        model_name=None,
         finish_reason=None,
         parts=[
             Part(
-                part_kind=PartKind.USER_PROMPT,
+                kind=PartKind.USER_PROMPT,
                 content="Hello 1",
                 timestamp=datetime.now(UTC),
                 tool_name=None,
@@ -63,11 +61,10 @@ async def test_get_messages_with_data(db_session: AsyncDbSession, session: Sessi
     msg2 = Message(
         session_id=session.id,
         kind=MessageKind.RESPONSE,
-        model_name="gpt-4",
         finish_reason=FinishReason.STOP,
         parts=[
             Part(
-                part_kind=PartKind.TEXT,
+                kind=PartKind.TEXT,
                 content="Hi there!",
                 timestamp=datetime.now(UTC),
                 tool_name=None,
@@ -88,11 +85,10 @@ async def test_create_message(db_session: AsyncDbSession, session: Session) -> N
     message = Message(
         session_id=session.id,
         kind=MessageKind.REQUEST,
-        model_name=None,
         finish_reason=None,
         parts=[
             Part(
-                part_kind=PartKind.USER_PROMPT,
+                kind=PartKind.USER_PROMPT,
                 content="Test message",
                 timestamp=datetime.now(UTC),
                 tool_name=None,
@@ -113,11 +109,10 @@ async def test_create_messages_batch(db_session: AsyncDbSession, session: Sessio
         Message(
             session_id=session.id,
             kind=MessageKind.REQUEST,
-            model_name=None,
             finish_reason=None,
             parts=[
                 Part(
-                    part_kind=PartKind.USER_PROMPT,
+                    kind=PartKind.USER_PROMPT,
                     content=f"Message {i}",
                     timestamp=datetime.now(UTC),
                     tool_name=None,
@@ -135,42 +130,34 @@ async def test_create_messages_batch(db_session: AsyncDbSession, session: Sessio
     assert count == 3
 
 
-def test_message_from_model_message_request() -> None:
+def test_message_from_model_request() -> None:
     session_id = uuid4()
-    msg_id = uuid4()
     model_request = ModelRequest([UserPromptPart(content="Hello, world!")])
-    message = Message.from_model_message(model_request, session_id, msg_id, None)
+    message = Message.from_model_request(session_id, model_request)
 
-    assert message.id == msg_id
     assert message.session_id == session_id
     assert message.kind == MessageKind.REQUEST
-    assert message.model_name is None
     assert len(message.parts) == 1
+    assert message.parts[0].content == "Hello, world!"
 
 
-def test_message_from_model_message_response() -> None:
+def test_message_from_model_response() -> None:
     session_id = uuid4()
-    msg_id = uuid4()
-    part_ids = [uuid4(), uuid4()]
-
     model_response = ModelResponse(
-        model_name="gpt-4",
         finish_reason="stop",
         timestamp=datetime.now(UTC),
         parts=[TextPart(content="Hello!"), TextPart(content="How can I help?")],
     )
 
-    message = Message.from_model_message(model_response, session_id, msg_id, part_ids)
+    message = Message.from_model_response(session_id, model_response)
 
-    assert message.id == msg_id
     assert message.session_id == session_id
     assert message.kind == MessageKind.RESPONSE
-    assert message.model_name == "gpt-4"
     assert message.finish_reason == FinishReason.STOP
     assert len(message.parts) == 2
 
 
-def test_message_to_dict() -> None:
+def test_message_to_model_message() -> None:
     session_id = uuid4()
     message_id = uuid4()
     timestamp = datetime.now(UTC)
@@ -180,11 +167,10 @@ def test_message_to_dict() -> None:
         session_id=session_id,
         timestamp=timestamp,
         kind=MessageKind.RESPONSE,
-        model_name="gpt-4",
         finish_reason=FinishReason.STOP,
         parts=[
             Part(
-                part_kind=PartKind.TEXT,
+                kind=PartKind.TEXT,
                 content="Hello!",
                 timestamp=timestamp,
                 tool_name=None,
@@ -194,14 +180,11 @@ def test_message_to_dict() -> None:
         ],
     )
 
-    result = message.to_dict()
+    result = message.to_model_message()
 
-    # type checking disabled because to_dict() returns Mapping[str, object]
-    assert result["id"] == str(message_id)
-    assert result["session_id"] == str(session_id)
-    assert isinstance(result["timestamp"], str)
-    assert result["kind"] == "response"
-    assert result["model_name"] == "gpt-4"
-    assert result["finish_reason"] == "stop"
-    assert len(result["parts"]) == 1  # type: ignore[arg-type]
-    assert result["parts"][0]["content"] == "Hello!"  # type: ignore[index]
+    assert isinstance(result.timestamp, datetime)
+    assert result.kind == "response"
+    assert result.finish_reason == "stop"
+    assert isinstance(result.parts, list)
+    assert len(result.parts) == 1
+    assert result.parts[0].content == "Hello!"

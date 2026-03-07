@@ -98,6 +98,7 @@ class _ModelRequestHandler:
 
             self._part = Part.from_model_response_part(event.part)
             self._part.message = self._resp_msg
+            self._part.message_id = self._resp_msg.id
             self._bus.publish(StreamPartMessage(self._session_id, self._resp_msg.id, self._part))
             self._last_delta = time()
 
@@ -164,11 +165,11 @@ class _ModelRequestHandler:
         assert self._part is not None
 
         delta: Delta | None = None
-        if self._part.part_kind in {PartKind.TEXT, PartKind.THINKING}:
+        if self._part.kind in {PartKind.TEXT, PartKind.THINKING} and self._content_delta:
             delta = ContentDelta(self._content_delta)
             self._content_delta = ""
 
-        elif self._part.part_kind == PartKind.TOOL_CALL:
+        elif self._part.kind == PartKind.TOOL_CALL:
             if self._args_delta:
                 delta = ToolArgsDelta(self._args_delta)
                 self._args_delta = ""

@@ -5,11 +5,12 @@ from uuid import uuid4
 import pytest
 from fastapi import WebSocketDisconnect
 from openai import APIError
-from pydantic_ai import ModelResponse
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 from starlette.websockets import WebSocketDisconnect as StarletteDisconnect
 from starlette.websockets import WebSocketState
 
+from llm_gamebook.db.models import Message
+from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.db.models.session import Session
 from llm_gamebook.engine.manager import EngineManager
 from llm_gamebook.engine.message import (
@@ -18,7 +19,7 @@ from llm_gamebook.engine.message import (
     ResponseStartedMessage,
     ResponseStoppedMessage,
     ResponseUserRequestMessage,
-    StreamResponseMessage,
+    StreamMessageMessage,
 )
 from llm_gamebook.story import ProjectManager
 from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage, WebSocketPongMessage
@@ -195,7 +196,7 @@ async def test_on_engine_response_started(
 
     mock_websocket.send_text.assert_called_once()
     call_args = mock_websocket.send_text.call_args[0][0]
-    assert '"kind":"status"' in call_args
+    assert '"kind":"stream_status"' in call_args
     assert '"status":"started"' in call_args
     assert f'"{session.id}"' in call_args
 
@@ -210,7 +211,7 @@ async def test_on_engine_response_stopped(
 
     mock_websocket.send_text.assert_called_once()
     call_args = mock_websocket.send_text.call_args[0][0]
-    assert '"kind":"status"' in call_args
+    assert '"kind":"stream_status"' in call_args
     assert '"status":"stopped"' in call_args
     assert f'"{session.id}"' in call_args
 
@@ -231,27 +232,25 @@ async def test_on_engine_response_error(
     assert '"message":"Test error"' in call_args
 
 
-async def test_on_engine_response_stream(
+async def test_on_engine_stream_message(
     handler: WebSocketHandler, mock_websocket: AsyncMock, session: Session
 ) -> None:
     handler._websocket = mock_websocket
 
-    model_response = ModelResponse(
-        parts=[],
-        model_name="test",
-        finish_reason="stop",
-    )
-    message = StreamResponseMessage(
+    message = StreamMessageMessage(
         session_id=session.id,
-        response=model_response,
-        response_id=uuid4(),
-        part_ids=[],
+        message=Message(
+            id=uuid4(),
+            session_id=session.id,
+            kind=MessageKind.RESPONSE,
+            finish_reason=None,
+        ),
     )
-    await handler._on_engine_stream_response(message)
+    await handler._on_engine_stream_message(message)
 
     mock_websocket.send_text.assert_called_once()
     call_args = mock_websocket.send_text.call_args[0][0]
-    assert '"kind":"stream"' in call_args
+    assert '"kind":"stream_message"' in call_args
     assert f'"{session.id}"' in call_args
 
 

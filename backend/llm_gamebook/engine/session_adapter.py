@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterable
-from datetime import UTC, datetime
 from logging import getLogger
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -7,7 +6,6 @@ from uuid import UUID
 from pydantic import ValidationError
 from pydantic_ai import (
     ModelMessage,
-    ModelMessagesTypeAdapter,
     ModelRequest,
     ModelResponse,
     TextPart,
@@ -59,8 +57,7 @@ class SessionAdapter:
 
         # Message history
         messages = await get_messages(db_session, self._session_id)
-        as_dicts = [msg.to_dict() for msg in messages]
-        model_messages = ModelMessagesTypeAdapter.validate_python(as_dicts)
+        model_messages = (msg.to_model_message() for msg in messages)
         for msg in model_messages:
             # Keep only relevant parts
             if isinstance(msg, ModelResponse):
@@ -93,11 +90,6 @@ class SessionAdapter:
     async def create_user_request(
         self, db_session: AsyncDbSession, message_in: "ModelRequestCreate"
     ) -> Message:
-        # Ensure UserPromptPart has a timestamp
-        for p in message_in.parts:
-            if p.part_kind == "user-prompt":
-                p.timestamp = datetime.now(UTC)
-
         message = Message(
             **message_in.model_dump(exclude={"parts"}),
             session_id=self._session_id,

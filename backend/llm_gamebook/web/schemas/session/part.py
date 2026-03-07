@@ -1,14 +1,14 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
 import pydantic_core
-from pydantic import BaseModel, Discriminator
+from pydantic import BaseModel, Discriminator, Field
 
 
 class BaseUserPromptPart(BaseModel):
-    part_kind: Literal["user-prompt"] = "user-prompt"
+    kind: Literal["user-prompt"] = "user-prompt"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     content: str
@@ -16,7 +16,7 @@ class BaseUserPromptPart(BaseModel):
 
 
 class UserPromptPartCreate(BaseUserPromptPart):
-    timestamp: datetime | None = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     """The timestamp of the prompt."""
 
 
@@ -34,7 +34,7 @@ class ToolReturnPart(BaseModel):
 
     id: UUID
 
-    part_kind: Literal["tool-return"] = "tool-return"
+    kind: Literal["tool-return"] = "tool-return"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     tool_name: str | None
@@ -55,7 +55,7 @@ class RetryPromptPart(BaseModel):
 
     id: UUID
 
-    part_kind: Literal["retry-prompt"] = "retry-prompt"
+    kind: Literal["retry-prompt"] = "retry-prompt"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     content: Sequence[pydantic_core.ErrorDetails] | str
@@ -76,7 +76,7 @@ class RetryPromptPart(BaseModel):
 
 type ModelRequestPart = Annotated[
     UserPromptPart | ToolReturnPart | RetryPromptPart,
-    Discriminator("part_kind"),
+    Discriminator("kind"),
 ]
 """A message part sent to an LLM."""
 
@@ -89,7 +89,7 @@ class TextPart(BaseModel):
     timestamp: datetime
     """The timestamp of the part."""
 
-    part_kind: Literal["text"] = "text"
+    kind: Literal["text"] = "text"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     content: str
@@ -104,7 +104,7 @@ class ToolCallPart(BaseModel):
     timestamp: datetime
     """The timestamp of the part."""
 
-    part_kind: Literal["tool-call"] = "tool-call"
+    kind: Literal["tool-call"] = "tool-call"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     tool_name: str
@@ -125,7 +125,7 @@ class ThinkingPart(BaseModel):
     timestamp: datetime
     """The timestamp of the part."""
 
-    part_kind: Literal["thinking"] = "thinking"
+    kind: Literal["thinking"] = "thinking"
     """Part type identifier, this is available on all parts as a discriminator."""
 
     content: str
@@ -140,6 +140,6 @@ class ThinkingPart(BaseModel):
 
 type ModelResponsePart = Annotated[
     TextPart | ToolCallPart | ThinkingPart,
-    Discriminator("part_kind"),
+    Discriminator("kind"),
 ]
 """A message part returned by an LLM."""

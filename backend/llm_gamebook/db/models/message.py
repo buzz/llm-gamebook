@@ -1,10 +1,10 @@
 import enum
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Optional, Self
 from uuid import UUID, uuid4
 
-from pydantic_ai import ModelRequest, ModelResponse
+from pydantic import TypeAdapter
+from pydantic_ai import ModelMessage, ModelRequest, ModelResponse, RequestUsage
 from sqlalchemy import JSON, Column, Enum, String
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -13,6 +13,8 @@ from .usage import Usage
 
 if TYPE_CHECKING:
     from .session import Session
+
+ModelMessageTypeAdapter: TypeAdapter[ModelMessage] = TypeAdapter(ModelMessage)
 
 
 class MessageKind(enum.StrEnum):
@@ -23,7 +25,7 @@ class MessageKind(enum.StrEnum):
 class FinishReason(enum.StrEnum):
     STOP = "stop"
     LENGTH = "length"
-    CONTENT_LENGTH = "content_length"
+    CONTENT_FILTER = "content_filter"
     TOOL_CALL = "tool_call"
     ERROR = "error"
 
@@ -61,14 +63,26 @@ class Message(MessageBase, table=True):
     @classmethod
     def from_model_response(cls, session_id: UUID, response: ModelResponse) -> Self:
         parts = [Part.from_model_response_part(p) for p in response.parts]
-        return cls(kind=MessageKind.RESPONSE, session_id=session_id, parts=parts)
+        return cls(
+            kind=MessageKind.RESPONSE,
+            session_id=session_id,
+            parts=parts,
+            finish_reason=FinishReason(response.finish_reason) if response.finish_reason else None,
+        )
 
-    def to_dict(self) -> Mapping[str, object]:
-        parts = [p.model_dump(mode="json", exclude={"message"}) for p in self.parts]
-        usage = self.usage.model_dump(mode="json", exclude={"message"}) if self.usage else None
-        return {
-            **self.model_dump(mode="json", exclude={"parts", "usage", "session"}),
-            "parts": parts,
-            "usage": usage,
-            "state": self.state,
-        }
+    def to_model_message(self) -> ModelMessage:
+        msg_dict = self.model_dump(mode="json", exclude={"parts", "usage", "session"})
+        msg = ModelMessageTypeAdapter.validate_python({**msg_dict, "parts": []})
+
+        if isinstance(msg, ModelResponse):
+            if self.usage:
+                usage = self.usage.model_dump(mode="json", exclude={"message"})
+                msg.usage = RequestUsage(**usage)
+            if self.parts:
+                msg.parts = [p.to_model_response_part() for p in self.parts]
+
+        elif isinstance(msg, ModelRequest):
+            if self.parts:
+                msg.parts = [p.to_model_request_part() for p in self.parts]
+
+        return msg

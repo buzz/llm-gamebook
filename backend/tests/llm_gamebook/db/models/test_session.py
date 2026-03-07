@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -35,9 +35,7 @@ async def test_session_relationships(
     message = Message(
         kind=MessageKind.REQUEST,
         session=session,
-        model_name="test-model",
-        finish_reason=None,
-        timestamp=None,
+        timestamp=datetime.now(UTC),
     )
     db_session.add(message)
     await db_session.commit()

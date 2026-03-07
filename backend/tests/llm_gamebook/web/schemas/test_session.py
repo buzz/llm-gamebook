@@ -100,7 +100,7 @@ def test_session_full_with_request_and_response() -> None:
     user_prompt = UserPromptPart(id=part_id1, content="What is 2+2?", timestamp=timestamp)
     request = ModelRequest(id=request_id, parts=[user_prompt], instructions=None)
 
-    text_part = TextPart(id=part_id2, content="2+2 equals 4")
+    text_part = TextPart(id=part_id2, content="2+2 equals 4", timestamp=timestamp)
     usage = Usage(input_tokens=10, output_tokens=20, cache_write_tokens=0, cache_read_tokens=0)
     response = ModelResponse(
         id=response_id,
@@ -133,7 +133,7 @@ def test_session_full_message_discriminator() -> None:
     user_prompt = UserPromptPart(id=uuid4(), content="Test", timestamp=timestamp)
     request = ModelRequest(id=request_id, parts=[user_prompt], instructions=None)
 
-    text_part = TextPart(id=uuid4(), content="Response")
+    text_part = TextPart(id=uuid4(), content="Response", timestamp=timestamp)
     response = ModelResponse(
         id=response_id,
         parts=[text_part],
