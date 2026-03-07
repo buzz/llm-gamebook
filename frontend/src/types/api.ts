@@ -3,9 +3,6 @@ import type { components } from './openapi'
 
 type ServerMessage = components['schemas']['ServerMessage']
 
-type ModelRequest = components['schemas']['ModelRequest']
-type ModelRequestCreate = components['schemas']['ModelRequestCreate']
-
 type Session = components['schemas']['Session']
 type SessionCreate = components['schemas']['SessionCreate']
 type SessionFull = components['schemas']['SessionFull']
@@ -13,7 +10,10 @@ type Sessions = components['schemas']['Sessions']
 type SessionUpdate = components['schemas']['SessionUpdate']
 
 type ModelMessage = components['schemas']['ModelMessage']
-type ThinkingPart = components['schemas']['ThinkingPart']
+type ModelResponse = components['schemas']['ModelResponse']
+type ModelResponsePart = components['schemas']['ModelResponsePart']
+type ModelRequest = components['schemas']['ModelRequest']
+type ModelRequestCreate = components['schemas']['ModelRequestCreate']
 
 type ModelConfigCreate = components['schemas']['ModelConfigCreate']
 type ModelConfigUpdate = components['schemas']['ModelConfigUpdate']
@@ -27,6 +27,9 @@ type ProjectBasic = components['schemas']['ProjectBasic']
 type ProjectDetail = components['schemas']['ProjectDetail']
 type Projects = components['schemas']['Projects']
 type ProjectSource = components['schemas']['ProjectSource']
+
+type Delta = components['schemas']['Delta']
+type ThinkingPart = components['schemas']['ThinkingPart']
 
 interface ApiQueryError {
   data: {
@@ -59,6 +62,7 @@ function isApiValidationError(thing: unknown): thing is ApiValidationError {
 export type {
   ApiQueryError,
   ApiValidationError,
+  Delta,
   ModelConfig,
   ModelConfigCreate,
   ModelConfigs,
@@ -68,6 +72,8 @@ export type {
   ModelProviders,
   ModelRequest,
   ModelRequestCreate,
+  ModelResponse,
+  ModelResponsePart,
   ProjectBasic,
   ProjectCreate,
   ProjectDetail,

@@ -1,13 +1,14 @@
 import { isObject } from './common'
 import type { components } from './openapi'
 
-type WebSocketErrorMessage = components['schemas']['WebSocketErrorMessage']
-type WebSocketStatusMessage = components['schemas']['WebSocketStatusMessage']
-type WebSocketStreamMessage = components['schemas']['WebSocketStreamMessage']
-type WebSocketServerMessage = components['schemas']['WebSocketServerMessage']
-
-type WebSocketPingMessage = components['schemas']['WebSocketPingMessage']
 type WebSocketClientMessage = components['schemas']['WebSocketClientMessage']
+type WebSocketErrorMessage = components['schemas']['WebSocketErrorMessage']
+type WebSocketPingMessage = components['schemas']['WebSocketPingMessage']
+type WebSocketServerMessage = components['schemas']['WebSocketServerMessage']
+type WebSocketStreamMessageMessage = components['schemas']['WebSocketStreamMessageMessage']
+type WebSocketStreamPartDeltaMessage = components['schemas']['WebSocketStreamPartDeltaMessage']
+type WebSocketStreamPartMessage = components['schemas']['WebSocketStreamPartMessage']
+type WebSocketStreamStatusMessage = components['schemas']['WebSocketStreamStatusMessage']
 
 function isWebsocketError(thing: unknown): thing is WebSocketErrorMessage {
   return (
@@ -23,7 +24,9 @@ export type {
   WebSocketErrorMessage,
   WebSocketPingMessage,
   WebSocketServerMessage,
-  WebSocketStatusMessage,
-  WebSocketStreamMessage,
+  WebSocketStreamMessageMessage,
+  WebSocketStreamPartDeltaMessage,
+  WebSocketStreamPartMessage,
+  WebSocketStreamStatusMessage,
 }
 export { isWebsocketError }

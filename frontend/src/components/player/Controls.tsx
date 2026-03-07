@@ -36,9 +36,9 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
           kind: 'request',
           parts: [
             {
-              part_kind: 'user-prompt',
+              kind: 'user-prompt',
               content,
-              timestamp: null,
+              timestamp: undefined,
             },
           ],
         },

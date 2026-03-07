@@ -5,16 +5,23 @@ import { assertNever } from '@/types/common'
 import type {
   WebSocketErrorMessage,
   WebSocketServerMessage,
-  WebSocketStatusMessage,
-  WebSocketStreamMessage,
+  WebSocketStreamMessageMessage,
+  WebSocketStreamPartDeltaMessage,
+  WebSocketStreamPartMessage,
+  WebSocketStreamStatusMessage,
 } from '@/types/websocket'
+
+type WebSocketMessage =
+  | WebSocketStreamMessageMessage
+  | WebSocketStreamPartDeltaMessage
+  | WebSocketStreamPartMessage
+  | WebSocketStreamStatusMessage
+  | null
 
 function useWebSocketConnection(sessionId: string) {
   const context = use(WebSocketContext)
   const [lastErrorMessage, setLastErrorMessage] = useState<WebSocketErrorMessage | null>(null)
-  const [lastMessage, setLastMessage] = useState<
-    WebSocketStatusMessage | WebSocketStreamMessage | null
-  >(null)
+  const [lastMessage, setLastMessage] = useState<WebSocketMessage>(null)
 
   useEffect(() => {
     if (!context) {
@@ -30,8 +37,10 @@ function useWebSocketConnection(sessionId: string) {
         case 'pong': {
           break
         }
-        case 'status':
-        case 'stream': {
+        case 'stream_status':
+        case 'stream_message':
+        case 'stream_part':
+        case 'stream_part_delta': {
           setLastMessage(message)
           break
         }

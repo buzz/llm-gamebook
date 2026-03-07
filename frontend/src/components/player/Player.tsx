@@ -4,6 +4,7 @@ import { useParams } from 'wouter'
 
 import QueryHandler from '@/components/common/QueryHandler'
 import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
+import useMessages from '@/hooks/messages'
 import sessionApi from '@/services/session'
 import type { SessionFull } from '@/types/api'
 import type { RouteParams } from '@/types/routes'
@@ -11,14 +12,13 @@ import type { RouteParams } from '@/types/routes'
 import Controls from './Controls'
 import Messages from './Messages/Messages'
 import classes from './Player.module.css'
-import useMessages from './use-messages'
 
 interface PlayerLoadedProps {
   session: SessionFull
 }
 
 function PlayerLoaded({ session }: PlayerLoadedProps) {
-  const { currentStreamingPartId, messages, streamStatus } = useMessages(session)
+  const { currentPartId, messages, streamStatus } = useMessages(session)
   const [modelConfigId, setModelConfigId] = useState(session.config_id ?? null)
   const [updateSession, { isLoading: isUpdating }] = sessionApi.useUpdateSessionMutation()
 
@@ -44,7 +44,7 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
         disabled={isUpdating || streamStatus === 'started'}
       />
       <Box className={classes.container}>
-        <Messages currentStreamingPartId={currentStreamingPartId} messages={messages} />
+        <Messages currentPartId={currentPartId} messages={messages} />
         <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
       </Box>
     </Stack>

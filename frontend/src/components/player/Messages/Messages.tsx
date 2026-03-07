@@ -1,4 +1,4 @@
-import { Box, Code, ScrollArea, Stack } from '@mantine/core'
+import { Code, ScrollArea, Stack } from '@mantine/core'
 import { IconArrowForward, IconTool } from '@tabler/icons-react'
 import cx from 'clsx'
 import { Streamdown } from 'streamdown'
@@ -10,26 +10,34 @@ import ThinkingPart from './ThinkingPart'
 import ToolPart from './ToolPart'
 
 interface MessageProps {
-  currentStreamingPartId: string | null
+  currentPartId: string | null
   message: ModelMessage
 }
 
-function Message({ currentStreamingPartId, message }: MessageProps) {
+function Message({ currentPartId, message }: MessageProps) {
   const parts = message.parts.map((part) => {
-    switch (part.part_kind) {
+    const isStreaming = currentPartId === part.id
+
+    switch (part.kind) {
       case 'thinking': {
+        return <ThinkingPart key={part.id} isStreaming={isStreaming} part={part} />
+      }
+      case 'text': {
         return (
-          <ThinkingPart
+          <Streamdown
+            animated
+            className={cx(classes.text, classes.responseText)}
+            isAnimating={isStreaming}
             key={part.id}
-            part={part}
-            isStreaming={currentStreamingPartId === part.id}
-          />
+            mode={isStreaming ? 'streaming' : 'static'}
+          >
+            {part.content}
+          </Streamdown>
         )
       }
-      case 'text':
       case 'user-prompt': {
         return (
-          <Streamdown className={classes.text} key={part.id}>
+          <Streamdown className={classes.text} key={part.id} mode="static">
             {part.content}
           </Streamdown>
         )
@@ -37,26 +45,19 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
       case 'tool-call': {
         return (
           <ToolPart icon={IconTool} title="Tool call" key={part.id}>
-            <Box>
+            <div>
               Name: <Code>{part.tool_name}</Code>
-            </Box>
-            <Box>
-              Arguments:{' '}
-              {part.args ? (
-                <Code>{typeof part.args === 'string' ? part.args : JSON.stringify(part.args)}</Code>
-              ) : (
-                'None'
-              )}
-            </Box>
+            </div>
+            <div>Arguments: {part.args ? <Code>{part.args}</Code> : 'None'}</div>
           </ToolPart>
         )
       }
       case 'tool-return': {
         return (
           <ToolPart icon={IconArrowForward} title="Tool return" key={part.id}>
-            <Box>
+            <div>
               Content: <Code>{part.content}</Code>
-            </Box>
+            </div>
           </ToolPart>
         )
       }
@@ -68,20 +69,23 @@ function Message({ currentStreamingPartId, message }: MessageProps) {
 
   const className = cx(classes.message, {
     [classes.userPrompt]:
-      message.kind === 'request' && message.parts.some((p) => p.part_kind === 'user-prompt'),
+      message.kind === 'request' && message.parts.some((p) => p.kind === 'user-prompt'),
   })
 
-  return <Box className={className}>{parts}</Box>
+  return <div className={className}>{parts}</div>
 }
 
 interface MessagesProps {
-  currentStreamingPartId: string | null
-  messages: ModelMessage[]
+  /** Currently streaming part ID. */
+  currentPartId: string | null
+
+  /** Map of messages by ID. */
+  messages: readonly Readonly<ModelMessage>[]
 }
 
-function Messages({ currentStreamingPartId, messages }: MessagesProps) {
+function Messages({ currentPartId, messages }: MessagesProps) {
   const content = messages.map((message) => (
-    <Message key={message.id} currentStreamingPartId={currentStreamingPartId} message={message} />
+    <Message key={message.id} currentPartId={currentPartId} message={message} />
   ))
 
   return (

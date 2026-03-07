@@ -1,5 +1,5 @@
-import '@fontsource/spectral/400'
-import '@fontsource/spectral/400-italic'
+import '@fontsource/spectral/300'
+import '@fontsource/spectral/300-italic'
 import '@fontsource/spectral/700'
 import '@fontsource/spectral/700-italic'
 import './theme.css'
@@ -26,7 +26,7 @@ const themeOverride = createTheme({
   },
 
   other: {
-    fontFamilySerif: "Charter, 'Bitstream Charter', 'Sitka Text', Georgia, serif",
+    fontFamilySerif: "Spectral, Charter, 'Bitstream Charter', 'Sitka Text', Georgia, serif",
     textShadowLight: '0 1px 0 hsl(0deg 0% 100% / 30%)',
     textShadowDark: '0 1px 0 hsl(0deg 0% 0% / 30%)',
   },

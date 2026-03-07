@@ -3,6 +3,11 @@
     --paper-shadow: var(--mantine-shadow-xs);
     background-color: rgba(255 255 255 / 5%);
     padding: var(--mantine-spacing-sm);
+    border-radius: var(--mantine-radius-sm);
+
+    .text {
+      font-size: var(--mantine-font-size-md);
+    }
   }
 
   .text {
@@ -26,6 +31,10 @@
         margin-bottom: 0;
       }
     }
+  }
+
+  .responseText {
+    font-family: var(--mantine-font-family-serif);
   }
 
   .thinkingPart {
@@ -65,6 +74,33 @@
       color: var(--mantine-color-dimmed);
       font-size: var(--mantine-font-size-md);
       margin-top: var(--mantine-spacing-xs);
+    }
+
+    .shimmerEffect {
+      color: transparent;
+
+      background: linear-gradient(
+        65deg,
+        var(--mantine-color-text) 0%,
+        var(--mantine-color-text) 15%,
+        color-mix(in srgb, var(--mantine-color-text), transparent 40%) 50%,
+        var(--mantine-color-text) 65%,
+        var(--mantine-color-text) 100%
+      );
+
+      background-size: 200% 100%;
+      background-position: 100% 0;
+
+      -webkit-background-clip: text;
+      background-clip: text;
+
+      animation: shimmer 4s linear infinite;
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: -100% 0;
+      }
     }
   }
 

@@ -4,166 +4,166 @@
  */
 
 export interface paths {
-  '/api/model-configs/': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/model-configs/': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Read Model Configs */
-    get: operations['read_model_configs_api_model_configs__get']
-    put?: never
+    readonly get: operations['read_model_configs_api_model_configs__get']
+    readonly put?: never
     /** Create Model Config */
-    post: operations['create_model_config_api_model_configs__post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly post: operations['create_model_config_api_model_configs__post']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/model-configs/{config_id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/model-configs/{config_id}': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Read Model Config */
-    get: operations['read_model_config_api_model_configs__config_id__get']
+    readonly get: operations['read_model_config_api_model_configs__config_id__get']
     /** Update Model Config */
-    put: operations['update_model_config_api_model_configs__config_id__put']
-    post?: never
+    readonly put: operations['update_model_config_api_model_configs__config_id__put']
+    readonly post?: never
     /** Delete Model Config */
-    delete: operations['delete_model_config_api_model_configs__config_id__delete']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly delete: operations['delete_model_config_api_model_configs__config_id__delete']
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/model-configs/providers/': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/model-configs/providers/': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** List Providers */
-    get: operations['list_providers_api_model_configs_providers__get']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly get: operations['list_providers_api_model_configs_providers__get']
+    readonly put?: never
+    readonly post?: never
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/projects/': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/projects/': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** List Projects */
-    get: operations['list_projects_api_projects__get']
-    put?: never
+    readonly get: operations['list_projects_api_projects__get']
+    readonly put?: never
     /** Create Project */
-    post: operations['create_project_api_projects__post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly post: operations['create_project_api_projects__post']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/projects/{project_namespace}/{project_name}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/projects/{project_namespace}/{project_name}': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Get Project */
-    get: operations['get_project_api_projects__project_namespace___project_name__get']
-    put?: never
-    post?: never
+    readonly get: operations['get_project_api_projects__project_namespace___project_name__get']
+    readonly put?: never
+    readonly post?: never
     /** Delete Project */
-    delete: operations['delete_project_api_projects__project_namespace___project_name__delete']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly delete: operations['delete_project_api_projects__project_namespace___project_name__delete']
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/projects/{project_namespace}/{project_name}/image': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/projects/{project_namespace}/{project_name}/image': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Get Project Image */
-    get: operations['get_project_image_api_projects__project_namespace___project_name__image_get']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly get: operations['get_project_image_api_projects__project_namespace___project_name__image_get']
+    readonly put?: never
+    readonly post?: never
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/sessions/': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/sessions/': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Read Sessions */
-    get: operations['read_sessions_api_sessions__get']
-    put?: never
+    readonly get: operations['read_sessions_api_sessions__get']
+    readonly put?: never
     /** Create Session */
-    post: operations['create_session_api_sessions__post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly post: operations['create_session_api_sessions__post']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
-  '/api/sessions/{session_id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/sessions/{session_id}': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
     /** Read Session */
-    get: operations['read_session_api_sessions__session_id__get']
-    put?: never
-    post?: never
+    readonly get: operations['read_session_api_sessions__session_id__get']
+    readonly put?: never
+    readonly post?: never
     /** Delete Session */
-    delete: operations['delete_session_api_sessions__session_id__delete']
-    options?: never
-    head?: never
+    readonly delete: operations['delete_session_api_sessions__session_id__delete']
+    readonly options?: never
+    readonly head?: never
     /** Update Session */
-    patch: operations['update_session_api_sessions__session_id__patch']
-    trace?: never
+    readonly patch: operations['update_session_api_sessions__session_id__patch']
+    readonly trace?: never
   }
-  '/api/sessions/{session_id}/request': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly '/api/sessions/{session_id}/request': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    get?: never
-    put?: never
+    readonly get?: never
+    readonly put?: never
     /** Create Model Request */
-    post: operations['create_model_request_api_sessions__session_id__request_post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
+    readonly post: operations['create_model_request_api_sessions__session_id__request_post']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
   }
 }
 export type webhooks = Record<string, never>
@@ -173,173 +173,175 @@ export interface components {
      * EntityDefinition
      * @description The base class to all story entities.
      */
-    EntityDefinition: {
-      id: components['schemas']['NormalizedSnakeCase']
+    readonly EntityDefinition: {
+      readonly id: components['schemas']['NormalizedSnakeCase']
       /** Functions */
-      functions?: components['schemas']['FunctionDefinition'][] | null
+      readonly functions?: readonly components['schemas']['FunctionDefinition'][] | null
     } & {
-      [key: string]: unknown
+      readonly [key: string]: unknown
     }
     /**
      * EntityTypeDefinition
      * @description A definition of a story entity type.
      */
-    EntityTypeDefinition: {
-      id: components['schemas']['NormalizedPascalCase']
+    readonly EntityTypeDefinition: {
+      readonly id: components['schemas']['NormalizedPascalCase']
       /** Name */
-      name: string
+      readonly name: string
       /** Instructions */
-      instructions?: string | null
+      readonly instructions?: string | null
       /**
        * Traits
        * @default []
        */
-      traits: components['schemas']['TraitDefinition'][]
+      readonly traits: readonly components['schemas']['TraitDefinition'][]
       /** Entities */
-      entities: components['schemas']['EntityDefinition'][]
+      readonly entities: readonly components['schemas']['EntityDefinition'][]
     }
     /** ErrorDetails */
-    ErrorDetails: {
+    readonly ErrorDetails: {
       /** Type */
-      type: string
+      readonly type: string
       /** Loc */
-      loc: (number | string)[]
+      readonly loc: readonly (number | string)[]
       /** Msg */
-      msg: string
+      readonly msg: string
       /** Input */
-      input: unknown
+      readonly input: unknown
       /** Ctx */
-      ctx?: {
-        [key: string]: unknown
+      readonly ctx?: {
+        readonly [key: string]: unknown
       }
       /** Url */
-      url?: string
+      readonly url?: string
     }
     /**
      * FinishReason
      * @enum {string}
      */
-    FinishReason: 'stop' | 'length' | 'content_length' | 'tool_call' | 'error'
+    readonly FinishReason: 'stop' | 'length' | 'content_filter' | 'tool_call' | 'error'
     /**
      * FunctionDefinition
      * @description A definition of an LLM-called function for the entity.
      */
-    FunctionDefinition: {
+    readonly FunctionDefinition: {
       /** Target */
-      target: string
+      readonly target: string
       /** Name */
-      name?: string | null
+      readonly name?: string | null
       /** Description */
-      description?: string | null
+      readonly description?: string | null
       /** Properties */
-      properties?: {
-        [key: string]: string
+      readonly properties?: {
+        readonly [key: string]: string
       } | null
     }
     /** HTTPValidationError */
-    HTTPValidationError: {
+    readonly HTTPValidationError: {
       /** Detail */
-      detail?: components['schemas']['ValidationError'][]
+      readonly detail?: readonly components['schemas']['ValidationError'][]
     }
     /**
      * ModelConfig
      * @description A model configuration.
      */
-    ModelConfig: {
+    readonly ModelConfig: {
       /** Name */
-      name: string
-      provider: components['schemas']['ModelProvider']
+      readonly name: string
+      readonly provider: components['schemas']['ModelProvider']
       /** Model Name */
-      model_name: string
+      readonly model_name: string
       /** Base Url */
-      base_url?: string | null
+      readonly base_url?: string | null
       /** Api Key */
-      api_key?: string | null
+      readonly api_key?: string | null
       /** Context Window */
-      context_window: number
+      readonly context_window: number
       /** Max Tokens */
-      max_tokens: number
+      readonly max_tokens: number
       /** Temperature */
-      temperature: number
+      readonly temperature: number
       /** Top P */
-      top_p: number
+      readonly top_p: number
       /** Presence Penalty */
-      presence_penalty: number
+      readonly presence_penalty: number
       /** Frequency Penalty */
-      frequency_penalty: number
+      readonly frequency_penalty: number
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
     }
     /** ModelConfigCreate */
-    ModelConfigCreate: {
+    readonly ModelConfigCreate: {
       /** Name */
-      name: string
-      provider: components['schemas']['ModelProvider']
+      readonly name: string
+      readonly provider: components['schemas']['ModelProvider']
       /** Model Name */
-      model_name: string
+      readonly model_name: string
       /** Base Url */
-      base_url?: string | null
+      readonly base_url?: string | null
       /** Api Key */
-      api_key?: string | null
+      readonly api_key?: string | null
       /** Context Window */
-      context_window: number
+      readonly context_window: number
       /** Max Tokens */
-      max_tokens: number
+      readonly max_tokens: number
       /** Temperature */
-      temperature: number
+      readonly temperature: number
       /** Top P */
-      top_p: number
+      readonly top_p: number
       /** Presence Penalty */
-      presence_penalty: number
+      readonly presence_penalty: number
       /** Frequency Penalty */
-      frequency_penalty: number
+      readonly frequency_penalty: number
     }
     /**
      * ModelConfigUpdate
      * @description Update fields for a model config.
      */
-    ModelConfigUpdate: {
+    readonly ModelConfigUpdate: {
       /** Name */
-      name: string
-      provider: components['schemas']['ModelProvider']
+      readonly name: string
+      readonly provider: components['schemas']['ModelProvider']
       /** Model Name */
-      model_name: string
+      readonly model_name: string
       /** Base Url */
-      base_url?: string | null
+      readonly base_url?: string | null
       /** Api Key */
-      api_key?: string | null
+      readonly api_key?: string | null
       /** Context Window */
-      context_window: number
+      readonly context_window: number
       /** Max Tokens */
-      max_tokens: number
+      readonly max_tokens: number
       /** Temperature */
-      temperature: number
+      readonly temperature: number
       /** Top P */
-      top_p: number
+      readonly top_p: number
       /** Presence Penalty */
-      presence_penalty: number
+      readonly presence_penalty: number
       /** Frequency Penalty */
-      frequency_penalty: number
+      readonly frequency_penalty: number
     }
     /**
      * ModelConfigs
      * @description A list of LLM models.
      */
-    ModelConfigs: {
+    readonly ModelConfigs: {
       /** Data */
-      data: components['schemas']['ModelConfig'][]
+      readonly data: readonly components['schemas']['ModelConfig'][]
       /** Count */
-      count: number
+      readonly count: number
     }
-    ModelMessage: components['schemas']['ModelRequest'] | components['schemas']['ModelResponse']
+    readonly ModelMessage:
+      | components['schemas']['ModelRequest']
+      | components['schemas']['ModelResponse']
     /**
      * ModelProvider
      * @enum {string}
      */
-    ModelProvider:
+    readonly ModelProvider:
       | 'anthropic'
       | 'deepseek'
       | 'google'
@@ -350,70 +352,73 @@ export interface components {
       | 'openrouter'
       | 'xai'
     /** ModelProviderInfo */
-    ModelProviderInfo: {
+    readonly ModelProviderInfo: {
       /** Label */
-      label: string
+      readonly label: string
       /** Supports Base Url */
-      supports_base_url: boolean
+      readonly supports_base_url: boolean
       /** Supports Max Tokens */
-      supports_max_tokens: boolean
+      readonly supports_max_tokens: boolean
       /** Supports Temperature */
-      supports_temperature: boolean
+      readonly supports_temperature: boolean
       /** Supports Top P */
-      supports_top_p: boolean
+      readonly supports_top_p: boolean
       /** Supports Presence Penalty */
-      supports_presence_penalty: boolean
+      readonly supports_presence_penalty: boolean
       /** Supports Frequency Penalty */
-      supports_frequency_penalty: boolean
+      readonly supports_frequency_penalty: boolean
       /** Supports Logit Bias */
-      supports_logit_bias: boolean
+      readonly supports_logit_bias: boolean
       /** Supports Extra Headers */
-      supports_extra_headers: boolean
+      readonly supports_extra_headers: boolean
       /** Supports Extra Body */
-      supports_extra_body: boolean
+      readonly supports_extra_body: boolean
       /** Default Base Url */
-      default_base_url?: string | null
+      readonly default_base_url?: string | null
     }
-    ModelProviderList: {
-      [key: string]: components['schemas']['ModelProviderInfo']
+    readonly ModelProviderList: {
+      readonly [key: string]: components['schemas']['ModelProviderInfo']
     }
     /**
      * ModelProviders
      * @description A list of model providers.
      */
-    ModelProviders: components['schemas']['ModelProviderList']
+    readonly ModelProviders: components['schemas']['ModelProviderList']
     /**
      * ModelRequest
      * @description A request sent to an LLM.
      */
-    ModelRequest: {
+    readonly ModelRequest: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'request'
+      readonly kind: 'request'
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /** Parts */
-      parts: components['schemas']['ModelRequestPart'][]
-      /** Instructions */
-      instructions?: string | null
+      readonly parts: readonly components['schemas']['ModelRequestPart'][]
+      /**
+       * Instructions
+       * @default null
+       */
+      readonly instructions: string | null
     }
     /** ModelRequestCreate */
-    ModelRequestCreate: {
+    readonly ModelRequestCreate: {
       /**
        * Kind
        * @default request
        * @constant
        */
-      kind: 'request'
+      readonly kind: 'request'
       /** Parts */
-      parts: components['schemas']['UserPromptPartCreate'][]
+      readonly parts: readonly components['schemas']['UserPromptPartCreate'][]
     }
-    ModelRequestPart:
+    readonly ModelRequestPart:
       | components['schemas']['UserPromptPart']
       | components['schemas']['ToolReturnPart']
       | components['schemas']['RetryPromptPart']
@@ -421,475 +426,582 @@ export interface components {
      * ModelResponse
      * @description A response from an LLM.
      */
-    ModelResponse: {
+    readonly ModelResponse: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'response'
+      readonly kind: 'response'
       /** Parts */
-      parts: components['schemas']['ModelResponsePart'][]
-      usage: components['schemas']['Usage']
+      readonly parts: readonly components['schemas']['ModelResponsePart'][]
+      /** @default null */
+      readonly usage: components['schemas']['Usage'] | null
       /**
        * Model Name
        * @default null
        */
-      model_name: string | null
+      readonly model_name: string | null
       /**
        * Timestamp
        * Format: date-time
        */
-      timestamp: string
+      readonly timestamp: string
       /**
        * Provider Name
        * @default null
        */
-      provider_name: string | null
+      readonly provider_name: string | null
       /** @default null */
-      finish_reason: components['schemas']['FinishReason'] | null
+      readonly finish_reason: components['schemas']['FinishReason'] | null
     }
-    ModelResponsePart:
+    readonly ModelResponsePart:
       | components['schemas']['TextPart']
       | components['schemas']['ToolCallPart']
       | components['schemas']['ThinkingPart']
-    NormalizedKebabCase: string
-    NormalizedPascalCase: string
-    NormalizedSnakeCase: string
+    readonly NormalizedKebabCase: string
+    readonly NormalizedPascalCase: string
+    readonly NormalizedSnakeCase: string
     /** ProjectBasic */
-    ProjectBasic: {
-      id: components['schemas']['ProjectId']
-      source: components['schemas']['ProjectSource']
+    readonly ProjectBasic: {
+      readonly id: components['schemas']['ProjectId']
+      readonly source: components['schemas']['ProjectSource']
       /** Title */
-      title: string
+      readonly title: string
       /** Author */
-      author?: string | null
+      readonly author?: string | null
       /** Description */
-      description?: string | null
+      readonly description?: string | null
       /** Image */
-      image?: string | null
+      readonly image?: string | null
     }
     /**
      * ProjectCreate
      * @description Create fields for a project.
      */
-    ProjectCreate: {
-      id: components['schemas']['ProjectId']
-      source: components['schemas']['ProjectSource']
+    readonly ProjectCreate: {
+      readonly id: components['schemas']['ProjectId']
+      readonly source: components['schemas']['ProjectSource']
       /** Title */
-      title: string
+      readonly title: string
       /** Author */
-      author?: string | null
+      readonly author?: string | null
       /** Description */
-      description?: string | null
+      readonly description?: string | null
       /** Image */
-      image?: string | null
+      readonly image?: string | null
     }
     /** ProjectDetail */
-    ProjectDetail: {
-      id: components['schemas']['ProjectId']
-      source: components['schemas']['ProjectSource']
+    readonly ProjectDetail: {
+      readonly id: components['schemas']['ProjectId']
+      readonly source: components['schemas']['ProjectSource']
       /** Title */
-      title: string
+      readonly title: string
       /** Author */
-      author?: string | null
+      readonly author?: string | null
       /** Description */
-      description?: string | null
+      readonly description?: string | null
       /** Image */
-      image?: string | null
+      readonly image?: string | null
       /** Entity Types */
-      entity_types: components['schemas']['EntityTypeDefinition'][]
+      readonly entity_types: readonly components['schemas']['EntityTypeDefinition'][]
     }
-    ProjectId: string
+    readonly ProjectId: string
     /**
      * ProjectSource
      * @enum {string}
      */
-    ProjectSource: 'example' | 'local'
+    readonly ProjectSource: 'example' | 'local'
     /**
      * Projects
      * @description A list of projects.
      */
-    Projects: {
+    readonly Projects: {
       /** Data */
-      data: components['schemas']['ProjectBasic'][]
+      readonly data: readonly components['schemas']['ProjectBasic'][]
       /** Count */
-      count: number
+      readonly count: number
     }
     /**
      * RetryPromptPart
      * @description A message sent back to an LLM asking it to try again.
      */
-    RetryPromptPart: {
+    readonly RetryPromptPart: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'retry-prompt'
+      readonly kind: 'retry-prompt'
       /** Content */
-      content: components['schemas']['ErrorDetails'][] | string
-      /** Tool Name */
-      tool_name?: string | null
+      readonly content: readonly components['schemas']['ErrorDetails'][] | string
+      /**
+       * Tool Name
+       * @default null
+       */
+      readonly tool_name: string | null
       /** Tool Call Id */
-      tool_call_id: string
+      readonly tool_call_id: string
       /**
        * Timestamp
        * Format: date-time
        */
-      timestamp: string
+      readonly timestamp: string
     }
     /** ServerMessage */
-    ServerMessage: {
+    readonly ServerMessage: {
       /** Message */
-      message: string
+      readonly message: string
     }
     /**
      * Session
      * @description A chat session with an LLM.
      */
-    Session: {
+    readonly Session: {
       /** Title */
-      title?: string | null
+      readonly title?: string | null
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /** Config Id */
-      config_id?: string | null
+      readonly config_id?: string | null
       /** Project Id */
-      project_id: string
+      readonly project_id: string
       /**
        * Timestamp
        * Format: date-time
        */
-      timestamp?: string
+      readonly timestamp?: string
     }
     /**
      * SessionCreate
      * @description Create fields for a session.
      */
-    SessionCreate: {
+    readonly SessionCreate: {
       /** Title */
-      title?: string | null
+      readonly title?: string | null
       /**
        * Config Id
        * Format: uuid
        */
-      config_id: string
+      readonly config_id: string
       /** Project Id */
-      project_id: string
+      readonly project_id: string
     }
     /**
      * SessionFull
      * @description A chat session with an LLM including the message history.
      */
-    SessionFull: {
+    readonly SessionFull: {
       /** Title */
-      title?: string | null
+      readonly title?: string | null
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /** Config Id */
-      config_id?: string | null
+      readonly config_id?: string | null
       /** Project Id */
-      project_id: string
+      readonly project_id: string
       /**
        * Timestamp
        * Format: date-time
        */
-      timestamp?: string
+      readonly timestamp?: string
       /** Messages */
-      messages: components['schemas']['ModelMessage'][]
+      readonly messages: readonly components['schemas']['ModelMessage'][]
     }
     /**
      * SessionUpdate
      * @description Update fields for a session.
      */
-    SessionUpdate: {
+    readonly SessionUpdate: {
       /** Title */
-      title?: string | null
+      readonly title?: string | null
       /** Config Id */
-      config_id?: string | null
+      readonly config_id?: string | null
     }
     /**
      * Sessions
      * @description A list of sessions.
      */
-    Sessions: {
+    readonly Sessions: {
       /** Data */
-      data: components['schemas']['Session'][]
+      readonly data: readonly components['schemas']['Session'][]
       /** Count */
-      count: number
+      readonly count: number
     }
     /**
      * TextPart
      * @description A plain text response from an LLM.
      */
-    TextPart: {
+    readonly TextPart: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      readonly timestamp: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'text'
+      readonly kind: 'text'
       /** Content */
-      content: string
+      readonly content: string
     }
     /**
      * ThinkingPart
      * @description A thinking response from an LLM.
      */
-    ThinkingPart: {
+    readonly ThinkingPart: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      readonly timestamp: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'thinking'
+      readonly kind: 'thinking'
       /** Content */
-      content: string
+      readonly content: string
       /**
        * Provider Name
        * @default null
        */
-      provider_name: string | null
+      readonly provider_name: string | null
       /**
        * Duration Seconds
        * @default null
        */
-      duration_seconds: number | null
+      readonly duration_seconds: number | null
     }
     /**
      * ToolCallPart
      * @description A tool call from an LLM.
      */
-    ToolCallPart: {
+    readonly ToolCallPart: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      readonly timestamp: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'tool-call'
+      readonly kind: 'tool-call'
       /** Tool Name */
-      tool_name: string
+      readonly tool_name: string
       /**
        * Args
        * @default null
        */
-      args: string | null
+      readonly args: string | null
       /** Tool Call Id */
-      tool_call_id: string
+      readonly tool_call_id: string
     }
     /**
      * ToolReturnPart
      * @description A tool return message, this encodes the result of running a tool.
      */
-    ToolReturnPart: {
+    readonly ToolReturnPart: {
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'tool-return'
+      readonly kind: 'tool-return'
       /** Tool Name */
-      tool_name: string | null
+      readonly tool_name: string | null
       /** Content */
-      content: string
+      readonly content: string
       /** Tool Call Id */
-      tool_call_id: string | null
+      readonly tool_call_id: string | null
       /** Timestamp */
-      timestamp: string | null
+      readonly timestamp: string | null
     }
     /** TraitDefinition */
-    TraitDefinition: {
-      name: components['schemas']['NormalizedSnakeCase']
+    readonly TraitDefinition: {
+      readonly name: components['schemas']['NormalizedSnakeCase']
       /** Options */
-      options?: {
-        [key: string]: unknown
+      readonly options?: {
+        readonly [key: string]: unknown
       }
     }
     /** Usage */
-    Usage: {
+    readonly Usage: {
       /** Input Tokens */
-      input_tokens: number
+      readonly input_tokens: number
       /** Output Tokens */
-      output_tokens: number
+      readonly output_tokens: number
       /** Cache Write Tokens */
-      cache_write_tokens: number
+      readonly cache_write_tokens: number
       /** Cache Read Tokens */
-      cache_read_tokens: number
+      readonly cache_read_tokens: number
     }
     /**
      * UserPromptPart
      * @description A user prompt, generally written by the user.
      */
-    UserPromptPart: {
+    readonly UserPromptPart: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      part_kind: 'user-prompt'
+      readonly kind: 'user-prompt'
       /** Content */
-      content: string
+      readonly content: string
       /**
        * Id
        * Format: uuid
        */
-      id: string
+      readonly id: string
       /**
        * Timestamp
        * Format: date-time
        */
-      timestamp: string
+      readonly timestamp: string
     }
     /** UserPromptPartCreate */
-    UserPromptPartCreate: {
+    readonly UserPromptPartCreate: {
       /**
-       * Part Kind
+       * Kind
        * @default user-prompt
        * @constant
        */
-      part_kind: 'user-prompt'
+      readonly kind: 'user-prompt'
       /** Content */
-      content: string
-      /** Timestamp */
-      timestamp?: string | null
+      readonly content: string
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      readonly timestamp?: string
     }
     /** ValidationError */
-    ValidationError: {
+    readonly ValidationError: {
       /** Location */
-      loc: (string | number)[]
+      readonly loc: readonly (string | number)[]
       /** Message */
-      msg: string
+      readonly msg: string
       /** Error Type */
-      type: string
+      readonly type: string
       /** Input */
-      input?: unknown
+      readonly input?: unknown
       /** Context */
-      ctx?: Record<string, never>
+      readonly ctx?: Record<string, never>
+    }
+    /** ContentDelta */
+    readonly ContentDelta: {
+      /** Content */
+      readonly content: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'content'
+    }
+    readonly Delta:
+      | components['schemas']['ContentDelta']
+      | components['schemas']['ToolArgsDelta']
+      | components['schemas']['ToolNameDelta']
+    /** ToolArgsDelta */
+    readonly ToolArgsDelta: {
+      /** Args */
+      readonly args: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'tool_args'
+    }
+    /** ToolNameDelta */
+    readonly ToolNameDelta: {
+      /** Tool Name */
+      readonly tool_name: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'tool_name'
     }
     /**
      * WebSocketErrorMessage
      * @description An error notification.
      */
-    WebSocketErrorMessage: {
+    readonly WebSocketErrorMessage: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'error'
+      readonly kind: 'error'
       /**
        * Session Id
        * @default null
        */
-      session_id: string | null
+      readonly session_id: string | null
       /** Name */
-      name: string
+      readonly name: string
       /** Message */
-      message: string
+      readonly message: string
     }
     /**
      * WebSocketPongMessage
      * @description An answer to a client ping.
      */
-    WebSocketPongMessage: {
+    readonly WebSocketPongMessage: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'pong'
+      readonly kind: 'pong'
     }
     /**
-     * WebSocketStatusMessage
-     * @description A status update.
+     * WebSocketStreamMessageMessage
+     * @description A streaming message update.
      */
-    WebSocketStatusMessage: {
+    readonly WebSocketStreamMessageMessage: {
       /**
        * Session Id
        * Format: uuid
        */
-      session_id: string
+      readonly session_id: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'status'
+      readonly kind: 'stream_message'
+      readonly message: components['schemas']['ModelMessage']
+    }
+    /**
+     * WebSocketStreamPartDeltaMessage
+     * @description A streaming part delta update.
+     */
+    readonly WebSocketStreamPartDeltaMessage: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      readonly session_id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'stream_part_delta'
+      /**
+       * Message Id
+       * Format: uuid
+       */
+      readonly message_id: string
+      /**
+       * Part Id
+       * Format: uuid
+       */
+      readonly part_id: string
+      readonly delta: components['schemas']['Delta']
+    }
+    /**
+     * WebSocketStreamPartMessage
+     * @description A streaming part update.
+     */
+    readonly WebSocketStreamPartMessage: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      readonly session_id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'stream_part'
+      /**
+       * Message Id
+       * Format: uuid
+       */
+      readonly message_id: string
+      readonly part: components['schemas']['ModelResponsePart']
+    }
+    /**
+     * WebSocketStreamStatusMessage
+     * @description A status update.
+     */
+    readonly WebSocketStreamStatusMessage: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      readonly session_id: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'stream_status'
       /**
        * Status
        * @enum {string}
        */
-      status: 'started' | 'stopped'
+      readonly status: 'started' | 'stopped'
     }
-    /**
-     * WebSocketStreamMessage
-     * @description A streaming update.
-     */
-    WebSocketStreamMessage: {
-      /**
-       * Session Id
-       * Format: uuid
-       */
-      session_id: string
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      kind: 'stream'
-      response: components['schemas']['ModelResponse']
-    }
-    WebSocketServerMessage:
+    readonly WebSocketServerMessage:
       | components['schemas']['WebSocketPongMessage']
       | components['schemas']['WebSocketErrorMessage']
-      | components['schemas']['WebSocketStatusMessage']
-      | components['schemas']['WebSocketStreamMessage']
+      | components['schemas']['WebSocketStreamStatusMessage']
+      | components['schemas']['WebSocketStreamMessageMessage']
+      | components['schemas']['WebSocketStreamPartMessage']
+      | components['schemas']['WebSocketStreamPartDeltaMessage']
     /** WebSocketDummyMessage */
-    WebSocketDummyMessage: {
+    readonly WebSocketDummyMessage: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'dummy'
+      readonly kind: 'dummy'
     }
     /**
      * WebSocketPingMessage
      * @description A ping message.
      */
-    WebSocketPingMessage: {
+    readonly WebSocketPingMessage: {
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
-      kind: 'ping'
+      readonly kind: 'ping'
     }
-    WebSocketClientMessage:
+    readonly WebSocketClientMessage:
       | components['schemas']['WebSocketPingMessage']
       | components['schemas']['WebSocketDummyMessage']
   }
@@ -901,541 +1013,541 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  read_model_configs_api_model_configs__get: {
-    parameters: {
-      query?: {
-        skip?: number
-        limit?: number
+  readonly read_model_configs_api_model_configs__get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly skip?: number
+        readonly limit?: number
       }
-      header?: never
-      path?: never
-      cookie?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ModelConfigs']
+          readonly 'application/json': components['schemas']['ModelConfigs']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  create_model_config_api_model_configs__post: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly create_model_config_api_model_configs__post: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ModelConfigCreate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ModelConfigCreate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ModelConfig']
+          readonly 'application/json': components['schemas']['ModelConfig']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  read_model_config_api_model_configs__config_id__get: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        config_id: string
+  readonly read_model_config_api_model_configs__config_id__get: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly config_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ModelConfig']
+          readonly 'application/json': components['schemas']['ModelConfig']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  update_model_config_api_model_configs__config_id__put: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        config_id: string
+  readonly update_model_config_api_model_configs__config_id__put: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly config_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ModelConfigUpdate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ModelConfigUpdate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ServerMessage']
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  delete_model_config_api_model_configs__config_id__delete: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        config_id: string
+  readonly delete_model_config_api_model_configs__config_id__delete: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly config_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ServerMessage']
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  list_providers_api_model_configs_providers__get: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly list_providers_api_model_configs_providers__get: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ModelProviders']
+          readonly 'application/json': components['schemas']['ModelProviders']
         }
       }
     }
   }
-  list_projects_api_projects__get: {
-    parameters: {
-      query?: {
-        source?: components['schemas']['ProjectSource'] | null
+  readonly list_projects_api_projects__get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly source?: components['schemas']['ProjectSource'] | null
       }
-      header?: never
-      path?: never
-      cookie?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Projects']
+          readonly 'application/json': components['schemas']['Projects']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  create_project_api_projects__post: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly create_project_api_projects__post: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ProjectCreate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ProjectCreate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      201: {
+      readonly 201: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ProjectBasic']
+          readonly 'application/json': components['schemas']['ProjectBasic']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  get_project_api_projects__project_namespace___project_name__get: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        project_namespace: components['schemas']['NormalizedKebabCase']
-        project_name: components['schemas']['NormalizedKebabCase']
+  readonly get_project_api_projects__project_namespace___project_name__get: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly project_namespace: components['schemas']['NormalizedKebabCase']
+        readonly project_name: components['schemas']['NormalizedKebabCase']
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ProjectDetail']
+          readonly 'application/json': components['schemas']['ProjectDetail']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  delete_project_api_projects__project_namespace___project_name__delete: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        project_namespace: components['schemas']['NormalizedKebabCase']
-        project_name: components['schemas']['NormalizedKebabCase']
+  readonly delete_project_api_projects__project_namespace___project_name__delete: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly project_namespace: components['schemas']['NormalizedKebabCase']
+        readonly project_name: components['schemas']['NormalizedKebabCase']
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ServerMessage']
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  get_project_image_api_projects__project_namespace___project_name__image_get: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        project_namespace: components['schemas']['NormalizedKebabCase']
-        project_name: components['schemas']['NormalizedKebabCase']
+  readonly get_project_image_api_projects__project_namespace___project_name__image_get: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly project_namespace: components['schemas']['NormalizedKebabCase']
+        readonly project_name: components['schemas']['NormalizedKebabCase']
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          readonly 'application/json': unknown
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  read_sessions_api_sessions__get: {
-    parameters: {
-      query?: {
-        skip?: number
-        limit?: number
+  readonly read_sessions_api_sessions__get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly skip?: number
+        readonly limit?: number
       }
-      header?: never
-      path?: never
-      cookie?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Sessions']
+          readonly 'application/json': components['schemas']['Sessions']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  create_session_api_sessions__post: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
+  readonly create_session_api_sessions__post: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SessionCreate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['SessionCreate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Session']
+          readonly 'application/json': components['schemas']['Session']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  read_session_api_sessions__session_id__get: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        session_id: string
+  readonly read_session_api_sessions__session_id__get: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['SessionFull']
+          readonly 'application/json': components['schemas']['SessionFull']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  delete_session_api_sessions__session_id__delete: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        session_id: string
+  readonly delete_session_api_sessions__session_id__delete: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody?: never
-    responses: {
+    readonly requestBody?: never
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ServerMessage']
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  update_session_api_sessions__session_id__patch: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        session_id: string
+  readonly update_session_api_sessions__session_id__patch: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SessionUpdate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['SessionUpdate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ServerMessage']
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
   }
-  create_model_request_api_sessions__session_id__request_post: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        session_id: string
+  readonly create_model_request_api_sessions__session_id__request_post: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
       }
-      cookie?: never
+      readonly cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ModelRequestCreate']
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ModelRequestCreate']
       }
     }
-    responses: {
+    readonly responses: {
       /** @description Successful Response */
-      200: {
+      readonly 200: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ModelRequest']
+          readonly 'application/json': components['schemas']['ModelRequest']
         }
       }
       /** @description Validation Error */
-      422: {
+      readonly 422: {
         headers: {
-          [name: string]: unknown
+          readonly [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
+          readonly 'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }

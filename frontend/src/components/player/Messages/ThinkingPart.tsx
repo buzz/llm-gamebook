@@ -2,13 +2,75 @@ import { Button, Collapse } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconBrain, IconChevronDown } from '@tabler/icons-react'
 import cx from 'clsx'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Streamdown } from 'streamdown'
 
 import { iconSizeProps } from '@/utils'
 import type { ThinkingPart as ThinkingPartType } from '@/types/api'
 
 import classes from './Messages.module.css'
+
+interface ThinkingDurationLabelProps {
+  timestamp: string
+  durationSecs: number | null
+  isStreaming: boolean
+}
+
+function formatDuration(totalSecs: number): string {
+  const mins = Math.floor(totalSecs / 60)
+  const secs = totalSecs % 60
+
+  if (mins === 0) {
+    return `${String(secs)} second${secs === 1 ? '' : 's'}`
+  }
+  if (secs === 0) {
+    return `${String(mins)} minute${mins === 1 ? '' : 's'}`
+  }
+  return (
+    `${String(mins)} minute${mins === 1 ? '' : 's'} ` +
+    `${String(secs)} second${secs === 1 ? '' : 's'}`
+  )
+}
+
+function calculateDeltaSecs(startMillis: number): number {
+  return Math.floor((Date.now() - startMillis) / 1000)
+}
+
+function ThinkingDurationLabel({
+  timestamp,
+  durationSecs,
+  isStreaming,
+}: ThinkingDurationLabelProps) {
+  const startMillis = Date.parse(timestamp)
+  const [deltaSecs, setDeltaSecs] = useState<number | null>(() => calculateDeltaSecs(startMillis))
+
+  useEffect(() => {
+    if (!isStreaming) {
+      return
+    }
+
+    const id = globalThis.setInterval(() => {
+      setDeltaSecs(calculateDeltaSecs(startMillis))
+    }, 1000)
+
+    return () => {
+      globalThis.clearInterval(id)
+    }
+  }, [isStreaming, startMillis])
+
+  const secs = deltaSecs ?? durationSecs
+
+  if (secs == null) {
+    return <>Thoughts</>
+  }
+
+  return (
+    <>
+      {isStreaming ? 'Thinking for' : 'Thought for'} {formatDuration(secs)}
+      {isStreaming && '…'}
+    </>
+  )
+}
 
 interface ThinkingPartProps {
   isStreaming: boolean
@@ -17,56 +79,32 @@ interface ThinkingPartProps {
 
 function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
   const [thinkingOpened, { toggle, close, open }] = useDisclosure(false)
-  const mountTime = useRef<number | null>(null)
-  const [deltaSecs, setDeltaSecs] = useState<number | null>(null)
 
+  // Auto-close after streaming is done
   useEffect(() => {
-    let timerIntervalId: number | null = null
     let closeTimeoutId: number | null = null
-
     if (isStreaming) {
       open()
-      mountTime.current ??= Date.now() // Remember time on mount
-      setDeltaSecs(Math.floor((Date.now() - mountTime.current) / 1000))
-
-      // Start interval to update every second
-      timerIntervalId = globalThis.setInterval(() => {
-        if (mountTime.current !== null) {
-          setDeltaSecs(Math.floor((Date.now() - mountTime.current) / 1000))
-        }
-      }, 1000)
     } else {
-      // Auto-collapse if we have been streaming
-      if (mountTime.current !== null) {
-        closeTimeoutId = globalThis.setTimeout(() => {
-          close()
-        }, 1000)
-      }
+      closeTimeoutId = globalThis.setTimeout(() => {
+        close()
+      }, 1000)
     }
-
     return () => {
-      if (timerIntervalId) {
-        globalThis.clearInterval(timerIntervalId)
-      }
       if (closeTimeoutId) {
         globalThis.clearTimeout(closeTimeoutId)
       }
     }
-  }, [close, isStreaming, open])
-
-  const label =
-    deltaSecs === null
-      ? part.duration_seconds === null
-        ? 'Thoughts'
-        : `Thought for ${part.duration_seconds.toString()} seconds`
-      : isStreaming
-        ? `Thinking for ${deltaSecs.toString()} seconds…`
-        : `Thought for ${deltaSecs.toString()} seconds`
+  }, [isStreaming, close, open])
 
   return (
     <div className={classes.thinkingPart}>
       <Button
-        classNames={{ root: classes.toggleBtn, inner: classes.toggleBtnInner }}
+        classNames={{
+          root: classes.toggleBtn,
+          inner: classes.toggleBtnInner,
+          label: isStreaming ? classes.shimmerEffect : undefined,
+        }}
         fullWidth
         leftSection={<IconBrain {...iconSizeProps('sm')} />}
         rightSection={
@@ -79,10 +117,21 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
         size="xs"
         variant="transparent"
       >
-        {label}
+        <ThinkingDurationLabel
+          timestamp={part.timestamp}
+          durationSecs={part.duration_seconds}
+          isStreaming={isStreaming}
+        />
       </Button>
       <Collapse in={thinkingOpened}>
-        <Streamdown className={cx(classes.thinkingText, classes.text)}>{part.content}</Streamdown>
+        <Streamdown
+          animated
+          isAnimating={isStreaming}
+          mode={isStreaming ? 'streaming' : 'static'}
+          className={cx(classes.thinkingText, classes.text)}
+        >
+          {part.content}
+        </Streamdown>
       </Collapse>
     </div>
   )
