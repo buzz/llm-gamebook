@@ -43,6 +43,13 @@ class SessionState:
             msg = f"Field state '{field_name}' not found on entity '{entity_id}'"
             raise EntityFieldNotFoundError(msg) from e
 
+    def is_empty(self) -> bool:
+        return not self._data.entities
+
+    @property
+    def data(self) -> SessionStateData:
+        return self._data
+
     def to_json(self) -> str:
         return self._data.model_dump_json()
 

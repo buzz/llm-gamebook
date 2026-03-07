@@ -12,8 +12,10 @@ from llm_gamebook.engine.message import (
     ResponseErrorMessage,
     ResponseStartedMessage,
     ResponseStoppedMessage,
-    ResponseStreamUpdateMessage,
     ResponseUserRequestMessage,
+    StreamMessageMessage,
+    StreamPartDeltaMessage,
+    StreamPartMessage,
 )
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
@@ -23,8 +25,10 @@ from llm_gamebook.web.schemas.websocket.message import (
     WebSocketPingMessage,
     WebSocketPongMessage,
     WebSocketServerMessage,
-    WebSocketStatusMessage,
-    WebSocketStreamMessage,
+    WebSocketStreamMessageMessage,
+    WebSocketStreamPartDeltaMessage,
+    WebSocketStreamPartMessage,
+    WebSocketStreamStatusMessage,
 )
 
 if TYPE_CHECKING:
@@ -53,7 +57,9 @@ class WebSocketHandler(BusSubscriber):
         self._subscribe(ResponseStartedMessage, self._on_engine_response_started)
         self._subscribe(ResponseStoppedMessage, self._on_engine_response_stopped)
         self._subscribe(ResponseErrorMessage, self._on_engine_response_error)
-        self._subscribe(ResponseStreamUpdateMessage, self._on_engine_response_stream)
+        self._subscribe(StreamMessageMessage, self._on_engine_stream_message)
+        self._subscribe(StreamPartMessage, self._on_engine_stream_part)
+        self._subscribe(StreamPartDeltaMessage, self._on_engine_stream_part_delta)
 
     async def handle_connection(self, websocket: WebSocket) -> None:
         """Main connection handler for WebSocket connections."""
@@ -116,15 +122,23 @@ class WebSocketHandler(BusSubscriber):
 
     async def _on_engine_response_started(self, message: ResponseStartedMessage) -> None:
         session_id = message.session_id
-        await self._send_message(WebSocketStatusMessage(session_id=session_id, status="started"))
+        ws_msg = WebSocketStreamStatusMessage(session_id=session_id, status="started")
+        await self._send_message(ws_msg)
 
     async def _on_engine_response_stopped(self, message: ResponseStoppedMessage) -> None:
         session_id = message.session_id
-        await self._send_message(WebSocketStatusMessage(session_id=session_id, status="stopped"))
+        ws_msg = WebSocketStreamStatusMessage(session_id=session_id, status="stopped")
+        await self._send_message(ws_msg)
 
     async def _on_engine_response_error(self, message: ResponseErrorMessage) -> None:
         ws_msg = WebSocketErrorMessage.from_exception(message.session_id, message.error)
         await self._send_message(ws_msg)
 
-    async def _on_engine_response_stream(self, message: ResponseStreamUpdateMessage) -> None:
-        await self._send_message(WebSocketStreamMessage.from_stream_update(message))
+    async def _on_engine_stream_message(self, message: StreamMessageMessage) -> None:
+        await self._send_message(WebSocketStreamMessageMessage.from_message(message))
+
+    async def _on_engine_stream_part(self, message: StreamPartMessage) -> None:
+        await self._send_message(WebSocketStreamPartMessage.from_message(message))
+
+    async def _on_engine_stream_part_delta(self, message: StreamPartDeltaMessage) -> None:
+        await self._send_message(WebSocketStreamPartDeltaMessage.from_message(message))

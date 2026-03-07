@@ -8,13 +8,13 @@ from llm_gamebook.engine.message import (
     ResponseErrorMessage,
     ResponseStartedMessage,
     ResponseStoppedMessage,
-    ResponseStreamUpdateMessage,
+    StreamResponseMessage,
 )
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
 
 type EngineEvents = tuple[list[str], list[ResponseErrorMessage]]
-type StreamEvents = list[ResponseStreamUpdateMessage]
+type StreamEvents = list[StreamResponseMessage]
 
 
 @pytest.fixture
@@ -42,10 +42,10 @@ def engine_events(message_bus: MessageBus) -> EngineEvents:
 def stream_events(message_bus: MessageBus) -> StreamEvents:
     events: StreamEvents = []
 
-    def track_stream(msg: ResponseStreamUpdateMessage) -> None:
+    def track_stream(msg: StreamResponseMessage) -> None:
         events.append(msg)
 
-    message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
+    message_bus.subscribe(StreamResponseMessage, track_stream)
 
     return events
 

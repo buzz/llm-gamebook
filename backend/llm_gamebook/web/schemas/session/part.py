@@ -86,6 +86,9 @@ class TextPart(BaseModel):
 
     id: UUID
 
+    timestamp: datetime
+    """The timestamp of the part."""
+
     part_kind: Literal["text"] = "text"
     """Part type identifier, this is available on all parts as a discriminator."""
 
@@ -97,6 +100,9 @@ class ToolCallPart(BaseModel):
     """A tool call from an LLM."""
 
     id: UUID
+
+    timestamp: datetime
+    """The timestamp of the part."""
 
     part_kind: Literal["tool-call"] = "tool-call"
     """Part type identifier, this is available on all parts as a discriminator."""
@@ -115,6 +121,9 @@ class ThinkingPart(BaseModel):
     """A thinking response from an LLM."""
 
     id: UUID
+
+    timestamp: datetime
+    """The timestamp of the part."""
 
     part_kind: Literal["thinking"] = "thinking"
     """Part type identifier, this is available on all parts as a discriminator."""

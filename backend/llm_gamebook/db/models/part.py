@@ -1,13 +1,11 @@
 import enum
 import json
-from collections.abc import Iterable, Sequence
-from contextlib import suppress
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Final, Self
 from uuid import UUID, uuid4
 
+from pydantic_ai import ModelRequestPart, RetryPromptPart
 from pydantic_ai.messages import (
-    ModelRequestPart,
     ModelResponsePart,
     TextPart,
     ThinkingPart,
@@ -36,10 +34,11 @@ class PartKind(enum.StrEnum):
     THINKING = "thinking"
     TOOL_CALL = "tool-call"
     TOOL_RETURN = "tool-return"
+    RETRY_PROMPT = "retry-prompt"
 
 
 class PartBase(SQLModel):
-    timestamp: datetime | None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     part_kind: PartKind = Field(sa_column=Column(Enum(PartKind)))
     content: str | None
     tool_name: str | None
@@ -54,35 +53,73 @@ class Part(PartBase, table=True):
     message_id: UUID | None = Field(default=None, foreign_key="message.id", ondelete="CASCADE")
 
     @classmethod
-    def from_model_parts(
-        cls,
-        parts: Sequence[ModelResponsePart | ModelRequestPart],
-        part_ids: Sequence[UUID] | None = None,
-        durations: dict[UUID, int] | None = None,
-    ) -> Iterable[Self]:
-        for idx, part in enumerate(parts):
-            if not isinstance(part, SUPPORTED_PARTS):
-                continue
+    def from_model_request_part(cls, request_part: ModelRequestPart) -> Self:
+        if not isinstance(request_part, UserPromptPart | ToolReturnPart | RetryPromptPart):
+            msg = f"Unsupported part type: {type(request_part).__name__}"
+            raise TypeError(msg)
 
-            attrs = ("timestamp", "content", "tool_name", "tool_call_id", "args")
-            kwargs = {a: getattr(part, a) for a in attrs if hasattr(part, a)}
+        part = cls(
+            timestamp=request_part.timestamp,
+            part_kind=PartKind(request_part.part_kind),
+            content=None,
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        )
 
-            if isinstance(part, ToolCallPart) and not isinstance(kwargs.get("args"), str):
-                kwargs["args"] = json.dumps(kwargs["args"])
+        if isinstance(request_part, UserPromptPart):
+            if not isinstance(request_part.content, str):
+                msg = f"Unsupported content type: {type(request_part.content).__name__}"
+                raise TypeError(msg)
+            part.content = request_part.content
 
-            if part_ids is not None:
-                with suppress(IndexError):
-                    kwargs["id"] = part_ids[idx]
+        elif isinstance(request_part, ToolReturnPart):
+            part.tool_name = request_part.tool_name
+            part.tool_call_id = request_part.tool_call_id
 
-            if isinstance(part, ToolReturnPart):
-                if isinstance(part.content, dict | list):
-                    kwargs["content"] = json.dumps(part.content)
-                elif isinstance(part.content, str):
-                    kwargs["content"] = part.content
-            elif isinstance(part, ThinkingPart) and durations is not None and part_ids is not None:
-                with suppress(IndexError):
-                    part_id = part_ids[idx]
-                    if part_id in durations:
-                        kwargs["duration_seconds"] = durations[part_id]
+            if isinstance(request_part.content, dict | list):
+                part.content = json.dumps(request_part.content)
+            elif isinstance(request_part.content, str):
+                part.content = request_part.content
+            else:
+                msg = f"Unsupported content type: {type(request_part.content).__name__}"
+                raise TypeError(msg)
 
-            yield cls(part_kind=PartKind(part.part_kind), **kwargs)
+        elif isinstance(request_part, RetryPromptPart):
+            part.tool_name = request_part.tool_name
+            part.tool_call_id = request_part.tool_call_id
+
+            if not isinstance(request_part.content, str):
+                msg = f"Unsupported content type: {type(request_part.content).__name__}"
+                raise TypeError(msg)
+            part.content = request_part.content
+
+        return part
+
+    @classmethod
+    def from_model_response_part(cls, response_part: ModelResponsePart) -> Self:
+        if not isinstance(response_part, TextPart | ThinkingPart | ToolCallPart):
+            msg = f"Unsupported part type: {type(response_part).__name__}"
+            raise TypeError(msg)
+
+        part = cls(
+            part_kind=PartKind(response_part.part_kind),
+            content=None,
+            tool_name=None,
+            tool_call_id=None,
+            args=None,
+        )
+
+        if isinstance(response_part, TextPart | ThinkingPart):
+            part.content = response_part.content
+
+        elif isinstance(response_part, ToolCallPart):
+            part.tool_name = response_part.tool_name
+            part.tool_call_id = response_part.tool_call_id
+
+            if isinstance(response_part.args, dict | list):
+                part.args = json.dumps(response_part.args)
+            else:
+                part.args = response_part.args
+
+        return part

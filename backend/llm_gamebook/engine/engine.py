@@ -19,6 +19,7 @@ from pydantic_ai.settings import ModelSettings
 from pydantic_ai.tools import ToolDefinition
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
+from llm_gamebook.db.crud.message import create_messages
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
@@ -35,7 +36,7 @@ class StoryEngine:
         model: Model | None,
         context: StoryContext,
         bus: MessageBus,
-        stream_debounce: float = 0.1,
+        stream_debounce: float = 0.5,
     ) -> None:
         self._context = context
         self._session_adapter = SessionAdapter(session_id, context, bus)
@@ -68,8 +69,9 @@ class StoryEngine:
             runner = StreamRunner(
                 self._agent, self._session_adapter.session_id, self._bus, self._stream_debounce
             )
-            result = await runner.run(msg_history, self._context)
-            await self._session_adapter.append_messages(db_session, result)
+
+            new_messages = await runner.run(msg_history, self._context)
+            await create_messages(db_session, new_messages)
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
             self._log.exception("Request failed. The exception was:")

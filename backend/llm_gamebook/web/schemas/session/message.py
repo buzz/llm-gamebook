@@ -47,7 +47,7 @@ class ModelResponse(BaseModel):
     parts: Sequence[ModelResponsePart]
     """The parts of the model message."""
 
-    usage: Usage
+    usage: Usage | None = None
     """Usage information for the request."""
 
     model_name: str | None = None

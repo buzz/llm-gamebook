@@ -17,8 +17,8 @@ from llm_gamebook.engine.message import (
     ResponseErrorMessage,
     ResponseStartedMessage,
     ResponseStoppedMessage,
-    ResponseStreamUpdateMessage,
     ResponseUserRequestMessage,
+    StreamResponseMessage,
 )
 from llm_gamebook.story import ProjectManager
 from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage, WebSocketPongMessage
@@ -241,13 +241,13 @@ async def test_on_engine_response_stream(
         model_name="test",
         finish_reason="stop",
     )
-    message = ResponseStreamUpdateMessage(
+    message = StreamResponseMessage(
         session_id=session.id,
         response=model_response,
         response_id=uuid4(),
         part_ids=[],
     )
-    await handler._on_engine_response_stream(message)
+    await handler._on_engine_stream_response(message)
 
     mock_websocket.send_text.assert_called_once()
     call_args = mock_websocket.send_text.call_args[0][0]

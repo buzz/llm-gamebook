@@ -9,10 +9,12 @@ from llm_gamebook.engine.message import (
     ResponseErrorMessage,
     ResponseStartedMessage,
     ResponseStoppedMessage,
-    ResponseStreamUpdateMessage,
     ResponseUserRequestMessage,
     SessionDeleted,
     SessionModelConfigChangedMessage,
+    StreamResponseMessage,
+    StreamToolCallMessage,
+    StreamToolResultMessage,
 )
 from llm_gamebook.message_bus.messages import BaseMessage
 from llm_gamebook.providers import ModelProvider
@@ -64,7 +66,7 @@ def test_response_stopped_message() -> None:
 
 
 def test_response_stream_update_message() -> None:
-    """Test ResponseStreamUpdateMessage construction."""
+    """Test StreamResponseMessage construction."""
     session_id = uuid4()
     response_id = uuid4()
     part_ids = [uuid4(), uuid4()]
@@ -73,7 +75,7 @@ def test_response_stream_update_message() -> None:
         model_name="gpt-4",
         usage=RequestUsage(input_tokens=5, output_tokens=3),
     )
-    msg = ResponseStreamUpdateMessage(
+    msg = StreamResponseMessage(
         session_id=session_id,
         response=response,
         response_id=response_id,
@@ -85,6 +87,59 @@ def test_response_stream_update_message() -> None:
     assert msg.response == response
     assert msg.response_id == response_id
     assert msg.part_ids == part_ids
+
+
+def test_tool_call_started_message_creation() -> None:
+    session_id = uuid4()
+    msg = StreamToolCallMessage(
+        session_id=session_id,
+        tool_name="search",
+        tool_call_id="call_123",
+        args={"query": "test"},
+    )
+
+    assert msg.session_id == session_id
+    assert msg.tool_name == "search"
+    assert msg.tool_call_id == "call_123"
+    assert msg.args == {"query": "test"}
+
+
+def test_tool_call_started_message_immutable() -> None:
+    session_id = uuid4()
+    msg = StreamToolCallMessage(
+        session_id=session_id,
+        tool_name="search",
+        tool_call_id="call_123",
+        args={"query": "test"},
+    )
+
+    with pytest.raises(AttributeError):
+        msg.tool_name = "new_name"  # type: ignore[misc]
+
+
+def test_tool_result_message_creation() -> None:
+    session_id = uuid4()
+    msg = StreamToolResultMessage(
+        session_id=session_id,
+        tool_call_id="call_123",
+        content="result data",
+    )
+
+    assert msg.session_id == session_id
+    assert msg.tool_call_id == "call_123"
+    assert msg.content == "result data"
+
+
+def test_tool_result_message_immutable() -> None:
+    session_id = uuid4()
+    msg = StreamToolResultMessage(
+        session_id=session_id,
+        tool_call_id="call_123",
+        content="result data",
+    )
+
+    with pytest.raises(AttributeError):
+        msg.content = "new content"  # type: ignore[misc]
 
 
 def test_response_error_message() -> None:

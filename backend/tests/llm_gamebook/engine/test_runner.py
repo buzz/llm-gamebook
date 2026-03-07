@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from pydantic_ai import Agent, ModelMessage, ModelRequest, UserPromptPart
 
 from llm_gamebook.engine._runner import StreamRunner
-from llm_gamebook.engine.message import ResponseStreamUpdateMessage
+from llm_gamebook.engine.message import StreamResponseMessage
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
 
@@ -102,12 +102,12 @@ async def test_stream_runner_debounce_reduces_events(
 
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    events: list[ResponseStreamUpdateMessage] = []
+    events: list[StreamResponseMessage] = []
 
-    def track_stream(msg: ResponseStreamUpdateMessage) -> None:
+    def track_stream(msg: StreamResponseMessage) -> None:
         events.append(msg)
 
-    message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
+    message_bus.subscribe(StreamResponseMessage, track_stream)
 
     await runner.run(messages, story_context)
 
@@ -123,12 +123,12 @@ async def test_stream_runner_zero_debounce_produces_more_events(
 
     messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
 
-    events: list[ResponseStreamUpdateMessage] = []
+    events: list[StreamResponseMessage] = []
 
-    def track_stream(msg: ResponseStreamUpdateMessage) -> None:
+    def track_stream(msg: StreamResponseMessage) -> None:
         events.append(msg)
 
-    message_bus.subscribe(ResponseStreamUpdateMessage, track_stream)
+    message_bus.subscribe(StreamResponseMessage, track_stream)
 
     await runner_zero.run(messages, story_context)
 

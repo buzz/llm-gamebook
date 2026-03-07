@@ -1,5 +1,4 @@
-from collections.abc import AsyncIterable, Sequence
-from contextlib import suppress
+from collections.abc import AsyncIterable
 from datetime import UTC, datetime
 from logging import getLogger
 from typing import TYPE_CHECKING
@@ -18,7 +17,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.crud.message import (
     create_message,
-    create_messages,
     get_latest_message_with_state,
     get_message_count,
     get_messages,
@@ -26,7 +24,6 @@ from llm_gamebook.db.crud.message import (
 from llm_gamebook.db.crud.session import delete_session, get_session
 from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.part import Part
-from llm_gamebook.engine._runner import StreamResult
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
 from llm_gamebook.story.state import SessionStateData
 
@@ -76,33 +73,6 @@ class SessionAdapter:
                 continue
 
             yield msg
-
-    async def append_messages(self, db_session: AsyncDbSession, result: StreamResult) -> None:
-        messages: list[Message] = []
-
-        for idx, model_message in enumerate(result.messages):
-            model_msg_id: UUID | None = None
-            model_part_ids: Sequence[UUID] | None = None
-            if result.message_ids is not None:
-                with suppress(IndexError):
-                    model_msg_id = result.message_ids[idx]
-            if result.part_ids is not None:
-                with suppress(IndexError):
-                    model_part_ids = result.part_ids[idx]
-            msg = Message.from_model_message(
-                model_message,
-                self._session_id,
-                model_msg_id,
-                model_part_ids,
-                result.thinking_durations,
-            )
-
-            if result.state is not None and idx == len(result.messages) - 1:
-                msg.state = result.state.model_dump()
-
-            messages.append(msg)
-
-        await create_messages(db_session, messages)
 
     async def load_state(self, db_session: AsyncDbSession) -> SessionStateData | None:
         message = await get_latest_message_with_state(db_session, self._session_id)
