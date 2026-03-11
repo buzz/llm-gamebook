@@ -20,7 +20,7 @@ import {
   IconTrash,
 } from '@tabler/icons-react'
 import { useCallback, useEffect, useMemo } from 'react'
-import { useParams } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 
 import InputSlider from '@/components/common/InputSlider'
 import PageShell from '@/components/layout/PageShell'
@@ -29,7 +29,9 @@ import {
   useDeleteModelConfig,
   useUpdateModelConfig,
 } from '@/hooks/model-config'
+import { url } from '@/routes'
 import modelConfigApi from '@/services/model-config'
+import { isApiQueryError } from '@/types/api'
 import { iconSizeProps } from '@/utils'
 import type { ModelProvider } from '@/types/api'
 
@@ -63,13 +65,16 @@ interface ConfigFormData {
 
 function ModelConfigForm() {
   const { id: modelConfigId } = useParams()
+  const [, navigate] = useLocation()
   const isEditing = modelConfigId !== undefined
 
   const [advancedOpened, advancedHandlers] = useDisclosure(false)
 
-  const { data: modelConfig, isLoading: isLoadingConfig } = modelConfigApi.useGetModelConfigQuery(
-    isEditing ? modelConfigId : skipToken
-  )
+  const {
+    data: modelConfig,
+    error,
+    isLoading: isLoadingConfig,
+  } = modelConfigApi.useGetModelConfigQuery(isEditing ? modelConfigId : skipToken)
   const { createModelConfig, isLoading: isCreating } = useCreateModelConfig()
   const { updateModelConfig, isLoading: isUpdating } = useUpdateModelConfig()
   const { deleteModelConfig, isLoading: isDeleting } = useDeleteModelConfig()
@@ -111,6 +116,13 @@ function ModelConfigForm() {
       reset()
     }
   }, [isEditing, modelConfig, setValues, reset])
+
+  // Navigate to home if model does not exist
+  useEffect(() => {
+    if (isApiQueryError(error) && error.status === 404) {
+      navigate(url('home'))
+    }
+  }, [error, navigate])
 
   const handleSubmit = form.onSubmit(async () => {
     if (isLoading) {
