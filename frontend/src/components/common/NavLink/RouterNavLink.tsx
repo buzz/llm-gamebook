@@ -14,7 +14,7 @@ const RouterNavLink = createPolymorphicComponent<'a', RouterNavLinkProps>(functi
   ref,
   ...otherProps
 }: RouterNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
-  const [location, setLocation] = useLocation()
+  const [location, navigate] = useLocation()
   const prevLocationRef = useRef<string | null>(null)
   const [isActive] = useRoute(otherProps.to ?? '')
   const context = use(CollapseContext)
@@ -34,7 +34,7 @@ const RouterNavLink = createPolymorphicComponent<'a', RouterNavLinkProps>(functi
       onClick={(event) => {
         event.preventDefault()
         if (otherProps.to) {
-          setLocation(otherProps.to)
+          navigate(otherProps.to)
         }
       }}
       {...otherProps}
