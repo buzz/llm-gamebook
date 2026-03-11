@@ -41,7 +41,7 @@ class StoryEngine:
         self._context = context
         self._session_adapter = SessionAdapter(session_id, context, bus)
         self._bus = bus
-        self._log = logger.getChild(f"engine-{session_id}")
+        self._log = logger.getChild(f"engine({session_id})")
         self._stream_debounce = stream_debounce
         self._agent: Agent[StoryContext, str] | None
         if model:
