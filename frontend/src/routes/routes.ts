@@ -31,7 +31,7 @@ const ROUTES = {
     path: '/model-config/new' as const,
     component: ModelConfigForm,
   },
-  'model-config.view': {
+  'model-config.edit': {
     path: `/model-config/${UUID}` as const,
     component: ModelConfigForm,
   },

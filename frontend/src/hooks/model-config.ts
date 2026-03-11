@@ -43,7 +43,7 @@ function useCreateModelConfig() {
             presence_penalty: config.presencePenalty,
             frequency_penalty: config.frequencyPenalty,
           }).unwrap()
-          navigate(url('model-config.view', { id: createdModel.id }))
+          navigate(url('model-config.edit', { id: createdModel.id }))
           showSuccess('Model config was created.')
         } catch (error) {
           showError('Failed to create model config!', error)
@@ -102,7 +102,7 @@ function useDeleteModelConfig() {
       async (id: string) => {
         try {
           await deleteModelConfig(id).unwrap()
-          if (location === url('model-config.view', { id })) {
+          if (location === url('model-config.edit', { id })) {
             navigate(url('home'))
             showSuccess('Model config was deleted.')
           }

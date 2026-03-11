@@ -41,7 +41,7 @@ function ModelConfigLink({ modelConfig }: ModelConfigLinkProps) {
         className={classes.navLink}
         icon={IconCategory}
         label={modelConfig.name}
-        to={url('model-config.view', { id: modelConfig.id })}
+        to={url('model-config.edit', { id: modelConfig.id })}
       />
       <ActionIcons modelConfigId={modelConfig.id} />
     </Group>
