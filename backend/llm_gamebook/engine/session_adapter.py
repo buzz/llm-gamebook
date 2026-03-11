@@ -52,24 +52,29 @@ class SessionAdapter:
         return await get_message_count(db_session, self._session_id)
 
     async def get_message_history(self, db_session: AsyncDbSession) -> AsyncIterable[ModelMessage]:
-        # Introduction message
-        yield ModelRequest([UserPromptPart(content=await self._context.get_intro_message())])
-
         # Message history
         messages = await get_messages(db_session, self._session_id)
-        model_messages = (msg.to_model_message() for msg in messages)
-        for msg in model_messages:
-            # Keep only relevant parts
-            if isinstance(msg, ModelResponse):
-                msg.parts = [p for p in msg.parts if isinstance(p, TextPart)]
-            else:  # ModelRequest
-                msg.parts = [p for p in msg.parts if isinstance(p, UserPromptPart)]
 
-            # Skip empty messages
-            if len(msg.parts) == 0:
-                continue
+        if not messages:
+            # Introduction message (only on empty chat)
+            req = ModelRequest([UserPromptPart(content=await self._context.get_intro_message())])
+            message = Message.from_model_request(self._session_id, req)
+            await create_message(db_session, message)
+            yield req
+        else:
+            model_messages = (msg.to_model_message() for msg in messages)
+            for msg in model_messages:
+                # Keep only relevant parts
+                if isinstance(msg, ModelResponse):
+                    msg.parts = [p for p in msg.parts if isinstance(p, TextPart)]
+                else:  # ModelRequest
+                    msg.parts = [p for p in msg.parts if isinstance(p, UserPromptPart)]
 
-            yield msg
+                # Skip empty messages
+                if len(msg.parts) == 0:
+                    continue
+
+                yield msg
 
     async def load_state(self, db_session: AsyncDbSession) -> SessionStateData | None:
         message = await get_latest_message_with_state(db_session, self._session_id)

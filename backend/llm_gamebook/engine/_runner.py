@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator, Iterable, Sequence
+from collections.abc import Iterable, Sequence
 from time import time
 from typing import assert_never
 from uuid import UUID
@@ -45,12 +45,9 @@ class _ModelRequestHandler:
         self._resp_msg: Message | None = None
         self._part: Part | None = None
 
-    async def handle(
-        self, node: ModelRequestNode, run: Run, context: StoryContext
-    ) -> AsyncIterator[Message]:
+    async def handle(self, node: ModelRequestNode, run: Run, context: StoryContext) -> Message:
         req_message = Message.from_model_request(self._session_id, node.request)
         self._bus.publish(StreamMessageMessage(self._session_id, req_message))
-        yield req_message
 
         async with node.stream(run.ctx) as req_stream:
             self._resp_msg = Message.from_model_response(self._session_id, req_stream.response)
@@ -62,7 +59,7 @@ class _ModelRequestHandler:
         if not context.session_state.is_empty():
             self._resp_msg.state = context.session_state.data.model_dump()
 
-        yield self._resp_msg
+        return self._resp_msg
 
     def _handle_request_stream(self, event: pai.ModelResponseStreamEvent) -> None:
         if isinstance(event, pai.PartStartEvent):
@@ -226,8 +223,8 @@ class StreamRunner:
                 elif pai.Agent.is_model_request_node(node):
                     self._log.debug("ModelRequestNode: %s", node.request)
                     handler.reset()
-                    async for message in handler.handle(node, run, context):
-                        self._messages.append(message)
+                    message = await handler.handle(node, run, context)
+                    self._messages.append(message)
 
                 elif pai.Agent.is_call_tools_node(node):
                     self._log.debug("CallToolsNode: %s", node.model_response)
