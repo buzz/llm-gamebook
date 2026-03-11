@@ -57,8 +57,8 @@ async def test_get_messages(db_session: AsyncDbSession, session: Session) -> Non
     messages = await message_crud.get_messages(db_session, session.id)
 
     assert len(messages) == 2
-    assert messages[0].id == msg2.id
-    assert messages[1].id == msg1.id
+    assert messages[0].id == msg1.id
+    assert messages[1].id == msg2.id
 
 
 async def test_get_messages_empty(db_session: AsyncDbSession, session: Session) -> None:

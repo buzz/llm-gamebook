@@ -1,19 +1,10 @@
 from collections.abc import Iterable, Sequence
 from uuid import UUID
 
-from sqlmodel import desc, func, select
+from sqlmodel import asc, desc, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
-from sqlmodel.sql.expression import SelectOfScalar
 
 from llm_gamebook.db.models import Message
-
-
-def _get_select_by_session_id(session_id: UUID) -> SelectOfScalar[Message]:
-    return (
-        select(Message)
-        .where(Message.session_id == session_id)
-        .order_by(desc(Message.timestamp).nulls_last())
-    )
 
 
 async def get_message_count(db_session: AsyncDbSession, session_id: UUID) -> int:
@@ -23,7 +14,9 @@ async def get_message_count(db_session: AsyncDbSession, session_id: UUID) -> int
 
 async def get_messages(db_session: AsyncDbSession, session_id: UUID) -> Sequence[Message]:
     result = await db_session.exec(
-        _get_select_by_session_id(session_id).order_by(desc(Message.timestamp).nulls_last())
+        select(Message)
+        .where(Message.session_id == session_id)
+        .order_by(asc(Message.timestamp).nulls_last())
     )
     return result.all()
 
