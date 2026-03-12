@@ -30,8 +30,11 @@ from llm_gamebook.engine.message import (
     StreamPartDeltaMessage,
     StreamPartMessage,
 )
+from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.traits.graph import GraphTransitionAction
+from llm_gamebook.web.schemas.session.message import ModelRequestCreate
+from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 from .conftest import EngineErrorMessages, EngineMessages, StreamMessages
 
@@ -276,3 +279,112 @@ async def test_state_persists_after_response(
     main_entity = loaded_state.entities["main"]
     current_node_id = main_entity["current_node_id"]
     assert current_node_id == "spark_of_hope"
+
+
+async def test_generate_response_persists_response_messages(
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    session: Session,
+) -> None:
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "First response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    count_before = await story_engine.session_adapter.get_message_count(db_session)
+    await story_engine.generate_response(db_session)
+    count_after = await story_engine.session_adapter.get_message_count(db_session)
+
+    assert count_before == 0
+    assert count_after == 2
+
+    messages = [msg async for msg in story_engine.session_adapter.get_message_history(db_session)]
+    assert len(messages) == 2
+    assert messages[0].kind == "request"
+    assert messages[1].kind == "response"
+
+
+async def test_generate_response_first_run_has_intro_message(
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    session: Session,
+) -> None:
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response with intro"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+
+    messages = [msg async for msg in story_engine.session_adapter.get_message_history(db_session)]
+    assert len(messages) == 2
+    assert isinstance(messages[0], ModelRequest)
+    intro_content = "".join(
+        part.content
+        for part in messages[0].parts
+        if hasattr(part, "content") and isinstance(part.content, str)
+    )
+    assert "Write the opening of the story" in intro_content
+
+
+async def test_generate_response_no_duplicate_messages_after_multiple_calls(
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    session: Session,
+) -> None:
+    call_count = 0
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        nonlocal call_count
+        call_count += 1
+        if messages and messages[-1].parts:
+            first_part = messages[-1].parts[0]
+            if isinstance(first_part, UserPromptPart):
+                yield f"Response {first_part.content}"
+            else:
+                yield "Response"
+        else:
+            yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+    count_after_first = await story_engine.session_adapter.get_message_count(db_session)
+
+    await story_engine.generate_response(db_session)
+    count_after_second = await story_engine.session_adapter.get_message_count(db_session)
+
+    assert count_after_first == 2
+    assert count_after_second == 3
+
+
+async def test_generate_response_does_not_persist_input_request_messages(
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    session: Session,
+) -> None:
+    adapter = SessionAdapter(session.id, story_engine._context, story_engine._bus)
+    user_request = ModelRequestCreate(parts=[UserPromptPartCreate(content="User input")])
+    await adapter.create_user_request(db_session, user_request)
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    count_before = await story_engine.session_adapter.get_message_count(db_session)
+    await story_engine.generate_response(db_session)
+    count_after = await story_engine.session_adapter.get_message_count(db_session)
+
+    assert count_before == 1
+    assert count_after == 2
+
+    messages = [msg async for msg in story_engine.session_adapter.get_message_history(db_session)]
+    request_messages = [m for m in messages if m.kind == "request"]
+    response_messages = [m for m in messages if m.kind == "response"]
+    assert len(request_messages) == 1
+    assert len(response_messages) == 1

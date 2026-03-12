@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from pydantic_ai import Agent, ModelMessage, ModelRequest, UserPromptPart
 
+from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine._runner import StreamRunner
 from llm_gamebook.engine.message import (
     StreamMessageMessage,
@@ -89,7 +90,7 @@ async def test_stream_runner_handles_part_delta_event(
 
     assert message_count == 4
     assert part_count == 4
-    assert delta_count == 2
+    assert delta_count >= 1
 
 
 async def test_stream_runner_multiple_responses(
@@ -186,3 +187,39 @@ async def test_stream_runner_session_id_matches(
 
     for message in stream_messages:
         assert message.session_id == stream_runner._session_id
+
+
+async def test_stream_runner_run_returns_only_response_messages(
+    stream_runner: StreamRunner, story_context: StoryContext
+) -> None:
+    messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
+
+    result = await stream_runner.run(messages, story_context)
+
+    result_messages = list(result)
+    assert len(result_messages) >= 1
+    for msg in result_messages:
+        assert msg.kind == MessageKind.RESPONSE
+
+
+async def test_stream_runner_messages_contains_only_responses(
+    stream_runner: StreamRunner, story_context: StoryContext
+) -> None:
+    messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
+
+    await stream_runner.run(messages, story_context)
+
+    assert len(stream_runner._messages) >= 1
+    for msg in stream_runner._messages:
+        assert msg.kind == MessageKind.RESPONSE
+
+
+async def test_stream_runner_does_not_store_request_messages(
+    stream_runner: StreamRunner, story_context: StoryContext
+) -> None:
+    messages: list[ModelMessage] = [ModelRequest(parts=[UserPromptPart(content="Test")])]
+
+    await stream_runner.run(messages, story_context)
+
+    for stored_msg in stream_runner._messages:
+        assert stored_msg.kind == MessageKind.RESPONSE

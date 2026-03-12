@@ -1,10 +1,29 @@
+from collections import Counter
+from uuid import UUID
+
 from pydantic_ai import ModelResponse, TextPart, ToolCallPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
+from llm_gamebook.db.crud.message import get_messages
+from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models.part import PartKind
 from llm_gamebook.engine.engine import StoryEngine
 
 from .mocks.model import MockModel
 from .mocks.player import MockPlayer
+
+
+async def assert_no_duplicate_user_prompts(session_id: UUID, db_session: AsyncDbSession) -> None:
+    messages = await get_messages(db_session, session_id)
+    user_prompts = [
+        part.content
+        for msg in messages
+        if msg.kind == MessageKind.REQUEST
+        for part in msg.parts
+        if part.kind == PartKind.USER_PROMPT and part.content
+    ]
+    duplicates = [p for p, count in Counter(user_prompts).items() if count > 1]
+    assert not duplicates, f"Duplicate user prompts found: {duplicates}"
 
 
 async def test_story_flow(
@@ -27,6 +46,10 @@ async def test_story_flow(
     assert "cockroaches under bed" in system_prompt
     assert "A leaflet was placed under" not in system_prompt
 
+    message_count = await story_engine.session_adapter.get_message_count(db_session)
+    assert message_count == 2
+    await assert_no_duplicate_user_prompts(story_engine.session_adapter.session_id, db_session)
+
     # Living room: triggers location transition
     await test_player.send_text("go to living room", db_session)
     test_model.add_responses(
@@ -41,6 +64,10 @@ async def test_story_flow(
     assert "messy, scattered with empty bottles" in system_prompt
     assert "A leaflet was placed under" in system_prompt
 
+    message_count = await story_engine.session_adapter.get_message_count(db_session)
+    assert message_count == 5
+    await assert_no_duplicate_user_prompts(story_engine.session_adapter.session_id, db_session)
+
     # Take leaflet: triggers The Meeting story arc transition
     await test_player.send_text("take the leaflet", db_session)
     test_model.add_responses(
@@ -53,3 +80,7 @@ async def test_story_flow(
     system_prompt = test_model.current_system_prompt
     assert "A leaflet was placed under" not in system_prompt
     assert "Player found the leaflet" in system_prompt
+
+    message_count = await story_engine.session_adapter.get_message_count(db_session)
+    assert message_count == 8
+    await assert_no_duplicate_user_prompts(story_engine.session_adapter.session_id, db_session)
