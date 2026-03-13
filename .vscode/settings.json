@@ -4,6 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
+  "js/ts.tsdk.path": "./frontend/node_modules/typescript/lib",
   "mypy.configFile": "backend/pyproject.toml",
   "search.exclude": {
     "**/.venv": true,
