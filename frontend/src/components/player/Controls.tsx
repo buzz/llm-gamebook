@@ -1,5 +1,6 @@
 import { Button, Group, Textarea } from '@mantine/core'
 import { isNotEmpty, useForm } from '@mantine/form'
+import { getHotkeyHandler } from '@mantine/hooks'
 import { IconSend } from '@tabler/icons-react'
 
 import { useShowError } from '@/hooks/notifications'
@@ -21,9 +22,7 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
   const form = useForm<FormValues>({
     mode: 'controlled',
     initialValues: { content: '' },
-    validate: {
-      content: isNotEmpty('Must not be empty'),
-    },
+    validate: { content: isNotEmpty('Must not be empty') },
   })
   const [createRequest, { isLoading }] = sessionApi.useCreateRequestMutation()
   const showError = useShowError()
@@ -34,13 +33,7 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
         sessionId,
         request: {
           kind: 'request',
-          parts: [
-            {
-              kind: 'user-prompt',
-              content,
-              timestamp: undefined,
-            },
-          ],
+          parts: [{ kind: 'user-prompt', content }],
         },
       }).unwrap()
     } catch (error) {
@@ -48,8 +41,13 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
     }
   }
 
+  const handleSubmit = (values: FormValues) => {
+    void send(values)
+    form.reset()
+  }
+
   return (
-    <form onSubmit={form.onSubmit((values) => void send(values))}>
+    <form onSubmit={form.onSubmit(handleSubmit)}>
       <Group align="stretch" gap="sm" mt="md">
         <Textarea
           key={form.key('content')}
@@ -60,6 +58,8 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
           disabled={isLoading || isGenerating}
           maxRows={4}
           minRows={1}
+          placeholder="Type a message…"
+          onKeyUp={getHotkeyHandler([['mod+Enter', form.onSubmit(handleSubmit)]])}
         />
         <Button
           className={classes.sendButton}

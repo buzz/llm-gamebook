@@ -4,6 +4,7 @@
     background-color: rgba(255 255 255 / 5%);
     padding: var(--mantine-spacing-sm);
     border-radius: var(--mantine-radius-sm);
+    margin-left: auto;
 
     .text {
       font-size: var(--mantine-font-size-md);
