@@ -19,8 +19,10 @@ async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
     sqlite_database_path = USER_DATA_PATH / sqlite_file_name
     sqlite_url = f"sqlite+aiosqlite:///{sqlite_database_path}"
 
+    log_verb = "Using" if sqlite_database_path.exists() else "Creating"
+    log.info("%s database '%s'", log_verb, sqlite_database_path)
+
     try:
-        log.info("Creating database engine (%s)…", sqlite_database_path)
         db_engine = create_async_engine(sqlite_url)
         await _create_db_and_tables(db_engine)
         yield db_engine
@@ -30,7 +32,6 @@ async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
 
 
 async def _create_db_and_tables(db_engine: AsyncEngine) -> None:
-    log.info("Creating database file and tables…")
     async with db_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
         # Enable foreign key support in SQLite
