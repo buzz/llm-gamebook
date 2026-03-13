@@ -42,7 +42,13 @@ function ThinkingDurationLabel({
   isStreaming,
 }: ThinkingDurationLabelProps) {
   const startMillis = Date.parse(timestamp)
-  const [deltaSecs, setDeltaSecs] = useState<number | null>(() => calculateDeltaSecs(startMillis))
+  const [deltaSecs, setDeltaSecs] = useState<number | null>(() =>
+    isStreaming ? calculateDeltaSecs(startMillis) : null
+  )
+
+  if (!isStreaming && deltaSecs !== null) {
+    setDeltaSecs(null)
+  }
 
   useEffect(() => {
     if (!isStreaming) {
