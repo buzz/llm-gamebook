@@ -18,10 +18,6 @@
   text-shadow: var(--llmg-text-shadow);
 }
 
-.detailsButton {
-  background-color: color-mix(in srgb, var(--mantine-color-default), transparent 50%);
-}
-
 .cardRoot > * {
   z-index: 1;
 }

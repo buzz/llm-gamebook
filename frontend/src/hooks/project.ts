@@ -65,7 +65,6 @@ function useDeleteProject() {
             if (
               [
                 url('gamebook.view', splitProjectId(project.id)),
-                url('player.new', splitProjectId(project.id)),
                 url('editor.edit', splitProjectId(project.id)),
               ].includes(location)
             ) {

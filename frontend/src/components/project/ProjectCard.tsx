@@ -1,7 +1,7 @@
 import { ActionIcon, Anchor, Group, Text } from '@mantine/core'
-import { IconEdit, IconPlayerPlay, IconTrash, IconZoom } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconZoom } from '@tabler/icons-react'
 import cx from 'clsx'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 import type { CardProps } from '@mantine/core'
 
 import StandardCard from '@/components/common/StandardCard'
@@ -14,27 +14,20 @@ import type { ProjectBasic } from '@/types/api'
 import classes from './ProjectCard.module.css'
 
 interface ActionButtonsProps {
-  enablePlayAction: boolean
   project: ProjectBasic
 }
 
-function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
+function ActionButtons({ project }: ActionButtonsProps) {
   const { deleteProject, isLoading: isDeleting } = useDeleteProject()
+  const [location] = useLocation()
+
+  const viewUrl = url('gamebook.view', splitProjectId(project.id))
+  const enableViewLink = location !== viewUrl
 
   return (
     <Group justify="space-between" w="100%" wrap="nowrap">
       <ProjectSourceBadge source={project.source} />
       <Group gap="xs" wrap="nowrap">
-        <ActionIcon
-          aria-label="Gamebook Details"
-          className={classes.detailsButton}
-          component={Link}
-          size="lg"
-          to={url('gamebook.view', splitProjectId(project.id))}
-          variant="default"
-        >
-          <IconZoom {...iconSizeProps('sm')} />
-        </ActionIcon>
         <ActionIcon
           aria-label="Edit Gamebook"
           color="blue"
@@ -55,16 +48,15 @@ function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
         >
           <IconTrash {...iconSizeProps('sm')} />
         </ActionIcon>
-        {project.source === 'local' && <></>}
-        {enablePlayAction && (
+        {enableViewLink && (
           <ActionIcon
-            aria-label="Play"
+            aria-label="Gamebook Details"
             color="teal"
             component={Link}
             size="lg"
-            to={url('player.new', splitProjectId(project.id))}
+            to={viewUrl}
           >
-            <IconPlayerPlay {...iconSizeProps('sm')} />
+            <IconZoom {...iconSizeProps('sm')} />
           </ActionIcon>
         )}
       </Group>
@@ -73,11 +65,10 @@ function ActionButtons({ enablePlayAction, project }: ActionButtonsProps) {
 }
 
 interface ProjectCardProps extends CardProps {
-  enablePlayAction?: boolean
   project: ProjectBasic
 }
 
-function ProjectCard({ enablePlayAction = false, project, ...cardProps }: ProjectCardProps) {
+function ProjectCard({ project, ...cardProps }: ProjectCardProps) {
   const imageSrc = projectImageSrc(project)
   const imageAlt = project.image ? project.title : undefined
 
@@ -93,7 +84,7 @@ function ProjectCard({ enablePlayAction = false, project, ...cardProps }: Projec
           {project.title}
         </Anchor>
       }
-      actionButtons={<ActionButtons enablePlayAction={enablePlayAction} project={project} />}
+      actionButtons={<ActionButtons project={project} />}
       imageSrc={imageSrc}
       imageAlt={imageAlt}
       shadow="lg"

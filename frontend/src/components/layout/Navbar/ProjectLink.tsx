@@ -63,7 +63,7 @@ function ProjectLink({ project }: ProjectLinkProps) {
         className={classes.navLink}
         leftSection={icon}
         label={project.title}
-        to={url('player.new', splitProjectId(project.id))}
+        to={url('gamebook.view', splitProjectId(project.id))}
       />
       <ActionIcons project={project} />
     </Group>

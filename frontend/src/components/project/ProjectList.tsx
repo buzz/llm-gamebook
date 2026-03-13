@@ -44,7 +44,7 @@ function ProjectListDisplay({ data }: ProjectListDisplayProps) {
     >
       <SimpleGrid cols={{ base: 1, '40em': 2, '60em': 3, '80em': 4, '100em': 5 }} type="container">
         {data.data.map((project) => (
-          <ProjectCard key={project.id} enablePlayAction project={project} />
+          <ProjectCard key={project.id} project={project} />
         ))}
       </SimpleGrid>
     </PageShell>

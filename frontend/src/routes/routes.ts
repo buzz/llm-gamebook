@@ -1,7 +1,6 @@
 import Editor from '@/components/editor/Editor'
 import ModelConfigForm from '@/components/model-config/ModelConfigForm'
 import Player from '@/components/player'
-import NewStory from '@/components/player/NewStory'
 import ProjectDetails from '@/components/project/ProjectDetails'
 import ProjectForm from '@/components/project/ProjectForm'
 import ProjectList from '@/components/project/ProjectList'
@@ -41,10 +40,6 @@ const ROUTES = {
     component: Editor,
   },
 
-  'player.new': {
-    path: `/player/new/${PROJECT_ID}` as const,
-    component: NewStory,
-  },
   'player.view': {
     path: `/player/${UUID}` as const,
     component: Player,
