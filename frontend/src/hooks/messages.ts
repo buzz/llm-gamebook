@@ -34,6 +34,7 @@ const messageReducer = produce((draft: WritableDeep<MessageState>, action: Messa
   switch (action.type) {
     case SYNC_SESSION: {
       const newMessages = new Map(action.messages.map((m) => [m.id, m]))
+      draft.streamStatus = 'stopped'
       draft.messages = newMessages as WritableDeep<Map<string, ModelMessage>>
       break
     }
@@ -48,6 +49,7 @@ const messageReducer = produce((draft: WritableDeep<MessageState>, action: Messa
       draft.messages.set(action.message.id, action.message as WritableDeep<ModelMessage>)
       const part = action.message.parts.at(0)
       draft.currentPartId = part?.id ?? null
+      draft.streamStatus = 'started'
       break
     }
 
@@ -70,6 +72,7 @@ const messageReducer = produce((draft: WritableDeep<MessageState>, action: Messa
       }
 
       draft.currentPartId = action.part.id
+      draft.streamStatus = 'started'
       break
     }
 
@@ -118,6 +121,7 @@ const messageReducer = produce((draft: WritableDeep<MessageState>, action: Messa
       }
 
       draft.currentPartId = action.partId
+      draft.streamStatus = 'started'
       break
     }
 
@@ -135,7 +139,7 @@ function useMessages(session: SessionFull) {
   const [state, dispatch] = useReducer(messageReducer, {
     messages: new Map(session.messages.map((m) => [m.id, m])),
     currentPartId: null,
-    streamStatus: 'stopped',
+    streamStatus: 'started',
   })
 
   // Sync state if the server-side session messages change (initial load or after refetch)
