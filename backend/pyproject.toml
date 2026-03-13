@@ -1,6 +1,6 @@
 [project]
 name = "llm-gamebook"
-version = "0.0.0"
+version = "0.3.0"
 description = "An interactive storytelling framework using LLMs to generate dynamic narratives"
 license = "AGPL-3.0-or-later"
 readme = "README.md"
