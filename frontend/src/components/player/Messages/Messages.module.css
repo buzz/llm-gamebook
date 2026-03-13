@@ -1,4 +1,6 @@
 .message {
+  line-height: calc(var(--mantine-line-height) * 0.9);
+
   &.userPrompt {
     --paper-shadow: var(--mantine-shadow-xs);
     background-color: rgba(255 255 255 / 5%);
