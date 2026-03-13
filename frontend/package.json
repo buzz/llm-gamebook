@@ -26,6 +26,7 @@
     "@tabler/icons-react": "^3.36.1",
     "clsx": "^2.1.1",
     "immer": "^11.1.4",
+    "pretty-ms": "^9.3.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-error-boundary": "^6.1.0",

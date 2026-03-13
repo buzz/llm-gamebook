@@ -9,8 +9,8 @@ import NotFound from './NotFound'
 
 interface QueryHandlerProps<R, Q, B extends BaseQueryFn> {
   children: (data: R) => ReactNode
-  notFoundTitle: string
-  notFoundMessage: string
+  notFoundTitle?: string
+  notFoundMessage?: string
   result: TypedUseQueryHookResult<R, Q, B>
 }
 

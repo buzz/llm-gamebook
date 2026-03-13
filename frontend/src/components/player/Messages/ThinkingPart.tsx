@@ -2,38 +2,29 @@ import { Button, Collapse } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconBrain, IconChevronDown } from '@tabler/icons-react'
 import cx from 'clsx'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Streamdown } from 'streamdown'
 
+import { formatDuration, useNow } from '@/hooks/time'
 import { iconSizeProps } from '@/utils'
 import type { ThinkingPart as ThinkingPartType } from '@/types/api'
 
 import classes from './Messages.module.css'
 
-interface ThinkingDurationLabelProps {
+interface PropsWithTimestamp {
   timestamp: string
+}
+
+function StreamingDuration({ timestamp }: PropsWithTimestamp) {
+  const now = useNow(1000)
+  const delta = Math.floor(now - Date.parse(timestamp))
+
+  return <>Thinking for {formatDuration(delta)}…</>
+}
+
+interface ThinkingDurationLabelProps extends PropsWithTimestamp {
   durationSecs: number | null
   isStreaming: boolean
-}
-
-function formatDuration(totalSecs: number): string {
-  const mins = Math.floor(totalSecs / 60)
-  const secs = totalSecs % 60
-
-  if (mins === 0) {
-    return `${String(secs)} second${secs === 1 ? '' : 's'}`
-  }
-  if (secs === 0) {
-    return `${String(mins)} minute${mins === 1 ? '' : 's'}`
-  }
-  return (
-    `${String(mins)} minute${mins === 1 ? '' : 's'} ` +
-    `${String(secs)} second${secs === 1 ? '' : 's'}`
-  )
-}
-
-function calculateDeltaSecs(startMillis: number): number {
-  return Math.floor((Date.now() - startMillis) / 1000)
 }
 
 function ThinkingDurationLabel({
@@ -41,41 +32,17 @@ function ThinkingDurationLabel({
   durationSecs,
   isStreaming,
 }: ThinkingDurationLabelProps) {
-  const startMillis = Date.parse(timestamp)
-  const [deltaSecs, setDeltaSecs] = useState<number | null>(() =>
-    isStreaming ? calculateDeltaSecs(startMillis) : null
-  )
-
-  if (!isStreaming && deltaSecs !== null) {
-    setDeltaSecs(null)
+  // Only mount the hook-heavy component when streaming is actually active
+  if (isStreaming) {
+    return <StreamingDuration timestamp={timestamp} />
   }
 
-  useEffect(() => {
-    if (!isStreaming) {
-      return
-    }
-
-    const id = globalThis.setInterval(() => {
-      setDeltaSecs(calculateDeltaSecs(startMillis))
-    }, 1000)
-
-    return () => {
-      globalThis.clearInterval(id)
-    }
-  }, [isStreaming, startMillis])
-
-  const secs = deltaSecs ?? durationSecs
-
-  if (secs == null) {
-    return <>Thoughts</>
+  // Fallback to static duration
+  if (durationSecs != null) {
+    return <>Thought for {formatDuration(durationSecs * 1000)}</>
   }
 
-  return (
-    <>
-      {isStreaming ? 'Thinking for' : 'Thought for'} {formatDuration(secs)}
-      {isStreaming && '…'}
-    </>
-  )
+  return <>Thoughts</>
 }
 
 interface ThinkingPartProps {
