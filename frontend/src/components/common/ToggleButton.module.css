@@ -1,0 +1,29 @@
+.toggleBtn {
+  border: none;
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-lg);
+  font-weight: normal;
+  padding: 0;
+
+  &:hover {
+    color: var(--mantine-color-text);
+  }
+
+  .chevron {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 0.15s;
+
+    &.rot-0 {
+      transform: rotate(0deg);
+    }
+
+    &.rot-180 {
+      transform: rotate(180deg);
+    }
+  }
+
+  .toggleBtnInner {
+    justify-content: flex-start;
+  }
+}

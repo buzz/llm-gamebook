@@ -582,6 +582,8 @@ export interface components {
        * Format: date-time
        */
       readonly timestamp?: string
+      /** Message Count */
+      readonly message_count: number
     }
     /**
      * SessionCreate
@@ -619,6 +621,8 @@ export interface components {
        * Format: date-time
        */
       readonly timestamp?: string
+      /** Message Count */
+      readonly message_count: number
       /** Messages */
       readonly messages: readonly components['schemas']['ModelMessage'][]
     }
@@ -1358,6 +1362,7 @@ export interface operations {
   readonly read_sessions_api_sessions__get: {
     readonly parameters: {
       readonly query?: {
+        readonly project_id?: string | null
         readonly skip?: number
         readonly limit?: number
       }

@@ -87,4 +87,5 @@ export type {
   SessionUpdate,
   ThinkingPart,
 }
+export type { paths } from './openapi'
 export { isApiQueryError, isApiValidationError }

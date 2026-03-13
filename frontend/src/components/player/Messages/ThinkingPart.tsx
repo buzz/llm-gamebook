@@ -105,6 +105,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
 
   return (
     <div className={classes.thinkingPart}>
+      {/* TODO: Consolidate with ToggleButton? */}
       <Button
         classNames={{
           root: classes.toggleBtn,
