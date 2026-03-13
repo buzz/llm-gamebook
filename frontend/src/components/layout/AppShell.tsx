@@ -1,18 +1,16 @@
-import { ActionIcon, AppShell as MantineAppShell, Group, Title } from '@mantine/core'
+import { AppShell as MantineAppShell } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconMenu2 } from '@tabler/icons-react'
 import { use, useEffect } from 'react'
 
 import WebSocketContext from '@/contexts/WebSocketContext'
 import { useShowErrorModal } from '@/hooks/modals'
-import { iconSizeProps } from '@/utils'
 
-import classes from './AppShell.module.css'
+import Header from './Header/Header'
 import Navbar from './Navbar/Navbar'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const context = use(WebSocketContext)
-  const [opened, { toggle }] = useDisclosure(true)
+  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(true)
   const showErrorModal = useShowErrorModal()
 
   useEffect(() => {
@@ -28,25 +26,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
       navbar={{
         width: 300,
         breakpoint: 'sm',
-        collapsed: { desktop: !opened, mobile: !opened },
+        collapsed: { desktop: !navbarOpened, mobile: !navbarOpened },
       }}
     >
       <MantineAppShell.Header>
-        <Group h="100%" wrap="nowrap" p="md">
-          <ActionIcon
-            title="Toggle menu"
-            onClick={toggle}
-            size="lg"
-            variant={opened ? 'filled' : 'default'}
-          >
-            <IconMenu2 {...iconSizeProps('md')} />
-          </ActionIcon>
-          <div className={classes.titleWrapper}>
-            <Title className={classes.title} lineClamp={2} order={1} size="xl">
-              LLM Gamebook
-            </Title>
-          </div>
-        </Group>
+        <Header navbarOpened={navbarOpened} onToggleNavbar={toggleNavbar} />
       </MantineAppShell.Header>
 
       <MantineAppShell.Navbar>

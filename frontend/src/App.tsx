@@ -9,6 +9,7 @@ import { Provider as ReactReduxProvider } from 'react-redux'
 
 import ErrorAlert from './components/common/ErrorAlert'
 import AppShell from './components/layout/AppShell'
+import { PortalProvider } from './contexts/PortalContext'
 import { WebSocketProvider } from './contexts/WebSocketContext'
 import Routes from './routes/Routes'
 import store from './store'
@@ -28,11 +29,13 @@ function App() {
         >
           <ModalsProvider>
             <Notifications />
-            <AppShell>
-              <ErrorBoundary FallbackComponent={ErrorAlert}>
-                <Routes />
-              </ErrorBoundary>
-            </AppShell>
+            <PortalProvider>
+              <AppShell>
+                <ErrorBoundary FallbackComponent={ErrorAlert}>
+                  <Routes />
+                </ErrorBoundary>
+              </AppShell>
+            </PortalProvider>
           </ModalsProvider>
         </MantineProvider>
       </WebSocketProvider>

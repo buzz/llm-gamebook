@@ -1,6 +1,6 @@
 .titleWrapper {
   flex-grow: 1;
-  text-align: center;
+  text-align: left;
 
   .title {
     display: inline-block;

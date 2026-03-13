@@ -2,8 +2,8 @@ import { Box, Stack } from '@mantine/core'
 import { useCallback, useState } from 'react'
 import { useParams } from 'wouter'
 
+import Fill from '@/components/common/portal/Fill'
 import QueryHandler from '@/components/common/QueryHandler'
-import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
 import useMessages from '@/hooks/messages'
 import sessionApi from '@/services/session'
 import type { SessionFull } from '@/types/api'
@@ -12,6 +12,7 @@ import type { RouteParams } from '@/types/routes'
 import Controls from './Controls'
 import Messages from './Messages/Messages'
 import classes from './Player.module.css'
+import PlayerToolbar from './PlayerToolbar'
 
 interface PlayerLoadedProps {
   session: SessionFull
@@ -37,17 +38,22 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
   )
 
   return (
-    <Stack gap="md" justify="center" h="100%">
-      <ModelConfigSelector
-        selectedModelConfigId={modelConfigId}
-        onModelConfigChange={handleModelChange}
-        disabled={isUpdating || streamStatus === 'started'}
-      />
-      <Box className={classes.container}>
-        <Messages currentPartId={currentPartId} messages={messages} />
-        <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
-      </Box>
-    </Stack>
+    <>
+      <Fill name="toolbar">
+        <PlayerToolbar
+          disabled={isUpdating || streamStatus === 'started'}
+          handleModelChange={handleModelChange}
+          modelConfigId={modelConfigId}
+        />
+      </Fill>
+
+      <Stack gap="md" justify="center" h="100%">
+        <Box className={classes.container}>
+          <Messages currentPartId={currentPartId} messages={messages} />
+          <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
+        </Box>
+      </Stack>
+    </>
   )
 }
 
