@@ -67,7 +67,12 @@ function ProjectDetailsDisplay({ project }: ProjectDetailsDisplayProps) {
   )
 
   return (
-    <PageShell footer={footer} icon={IconBook} title="New Story" topBarRightSection={modelSelector}>
+    <PageShell
+      footer={footer}
+      icon={IconBook}
+      title={project.title}
+      topBarRightSection={modelSelector}
+    >
       <ProjectCard project={project} />
       {configs.length === 0 && (
         <Alert

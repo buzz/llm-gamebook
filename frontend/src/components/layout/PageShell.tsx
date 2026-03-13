@@ -28,15 +28,19 @@ function PageShell({
   return (
     <Container className={classes.container} fluid={fluid}>
       <Stack gap="md" justify="center" h="100%">
-        <Group justify="space-between" wrap="nowrap">
-          <Group align="center" gap="xs" preventGrowOverflow={false} wrap="nowrap">
+        <Group className={classes.titleRow} preventGrowOverflow={false}>
+          <Group className={classes.title} preventGrowOverflow={false}>
             {Icon && <Icon className={classes.icon} {...iconSizeProps('lg')} />}
-            <Title order={2} textWrap="nowrap">
+            <Title lineClamp={1} order={2} textWrap="nowrap">
               {title}
             </Title>
           </Group>
-          <div>{topBarMiddleSection}</div>
-          <div>{topBarRightSection}</div>
+          {(topBarMiddleSection ?? topBarRightSection) && (
+            <>
+              {topBarMiddleSection && <div className={classes.noShrink}>{topBarMiddleSection}</div>}
+              {topBarRightSection && <div className={classes.noShrink}>{topBarRightSection}</div>}
+            </>
+          )}
         </Group>
         <ScrollArea
           classNames={{ root: classes.scrollArea, thumb: classes.scrollThumb }}

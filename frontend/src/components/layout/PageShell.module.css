@@ -1,16 +1,33 @@
 .container {
   padding-right: 0;
   padding-left: 0;
-}
 
-.icon {
-  flex: 0 0 auto;
-}
+  .titleRow {
+    flex-wrap: nowrap;
+    justify-content: space-between;
 
-.scrollArea {
-  flex: 1 1 auto;
-}
+    .title {
+      align-items: center;
+      flex-shrink: 1;
+      flex-wrap: nowrap;
+      gap: var(--mantine-spacing-xs);
+      min-width: 0;
 
-.scrollThumb {
-  z-index: 2;
+      .icon {
+        flex: 0 0 auto;
+      }
+    }
+
+    .noShrink {
+      flex-shrink: 0;
+    }
+  }
+
+  .scrollArea {
+    flex: 1 1 auto;
+  }
+
+  .scrollThumb {
+    z-index: 2;
+  }
 }

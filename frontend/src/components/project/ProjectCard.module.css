@@ -8,6 +8,7 @@
 .description {
   color: var(--mantine-color-dimmed);
   font-family: var(--mantine-font-family-serif);
+  text-wrap: balance;
 }
 
 .projectId {
