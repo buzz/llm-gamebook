@@ -18,14 +18,14 @@ async def create_model_config(db_session: AsyncDbSession, config: ModelConfig) -
 async def get_model_configs(
     db_session: AsyncDbSession, skip: int = 0, limit: int = 100
 ) -> Sequence[ModelConfig]:
-    statement = select(ModelConfig).offset(skip).limit(limit)
-    result = await db_session.exec(statement)
+    stmt = select(ModelConfig).offset(skip).limit(limit)
+    result = await db_session.exec(stmt)
     return result.all()
 
 
 async def get_model_config_count(db_session: AsyncDbSession) -> int:
-    statement = select(func.count()).select_from(ModelConfig)
-    result = await db_session.exec(statement)
+    stmt = select(func.count()).select_from(ModelConfig)
+    result = await db_session.exec(stmt)
     return result.one()
 
 

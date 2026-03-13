@@ -8,16 +8,20 @@ from llm_gamebook.db.models import Message
 
 
 async def get_message_count(db_session: AsyncDbSession, session_id: UUID) -> int:
-    statement = select(func.count()).select_from(Message).where(Message.session_id == session_id)
-    return (await db_session.exec(statement)).one()
+    stmt = select(func.count()).select_from(Message).where(Message.session_id == session_id)
+    result = await db_session.exec(stmt)
+
+    return result.one()
 
 
 async def get_messages(db_session: AsyncDbSession, session_id: UUID) -> Sequence[Message]:
-    result = await db_session.exec(
+    stmt = (
         select(Message)
         .where(Message.session_id == session_id)
         .order_by(asc(Message.timestamp).nulls_last())
     )
+
+    result = await db_session.exec(stmt)
     return result.all()
 
 
@@ -36,12 +40,12 @@ async def create_messages(db_session: AsyncDbSession, messages: Iterable[Message
 async def get_latest_message_with_state(
     db_session: AsyncDbSession, session_id: UUID
 ) -> Message | None:
-    statement = (
+    stmt = (
         select(Message)
         .where(Message.session_id == session_id)
         .order_by(desc(Message.timestamp).nulls_last())
     )
-    result = await db_session.exec(statement)
+    result = await db_session.exec(stmt)
     for msg in result.all():
         if msg.state is not None:
             return msg

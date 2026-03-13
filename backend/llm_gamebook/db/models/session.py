@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import ClassVar
 from uuid import UUID, uuid4
 
+from sqlalchemy.orm import Mapped, MappedSQLExpression, query_expression
 from sqlmodel import Field, Relationship, SQLModel
 
 from .message import Message
@@ -15,10 +17,12 @@ class Session(SessionBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str | None
     project_id: str
-    config: ModelConfig | None = Relationship(back_populates="sessions")
+    config: Mapped[ModelConfig | None] = Relationship(back_populates="sessions")
     config_id: UUID | None = Field(default=None, foreign_key="modelconfig.id")
     messages: list[Message] = Relationship(
         back_populates="session",
         passive_deletes="all",
         sa_relationship_kwargs={"lazy": "selectin"},
     )
+
+    message_count: ClassVar[MappedSQLExpression[int]] = query_expression()

@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlmodel import func, select
+from sqlalchemy.orm import with_expression
+from sqlmodel import col, desc, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
-from llm_gamebook.db.models import Session
-from llm_gamebook.db.models.model_config import ModelConfig
+from llm_gamebook.db.models import Message, ModelConfig, Session
 
 
 async def create_session(
@@ -18,20 +18,58 @@ async def create_session(
     return session
 
 
-async def get_sessions(db_session: AsyncDbSession, skip: int, limit: int) -> Sequence[Session]:
-    statement = select(Session).offset(skip).limit(limit)
-    result = await db_session.exec(statement)
+async def get_sessions(
+    db_session: AsyncDbSession, project_id: str | None, skip: int, limit: int
+) -> Sequence[Session]:
+    stmt = (
+        select(Session)
+        .outerjoin(Message, col(Message.session_id) == Session.id)
+        .group_by(col(Session.id))
+        .order_by(desc(Session.timestamp).nulls_last())
+        .offset(skip)
+        .limit(limit)
+    )
+
+    if project_id:
+        stmt = stmt.where(Session.project_id == project_id)
+
+    stmt = stmt.options(
+        with_expression(
+            Session.message_count,
+            func.count(col(Message.id)),
+        )
+    )
+
+    result = await db_session.exec(stmt)
     return result.all()
 
 
-async def get_session_count(db_session: AsyncDbSession) -> int:
-    statement = select(func.count()).select_from(Session)
-    result = await db_session.exec(statement)
+async def get_session_count(db_session: AsyncDbSession, project_id: str | None) -> int:
+    stmt = select(func.count()).select_from(Session)
+
+    if project_id:
+        stmt = stmt.where(Session.project_id == project_id)
+
+    result = await db_session.exec(stmt)
     return result.one()
 
 
 async def get_session(db_session: AsyncDbSession, session_id: UUID) -> Session | None:
-    return await db_session.get(Session, session_id)
+    stmt = (
+        select(Session)
+        .where(Session.id == session_id)
+        .outerjoin(Message, col(Message.session_id) == Session.id)
+        .group_by(col(Session.id))
+        .options(
+            with_expression(
+                Session.message_count,
+                func.count(col(Message.id)),
+            )
+        )
+    )
+
+    result = await db_session.exec(stmt)
+    return result.one_or_none()
 
 
 async def update_session_model_config(

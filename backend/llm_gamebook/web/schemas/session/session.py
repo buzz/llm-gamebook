@@ -36,6 +36,9 @@ class Session(BaseSession):
     timestamp: datetime = Field(default_factory=datetime.now)
     """The timestamp of the session."""
 
+    message_count: int
+    """The number of messages in this session."""
+
 
 class SessionUpdate(BaseSession):
     """Update fields for a session."""

@@ -85,9 +85,9 @@ class EngineManager(BusSubscriber):
         db_session: AsyncDbSession,
         project_manager: ProjectManager,
     ) -> tuple[Model | None, StoryContext]:
-        statement = select(Session).where(Session.id == session_id)
-        statement = statement.options(selectinload(Session.config))  # type: ignore[arg-type]
-        result = await db_session.exec(statement)
+        stmt = select(Session).where(Session.id == session_id)
+        stmt = stmt.options(selectinload(Session.config))
+        result = await db_session.exec(stmt)
         session = result.one_or_none()
 
         if not session:

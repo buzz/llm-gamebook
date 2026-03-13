@@ -29,11 +29,14 @@ session_router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 @session_router.get("/")
-async def read_sessions(db_session: DbSessionDep, skip: int = 0, limit: int = 100) -> Sessions:
-    sessions = await get_sessions(db_session, skip, limit)
+async def read_sessions(
+    db_session: DbSessionDep, project_id: str | None = None, skip: int = 0, limit: int = 100
+) -> Sessions:
+    sessions = await get_sessions(db_session, project_id, skip, limit)
+
     return Sessions(
         data=[Session.model_validate(s, from_attributes=True) for s in sessions],
-        count=await get_session_count(db_session),
+        count=await get_session_count(db_session, project_id),
     )
 
 
@@ -48,10 +51,10 @@ async def read_session(engine: StoryEngineDep, db_session: DbSessionDep) -> SqlM
     return session
 
 
-@session_router.post("/", response_model=Session)
+@session_router.post("/")
 async def create_session(
     db_session: DbSessionDep, project_manager: ProjectManagerDep, session_in: SessionCreate
-) -> SqlModelSession:
+) -> Session:
     model_config = await get_model_config(db_session, session_in.config_id)
     if not model_config:
         raise HTTPException(status_code=404, detail="Model config not found")
@@ -61,7 +64,9 @@ async def create_session(
     except ProjectNotFoundError as err:
         raise HTTPException(status_code=404, detail="Project not found") from err
 
-    return await crud_create_session(db_session, model_config, project.id, session_in.title)
+    session = await crud_create_session(db_session, model_config, project.id, session_in.title)
+
+    return Session.model_validate({**session.model_dump(), "message_count": 0})
 
 
 @session_router.patch("/{session_id}")
