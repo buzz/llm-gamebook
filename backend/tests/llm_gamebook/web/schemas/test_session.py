@@ -71,6 +71,7 @@ def test_session_full_with_messages() -> None:
         project_id="foo/bar",
         title="Test",
         messages=[model_request],
+        message_count=1,
     )
     assert session.messages == [model_request]
     assert len(session.messages) == 1
@@ -81,7 +82,12 @@ def test_session_full_with_empty_messages() -> None:
     config_id = uuid4()
 
     session = SessionFull(
-        id=session_id, config_id=config_id, project_id="foo/bar", title="Test", messages=[]
+        id=session_id,
+        config_id=config_id,
+        project_id="foo/bar",
+        title="Test",
+        messages=[],
+        message_count=0,
     )
     assert session.messages == []
     assert len(session.messages) == 0
@@ -118,6 +124,7 @@ def test_session_full_with_request_and_response() -> None:
         project_id="foo/bar",
         title="Math Session",
         messages=[request, response],
+        message_count=2,
     )
     assert len(session.messages) == 2
 
@@ -142,7 +149,11 @@ def test_session_full_message_discriminator() -> None:
     )
 
     session = SessionFull(
-        id=session_id, config_id=config_id, project_id="foo/bar", messages=[request, response]
+        id=session_id,
+        config_id=config_id,
+        project_id="foo/bar",
+        messages=[request, response],
+        message_count=2,
     )
 
     messages = session.messages
@@ -161,7 +172,11 @@ def test_sessions_with_single_session() -> None:
     config_id = uuid4()
 
     session = Session(
-        id=session_id, config_id=config_id, project_id="foo/bar", title="Test Session"
+        id=session_id,
+        config_id=config_id,
+        project_id="foo/bar",
+        title="Test Session",
+        message_count=0,
     )
 
     sessions = Sessions(data=[session], count=1)
@@ -172,7 +187,13 @@ def test_sessions_with_single_session() -> None:
 
 def test_sessions_with_multiple_sessions() -> None:
     sessions_list = [
-        Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar", title=f"Session {i}")
+        Session(
+            id=uuid4(),
+            config_id=uuid4(),
+            project_id="foo/bar",
+            title=f"Session {i}",
+            message_count=0,
+        )
         for i in range(3)
     ]
 
@@ -183,7 +204,13 @@ def test_sessions_with_multiple_sessions() -> None:
 
 def test_sessions_count_matches_data_length() -> None:
     sessions_list = [
-        Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar", title=f"Session {i}")
+        Session(
+            id=uuid4(),
+            config_id=uuid4(),
+            project_id="foo/bar",
+            title=f"Session {i}",
+            message_count=0,
+        )
         for i in range(5)
     ]
 
@@ -192,7 +219,22 @@ def test_sessions_count_matches_data_length() -> None:
 
 
 def test_sessions_with_no_title() -> None:
-    session = Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar")
+    session = Session(id=uuid4(), config_id=uuid4(), project_id="foo/bar", message_count=0)
 
     sessions = Sessions(data=[session], count=1)
     assert sessions.data[0].title is None
+
+
+def test_session_with_message_count() -> None:
+    session_id = uuid4()
+    config_id = uuid4()
+
+    session = Session(
+        id=session_id,
+        config_id=config_id,
+        project_id="foo/bar",
+        title="Test Session",
+        message_count=5,
+    )
+
+    assert session.message_count == 5

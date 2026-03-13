@@ -19,7 +19,7 @@ async def test_create_session(db_session: AsyncDbSession, model_config: ModelCon
 
 
 async def test_get_sessions_empty(db_session: AsyncDbSession) -> None:
-    sessions = await session_crud.get_sessions(db_session, skip=0, limit=10)
+    sessions = await session_crud.get_sessions(db_session, project_id=None, skip=0, limit=10)
 
     assert sessions == []
 
@@ -30,21 +30,44 @@ async def test_get_sessions_with_data(
     await session_crud.create_session(db_session, model_config, "foo/bar", "Session 1")
     await session_crud.create_session(db_session, model_config, "baz/quz", "Session 2")
 
-    sessions = await session_crud.get_sessions(db_session, skip=0, limit=10)
+    sessions = await session_crud.get_sessions(db_session, project_id=None, skip=0, limit=10)
 
     assert len(sessions) == 2
-    assert sessions[0].title == "Session 1"
-    assert sessions[1].title == "Session 2"
+    assert sessions[0].title == "Session 2"
+    assert sessions[1].title == "Session 1"
+
+
+async def test_get_sessions_with_project_filter(
+    db_session: AsyncDbSession, model_config: ModelConfig
+) -> None:
+    await session_crud.create_session(db_session, model_config, "foo/bar", "Session 1")
+    await session_crud.create_session(db_session, model_config, "baz/quz", "Session 2")
+
+    sessions = await session_crud.get_sessions(db_session, project_id="foo/bar", skip=0, limit=10)
+
+    assert len(sessions) == 1
+    assert sessions[0].project_id == "foo/bar"
 
 
 async def test_get_session_count(db_session: AsyncDbSession, model_config: ModelConfig) -> None:
-    initial_count = await session_crud.get_session_count(db_session)
+    initial_count = await session_crud.get_session_count(db_session, project_id=None)
 
     await session_crud.create_session(db_session, model_config, "foo/bar", "Test Session")
 
-    new_count = await session_crud.get_session_count(db_session)
+    new_count = await session_crud.get_session_count(db_session, project_id=None)
 
     assert new_count == initial_count + 1
+
+
+async def test_get_session_count_with_project_filter(
+    db_session: AsyncDbSession, model_config: ModelConfig
+) -> None:
+    await session_crud.create_session(db_session, model_config, "foo/bar", "Session 1")
+    await session_crud.create_session(db_session, model_config, "baz/quz", "Session 2")
+
+    count = await session_crud.get_session_count(db_session, project_id="foo/bar")
+
+    assert count == 1
 
 
 async def test_get_session_found(db_session: AsyncDbSession, session: Session) -> None:
