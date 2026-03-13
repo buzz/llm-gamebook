@@ -131,6 +131,9 @@ commit_author = "buzz <buzz@users.noreply.github.com>"
 commit_message = "Version {version}"
 tag_format = "v{version}"
 
+[tool.semantic_release.changelog]
+exclude_commit_patterns = ["^\\w+\\(openspec\\):"]
+
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "../CHANGELOG.md"
 
