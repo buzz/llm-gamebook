@@ -1,6 +1,6 @@
 import mimetypes
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, status
 
 from llm_gamebook.story.errors import ProjectExistsError, ProjectNotFoundError
 from llm_gamebook.story.schemas import ProjectSource
@@ -9,9 +9,10 @@ from llm_gamebook.story.types import NormalizedKebabCase
 from llm_gamebook.web.schemas.common import ServerMessage
 from llm_gamebook.web.schemas.project import ProjectBasic, ProjectCreate, ProjectDetail, Projects
 
+from ._tags import ApiTags
 from .dependencies import ProjectManagerDep
 
-project_router = APIRouter(prefix="/projects", tags=["projects"])
+project_router = APIRouter(prefix="/projects", tags=[ApiTags.projects])
 
 
 @project_router.get("/")

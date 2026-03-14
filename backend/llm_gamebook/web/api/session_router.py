@@ -23,9 +23,10 @@ from llm_gamebook.web.schemas.session import (
 )
 from llm_gamebook.web.schemas.session.message import ModelRequest, ModelRequestCreate
 
+from ._tags import ApiTags
 from .dependencies import DbSessionDep, MessageBusDep, ProjectManagerDep, StoryEngineDep
 
-session_router = APIRouter(prefix="/sessions", tags=["sessions"])
+session_router = APIRouter(prefix="/sessions", tags=[ApiTags.sessions])
 
 
 @session_router.get("/")

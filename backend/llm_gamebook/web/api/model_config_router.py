@@ -22,7 +22,9 @@ from llm_gamebook.web.schemas.model_config import (
     ModelProviders,
 )
 
-model_config_router = APIRouter(prefix="/model-configs", tags=["model-configs"])
+from ._tags import ApiTags
+
+model_config_router = APIRouter(prefix="/model-configs", tags=[ApiTags.model_configs])
 
 
 @model_config_router.get("/")
