@@ -49,9 +49,9 @@ function ErrorAlert({ error, resetErrorBoundary }: ErrorAlertProps) {
           {message ?? 'Some unknown error occured. Please check the console for details.'}
         </Box>
         {code ? (
-          <Box className={classes.codeWrap}>
+          <div>
             <Code block>{code}</Code>
-          </Box>
+          </div>
         ) : null}
         {resetErrorBoundary === undefined ? null : (
           <Button
