@@ -32,7 +32,7 @@ function Controls({ isGenerating, session }: ControlsProps) {
     try {
       await createRequest({
         sessionId: session.id,
-        projectId: session.project_id,
+        projectId: session.projectId,
         request: {
           kind: 'request',
           parts: [{ kind: 'user-prompt', content }],

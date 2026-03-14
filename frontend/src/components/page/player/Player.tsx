@@ -20,15 +20,15 @@ interface PlayerLoadedProps {
 
 function PlayerLoaded({ session }: PlayerLoadedProps) {
   const { currentPartId, messages, streamStatus } = useMessages(session)
-  const [modelConfigId, setModelConfigId] = useState(session.config_id ?? null)
+  const [modelConfigId, setModelConfigId] = useState(session.configId ?? null)
   const [updateSession, { isLoading: isUpdating }] = sessionApi.useUpdateSessionMutation()
 
   const handleModelChange = useCallback(
     (newConfigId: string) => {
       updateSession({
         sessionId: session.id,
-        projectId: session.project_id,
-        config_id: newConfigId,
+        projectId: session.projectId,
+        configId: newConfigId,
       })
         .unwrap()
         .then(() => {

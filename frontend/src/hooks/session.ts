@@ -17,8 +17,8 @@ function useCreateSession() {
       async (projectId: string, modelConfigId: string) => {
         try {
           const { id } = await createSession({
-            project_id: projectId,
-            config_id: modelConfigId,
+            projectId,
+            configId: modelConfigId,
           }).unwrap()
           navigate(url('player.view', { id }))
         } catch (error) {
@@ -48,7 +48,7 @@ function useDeleteSession() {
               'Are you sure you want to delete this session?'
             )
           ) {
-            await deleteSession({ sessionId: session.id, projectId: session.project_id }).unwrap()
+            await deleteSession({ sessionId: session.id, projectId: session.projectId }).unwrap()
             if (location === url('player.view', { id: session.id })) {
               navigate(url('home'))
               showSuccess('Story session was deleted.')

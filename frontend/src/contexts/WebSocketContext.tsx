@@ -49,8 +49,8 @@ function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
   // Subscriber notification
   useEffect(() => {
-    if (lastMessage && lastMessage.kind !== 'pong' && lastMessage.session_id !== null) {
-      const sessionSubscribers = subscribersReference.current.get(lastMessage.session_id)
+    if (lastMessage && lastMessage.kind !== 'pong' && lastMessage.sessionId !== null) {
+      const sessionSubscribers = subscribersReference.current.get(lastMessage.sessionId)
 
       if (sessionSubscribers) {
         for (const callback of sessionSubscribers) {

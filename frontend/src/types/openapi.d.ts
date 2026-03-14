@@ -249,24 +249,24 @@ export interface components {
       /** Name */
       readonly name: string
       readonly provider: components['schemas']['ModelProvider']
-      /** Model Name */
-      readonly model_name: string
-      /** Base Url */
-      readonly base_url?: string | null
-      /** Api Key */
-      readonly api_key?: string | null
-      /** Context Window */
-      readonly context_window: number
-      /** Max Tokens */
-      readonly max_tokens: number
+      /** Modelname */
+      readonly modelName: string
+      /** Baseurl */
+      readonly baseUrl?: string | null
+      /** Apikey */
+      readonly apiKey?: string | null
+      /** Contextwindow */
+      readonly contextWindow: number
+      /** Maxtokens */
+      readonly maxTokens: number
       /** Temperature */
       readonly temperature: number
-      /** Top P */
-      readonly top_p: number
-      /** Presence Penalty */
-      readonly presence_penalty: number
-      /** Frequency Penalty */
-      readonly frequency_penalty: number
+      /** Topp */
+      readonly topP: number
+      /** Presencepenalty */
+      readonly presencePenalty: number
+      /** Frequencypenalty */
+      readonly frequencyPenalty: number
       /**
        * Id
        * Format: uuid
@@ -278,24 +278,24 @@ export interface components {
       /** Name */
       readonly name: string
       readonly provider: components['schemas']['ModelProvider']
-      /** Model Name */
-      readonly model_name: string
-      /** Base Url */
-      readonly base_url?: string | null
-      /** Api Key */
-      readonly api_key?: string | null
-      /** Context Window */
-      readonly context_window: number
-      /** Max Tokens */
-      readonly max_tokens: number
+      /** Modelname */
+      readonly modelName: string
+      /** Baseurl */
+      readonly baseUrl?: string | null
+      /** Apikey */
+      readonly apiKey?: string | null
+      /** Contextwindow */
+      readonly contextWindow: number
+      /** Maxtokens */
+      readonly maxTokens: number
       /** Temperature */
       readonly temperature: number
-      /** Top P */
-      readonly top_p: number
-      /** Presence Penalty */
-      readonly presence_penalty: number
-      /** Frequency Penalty */
-      readonly frequency_penalty: number
+      /** Topp */
+      readonly topP: number
+      /** Presencepenalty */
+      readonly presencePenalty: number
+      /** Frequencypenalty */
+      readonly frequencyPenalty: number
     }
     /**
      * ModelConfigUpdate
@@ -305,24 +305,24 @@ export interface components {
       /** Name */
       readonly name: string
       readonly provider: components['schemas']['ModelProvider']
-      /** Model Name */
-      readonly model_name: string
-      /** Base Url */
-      readonly base_url?: string | null
-      /** Api Key */
-      readonly api_key?: string | null
-      /** Context Window */
-      readonly context_window: number
-      /** Max Tokens */
-      readonly max_tokens: number
+      /** Modelname */
+      readonly modelName: string
+      /** Baseurl */
+      readonly baseUrl?: string | null
+      /** Apikey */
+      readonly apiKey?: string | null
+      /** Contextwindow */
+      readonly contextWindow: number
+      /** Maxtokens */
+      readonly maxTokens: number
       /** Temperature */
       readonly temperature: number
-      /** Top P */
-      readonly top_p: number
-      /** Presence Penalty */
-      readonly presence_penalty: number
-      /** Frequency Penalty */
-      readonly frequency_penalty: number
+      /** Topp */
+      readonly topP: number
+      /** Presencepenalty */
+      readonly presencePenalty: number
+      /** Frequencypenalty */
+      readonly frequencyPenalty: number
     }
     /**
      * ModelConfigs
@@ -442,22 +442,22 @@ export interface components {
       /** @default null */
       readonly usage: components['schemas']['Usage'] | null
       /**
-       * Model Name
+       * Modelname
        * @default null
        */
-      readonly model_name: string | null
+      readonly modelName: string | null
       /**
        * Timestamp
        * Format: date-time
        */
       readonly timestamp: string
       /**
-       * Provider Name
+       * Providername
        * @default null
        */
-      readonly provider_name: string | null
+      readonly providerName: string | null
       /** @default null */
-      readonly finish_reason: components['schemas']['FinishReason'] | null
+      readonly finishReason: components['schemas']['FinishReason'] | null
     }
     readonly ModelResponsePart:
       | components['schemas']['TextPart']
@@ -507,8 +507,8 @@ export interface components {
       readonly description?: string | null
       /** Image */
       readonly image?: string | null
-      /** Entity Types */
-      readonly entity_types: readonly components['schemas']['EntityTypeDefinition'][]
+      /** Entitytypes */
+      readonly entityTypes: readonly components['schemas']['EntityTypeDefinition'][]
     }
     readonly ProjectId: string
     /**
@@ -544,12 +544,12 @@ export interface components {
       /** Content */
       readonly content: readonly components['schemas']['ErrorDetails'][] | string
       /**
-       * Tool Name
+       * Toolname
        * @default null
        */
-      readonly tool_name: string | null
-      /** Tool Call Id */
-      readonly tool_call_id: string
+      readonly toolName: string | null
+      /** Toolcallid */
+      readonly toolCallId: string
       /**
        * Timestamp
        * Format: date-time
@@ -573,17 +573,17 @@ export interface components {
        * Format: uuid
        */
       readonly id: string
-      /** Config Id */
-      readonly config_id?: string | null
-      /** Project Id */
-      readonly project_id: string
+      /** Configid */
+      readonly configId?: string | null
+      /** Projectid */
+      readonly projectId: string
       /**
        * Timestamp
        * Format: date-time
        */
       readonly timestamp?: string
-      /** Message Count */
-      readonly message_count: number
+      /** Messagecount */
+      readonly messageCount: number
     }
     /**
      * SessionCreate
@@ -593,12 +593,12 @@ export interface components {
       /** Title */
       readonly title?: string | null
       /**
-       * Config Id
+       * Configid
        * Format: uuid
        */
-      readonly config_id: string
-      /** Project Id */
-      readonly project_id: string
+      readonly configId: string
+      /** Projectid */
+      readonly projectId: string
     }
     /**
      * SessionFull
@@ -612,17 +612,17 @@ export interface components {
        * Format: uuid
        */
       readonly id: string
-      /** Config Id */
-      readonly config_id?: string | null
-      /** Project Id */
-      readonly project_id: string
+      /** Configid */
+      readonly configId?: string | null
+      /** Projectid */
+      readonly projectId: string
       /**
        * Timestamp
        * Format: date-time
        */
       readonly timestamp?: string
-      /** Message Count */
-      readonly message_count: number
+      /** Messagecount */
+      readonly messageCount: number
       /** Messages */
       readonly messages: readonly components['schemas']['ModelMessage'][]
     }
@@ -633,8 +633,8 @@ export interface components {
     readonly SessionUpdate: {
       /** Title */
       readonly title?: string | null
-      /** Config Id */
-      readonly config_id?: string | null
+      /** Configid */
+      readonly configId?: string | null
     }
     /**
      * Sessions
@@ -692,15 +692,15 @@ export interface components {
       /** Content */
       readonly content: string
       /**
-       * Provider Name
+       * Providername
        * @default null
        */
-      readonly provider_name: string | null
+      readonly providerName: string | null
       /**
-       * Duration Seconds
+       * Durationseconds
        * @default null
        */
-      readonly duration_seconds: number | null
+      readonly durationSeconds: number | null
     }
     /**
      * ToolCallPart
@@ -722,15 +722,15 @@ export interface components {
        * @enum {string}
        */
       readonly kind: 'tool-call'
-      /** Tool Name */
-      readonly tool_name: string
+      /** Toolname */
+      readonly toolName: string
       /**
        * Args
        * @default null
        */
       readonly args: string | null
-      /** Tool Call Id */
-      readonly tool_call_id: string
+      /** Toolcallid */
+      readonly toolCallId: string
     }
     /**
      * ToolReturnPart
@@ -747,12 +747,12 @@ export interface components {
        * @enum {string}
        */
       readonly kind: 'tool-return'
-      /** Tool Name */
-      readonly tool_name: string | null
+      /** Toolname */
+      readonly toolName: string | null
       /** Content */
       readonly content: string
-      /** Tool Call Id */
-      readonly tool_call_id: string | null
+      /** Toolcallid */
+      readonly toolCallId: string | null
       /** Timestamp */
       readonly timestamp: string | null
     }
@@ -766,14 +766,14 @@ export interface components {
     }
     /** Usage */
     readonly Usage: {
-      /** Input Tokens */
-      readonly input_tokens: number
-      /** Output Tokens */
-      readonly output_tokens: number
-      /** Cache Write Tokens */
-      readonly cache_write_tokens: number
-      /** Cache Read Tokens */
-      readonly cache_read_tokens: number
+      /** Inputtokens */
+      readonly inputTokens: number
+      /** Outputtokens */
+      readonly outputTokens: number
+      /** Cachewritetokens */
+      readonly cacheWriteTokens: number
+      /** Cachereadtokens */
+      readonly cacheReadTokens: number
     }
     /**
      * UserPromptPart
@@ -853,8 +853,8 @@ export interface components {
     }
     /** ToolNameDelta */
     readonly ToolNameDelta: {
-      /** Tool Name */
-      readonly tool_name: string
+      /** Toolname */
+      readonly toolName: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
@@ -872,10 +872,10 @@ export interface components {
        */
       readonly kind: 'error'
       /**
-       * Session Id
+       * Sessionid
        * @default null
        */
-      readonly session_id: string | null
+      readonly sessionId: string | null
       /** Name */
       readonly name: string
       /** Message */
@@ -898,10 +898,10 @@ export interface components {
      */
     readonly WebSocketStreamMessageMessage: {
       /**
-       * Session Id
+       * Sessionid
        * Format: uuid
        */
-      readonly session_id: string
+      readonly sessionId: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
@@ -915,25 +915,25 @@ export interface components {
      */
     readonly WebSocketStreamPartDeltaMessage: {
       /**
-       * Session Id
+       * Sessionid
        * Format: uuid
        */
-      readonly session_id: string
+      readonly sessionId: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
       readonly kind: 'stream_part_delta'
       /**
-       * Message Id
+       * Messageid
        * Format: uuid
        */
-      readonly message_id: string
+      readonly messageId: string
       /**
-       * Part Id
+       * Partid
        * Format: uuid
        */
-      readonly part_id: string
+      readonly partId: string
       readonly delta: components['schemas']['Delta']
     }
     /**
@@ -942,20 +942,20 @@ export interface components {
      */
     readonly WebSocketStreamPartMessage: {
       /**
-       * Session Id
+       * Sessionid
        * Format: uuid
        */
-      readonly session_id: string
+      readonly sessionId: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
       readonly kind: 'stream_part'
       /**
-       * Message Id
+       * Messageid
        * Format: uuid
        */
-      readonly message_id: string
+      readonly messageId: string
       readonly part: components['schemas']['ModelResponsePart']
     }
     /**
@@ -964,10 +964,10 @@ export interface components {
      */
     readonly WebSocketStreamStatusMessage: {
       /**
-       * Session Id
+       * Sessionid
        * Format: uuid
        */
-      readonly session_id: string
+      readonly sessionId: string
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}

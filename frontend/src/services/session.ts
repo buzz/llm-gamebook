@@ -31,11 +31,18 @@ const sessionApi = createApi({
       providesTags: (_result, _error, id) => [{ type: 'Session', id }],
     }),
 
-    getSessions: build.query<Sessions, paths['/api/sessions/']['get']['parameters']['query']>({
-      query: (params) => ({ url: '', params }),
+    getSessions: build.query<Sessions, { projectId?: string; skip?: number; limit?: number }>({
+      query: ({ projectId, skip, limit }) => ({
+        url: '',
+        params: {
+          project_id: projectId,
+          skip,
+          limit,
+        } satisfies paths['/api/sessions/']['get']['parameters']['query'],
+      }),
       providesTags: (result, _error, args) => [
         ...(result?.data.map(({ id }) => ({ type: 'Session' as const, id })) ?? []),
-        ...getListTags(args?.project_id),
+        ...getListTags(args.projectId),
       ],
     }),
 
@@ -45,17 +52,17 @@ const sessionApi = createApi({
         method: 'POST',
         body: session,
       }),
-      invalidatesTags: (_result, _error, session) => getListTags(session.project_id),
+      invalidatesTags: (_result, _error, session) => getListTags(session.projectId),
     }),
 
     updateSession: build.mutation<
       ServerMessage,
       { sessionId: string; projectId: string } & SessionUpdate
     >({
-      query: ({ sessionId, config_id }) => ({
+      query: ({ sessionId, configId }) => ({
         url: sessionId,
         method: 'PATCH',
-        body: { config_id },
+        body: { configId },
       }),
       invalidatesTags: (_result, _error, { sessionId, projectId }) => [
         { type: 'Session', sessionId },

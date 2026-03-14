@@ -22,7 +22,7 @@ function Session({ session }: SessionProps) {
       }
     >
       <Text size="sm">
-        {session.message_count} Message{session.message_count === 1 ? '' : 's'}
+        {session.messageCount} Message{session.messageCount === 1 ? '' : 's'}
       </Text>
       {session.timestamp && (
         <Text c="dimmed" size="xs" mt={4}>

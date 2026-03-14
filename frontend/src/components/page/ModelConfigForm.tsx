@@ -38,7 +38,7 @@ import type { ModelProvider } from '@/types/api'
 const EMPTY_FORM = {
   name: '',
   provider: 'openai-compatible',
-  modelId: '',
+  modelName: '',
   baseUrl: '',
   apiKey: '',
   contextWindow: 32_768,
@@ -52,7 +52,7 @@ const EMPTY_FORM = {
 interface ConfigFormData {
   name: string
   provider: ModelProvider
-  modelId: string
+  modelName: string
   baseUrl: string
   apiKey: string
   contextWindow: number
@@ -88,7 +88,7 @@ function ModelConfigForm() {
     validate: {
       name: (value) => (value.length === 0 ? 'Name is required' : null),
       provider: (value) => (value.length === 0 ? 'Provider is required' : null),
-      modelId: (value) => (value.length === 0 ? 'Model ID is required' : null),
+      modelName: (value) => (value.length === 0 ? 'Model ID is required' : null),
     },
   })
 
@@ -100,17 +100,9 @@ function ModelConfigForm() {
   useEffect(() => {
     if (isEditing && modelConfig) {
       setValues({
-        name: modelConfig.name,
-        provider: modelConfig.provider,
-        modelId: modelConfig.model_name,
-        baseUrl: modelConfig.base_url ?? undefined,
-        apiKey: modelConfig.api_key ?? undefined,
-        contextWindow: modelConfig.context_window,
-        maxTokens: modelConfig.max_tokens,
-        temperature: modelConfig.temperature,
-        topP: modelConfig.top_p,
-        presencePenalty: modelConfig.presence_penalty,
-        frequencyPenalty: modelConfig.frequency_penalty,
+        ...modelConfig,
+        baseUrl: modelConfig.baseUrl ?? undefined,
+        apiKey: modelConfig.apiKey ?? undefined,
       })
     } else {
       reset()
@@ -130,19 +122,7 @@ function ModelConfigForm() {
     }
 
     const formValues = form.getValues()
-    const config = {
-      name: formValues.name,
-      provider: formValues.provider,
-      modelId: formValues.modelId,
-      baseUrl: formValues.baseUrl,
-      apiKey: formValues.apiKey,
-      contextWindow: formValues.contextWindow,
-      maxTokens: formValues.maxTokens,
-      temperature: formValues.temperature,
-      topP: formValues.topP,
-      presencePenalty: formValues.presencePenalty,
-      frequencyPenalty: formValues.frequencyPenalty,
-    }
+    const config = { ...formValues }
 
     await (isEditing && modelConfig
       ? updateModelConfig(modelConfig.id, config)

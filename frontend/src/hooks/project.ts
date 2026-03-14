@@ -6,14 +6,7 @@ import { useShowError, useShowSuccess } from '@/hooks/notifications'
 import url from '@/routes/url'
 import projectApi from '@/services/project'
 import { splitProjectId } from '@/utils'
-import type { ProjectBasic } from '@/types/api'
-
-interface ProjectInput {
-  id: string
-  title: string
-  description?: string | null
-  author?: string | null
-}
+import type { ProjectBasic, ProjectCreate } from '@/types/api'
 
 function useCreateProject() {
   const [, navigate] = useLocation()
@@ -23,15 +16,9 @@ function useCreateProject() {
 
   return {
     createProject: useCallback(
-      async (project: ProjectInput) => {
+      async (project: ProjectCreate) => {
         try {
-          const createdProject = await createProject({
-            id: project.id,
-            source: 'local',
-            title: project.title,
-            description: project.description ?? undefined,
-            author: project.author ?? undefined,
-          }).unwrap()
+          const createdProject = await createProject(project).unwrap()
           navigate(url('gamebook.view', splitProjectId(createdProject.id)))
           showSuccess('Gamebook was created.')
         } catch (error) {

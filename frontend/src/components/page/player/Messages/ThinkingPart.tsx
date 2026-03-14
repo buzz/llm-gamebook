@@ -93,7 +93,7 @@ function ThinkingPart({ isStreaming, part }: ThinkingPartProps) {
       >
         <ThinkingDurationLabel
           timestamp={part.timestamp}
-          durationSecs={part.duration_seconds}
+          durationSecs={part.durationSeconds}
           isStreaming={isStreaming}
         />
       </Button>

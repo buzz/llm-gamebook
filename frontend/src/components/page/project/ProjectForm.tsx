@@ -58,6 +58,7 @@ function ProjectForm() {
 
     await createProject({
       id: `${values.namespace}/${values.name}`,
+      source: 'local',
       title: values.title,
       description: values.description || undefined,
       author: values.author || undefined,

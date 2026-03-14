@@ -63,8 +63,8 @@ function standardizeErrorMessage(error: unknown): ErrorDisplay {
   } else if (isWebsocketError(error)) {
     errorDisp.name = error.name
     errorDisp.message = error.message
-    if (error.session_id !== null) {
-      errorDisp.details = `sessionId: ${error.session_id}`
+    if (error.sessionId !== null) {
+      errorDisp.details = `sessionId: ${error.sessionId}`
     }
   } else if (error instanceof Error) {
     errorDisp.name = error.name

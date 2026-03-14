@@ -35,7 +35,7 @@ function ProjectDetailsDisplay({ project }: ProjectDetailsDisplayProps) {
   const { createSession, isLoading } = useCreateSession()
   const { data: configsData } = modelConfigApi.useGetModelConfigsQuery()
   const configs = configsData?.data ?? []
-  const sessionsResult = sessionApi.useGetSessionsQuery({ project_id: project.id })
+  const sessionsResult = sessionApi.useGetSessionsQuery({ projectId: project.id })
 
   const [modelConfigId, setModelConfigId] = useState<string | null>(null)
   const [sessionListOpened, sessionListHandlers] = useDisclosure(true)

@@ -110,7 +110,7 @@ const messageReducer = produce((draft: WritableDeep<MessageState>, action: Messa
 
         case 'tool_name': {
           if (updatedPart.kind === 'tool-call') {
-            updatedPart.tool_name += delta.tool_name
+            updatedPart.toolName += delta.toolName
           }
           break
         }
@@ -173,7 +173,7 @@ function useMessages(session: SessionFull) {
       case 'stream_part': {
         dispatch({
           type: INSERT_PART,
-          messageId: lastMessage.message_id,
+          messageId: lastMessage.messageId,
           part: lastMessage.part,
         })
         break
@@ -182,8 +182,8 @@ function useMessages(session: SessionFull) {
       case 'stream_part_delta': {
         dispatch({
           type: APPLY_DELTA,
-          messageId: lastMessage.message_id,
-          partId: lastMessage.part_id,
+          messageId: lastMessage.messageId,
+          partId: lastMessage.partId,
           delta: lastMessage.delta,
         })
         break

@@ -4,21 +4,7 @@ import { useLocation } from 'wouter'
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
 import url from '@/routes/url'
 import modelConfigApi from '@/services/model-config'
-import type { ModelProvider } from '@/types/api'
-
-interface ModelConfigInput {
-  name: string
-  provider: ModelProvider
-  modelId: string
-  baseUrl?: string
-  apiKey?: string
-  contextWindow: number
-  maxTokens: number
-  temperature: number
-  topP: number
-  presencePenalty: number
-  frequencyPenalty: number
-}
+import type { ModelConfigCreate, ModelConfigUpdate } from '@/types/api'
 
 function useCreateModelConfig() {
   const [, navigate] = useLocation()
@@ -28,21 +14,9 @@ function useCreateModelConfig() {
 
   return {
     createModelConfig: useCallback(
-      async (config: ModelConfigInput) => {
+      async (config: ModelConfigCreate) => {
         try {
-          const createdModel = await createModelConfig({
-            name: config.name,
-            provider: config.provider,
-            model_name: config.modelId,
-            base_url: config.baseUrl ?? undefined,
-            api_key: config.apiKey ?? undefined,
-            context_window: config.contextWindow,
-            max_tokens: config.maxTokens,
-            temperature: config.temperature,
-            top_p: config.topP,
-            presence_penalty: config.presencePenalty,
-            frequency_penalty: config.frequencyPenalty,
-          }).unwrap()
+          const createdModel = await createModelConfig(config).unwrap()
           navigate(url('model-config.edit', { id: createdModel.id }))
           showSuccess('Model config was created.')
         } catch (error) {
@@ -62,24 +36,9 @@ function useUpdateModelConfig() {
 
   return {
     updateModelConfig: useCallback(
-      async (id: string, config: ModelConfigInput) => {
+      async (id: string, config: ModelConfigUpdate) => {
         try {
-          await updateModelConfig({
-            id,
-            config: {
-              name: config.name,
-              provider: config.provider,
-              model_name: config.modelId,
-              base_url: config.baseUrl ?? undefined,
-              api_key: config.apiKey ?? undefined,
-              context_window: config.contextWindow,
-              max_tokens: config.maxTokens,
-              temperature: config.temperature,
-              top_p: config.topP,
-              presence_penalty: config.presencePenalty,
-              frequency_penalty: config.frequencyPenalty,
-            },
-          }).unwrap()
+          await updateModelConfig({ id, config }).unwrap()
           showSuccess('Model config was updated.')
         } catch (error) {
           showError('Failed to update model config!', error)

@@ -46,7 +46,7 @@ function Message({ currentPartId, message }: MessageProps) {
         return (
           <ToolPart icon={IconTool} title="Tool call" key={part.id}>
             <div>
-              Name: <Code>{part.tool_name}</Code>
+              Name: <Code>{part.toolName}</Code>
             </div>
             <div>Arguments: {part.args ? <Code>{part.args}</Code> : 'None'}</div>
           </ToolPart>
