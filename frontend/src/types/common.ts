@@ -1,3 +1,5 @@
+type IconSize = 'lg' | 'md' | 'sm'
+
 /** Type guard for `object`. */
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -9,4 +11,5 @@ function assertNever(value: never): never {
   throw new Error(`This code should never be reached. Value='${value}'`)
 }
 
+export type { IconSize }
 export { assertNever, isObject }
