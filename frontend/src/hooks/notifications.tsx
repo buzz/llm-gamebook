@@ -3,30 +3,11 @@ import { notifications } from '@mantine/notifications'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { useCallback } from 'react'
 
-import { isApiQueryError, isApiValidationError, isWebsocketError } from '@/types/typeguards'
-import { iconSizeProps } from '@/utils'
+import { iconSizeProps, standardizeErrorMessage } from '@/utils'
 
 function useShowError() {
   return useCallback((message: string, error: unknown) => {
-    let errorMessage = 'UnknownError'
-
-    if (isApiQueryError(error)) {
-      if (isApiValidationError(error) && Array.isArray(error.data.detail)) {
-        const validationErrors = error.data.detail
-          .map((err) => {
-            const field = Array.isArray(err.loc) ? err.loc.join('.') : 'unknown field'
-            return `${field}: ${err.msg || 'validation error'}`
-          })
-          .join(', ')
-        errorMessage = `Validation error: ${validationErrors}`
-      } else if (typeof error.data.detail === 'string') {
-        errorMessage = String(error.status) + ' - ' + error.data.detail
-      } else {
-        errorMessage = String(error.status)
-      }
-    } else if (error instanceof Error || isWebsocketError(error)) {
-      errorMessage = error.message
-    }
+    const errDisp = standardizeErrorMessage(error)
 
     notifications.show({
       title: 'Error',
@@ -36,7 +17,7 @@ function useShowError() {
             {message}
           </Text>
           <Text fz="sm" lineClamp={5}>
-            {errorMessage}
+            {errDisp.name}: {errDisp.message}
           </Text>
         </>
       ),

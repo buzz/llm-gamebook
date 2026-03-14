@@ -1,6 +1,11 @@
-import { assertNever } from './types/typeguards'
+import {
+  assertNever,
+  isApiQueryError,
+  isApiValidationError,
+  isWebsocketError,
+} from './types/typeguards'
 import type { ProjectBasic } from './types/api'
-import type { IconSize } from './types/common'
+import type { ErrorDisplay, IconSize } from './types/common'
 
 interface IconProps {
   size: number
@@ -39,4 +44,37 @@ function splitProjectId(projectId: string) {
   return { namespace, name }
 }
 
-export { iconSizeProps, projectImageSrc, splitProjectId }
+function standardizeErrorMessage(error: unknown): ErrorDisplay {
+  const errorDisp: ErrorDisplay = {
+    name: 'Unknown Error',
+    message: null,
+    details: null,
+  }
+
+  if (isApiQueryError(error)) {
+    if (isApiValidationError(error)) {
+      errorDisp.name = `${String(error.status)} Validation Error`
+      if (error.data.detail !== undefined) {
+        errorDisp.details = JSON.stringify(error.data.detail, undefined, 2)
+      }
+    } else {
+      errorDisp.name = `${String(error.status)} Query Error`
+    }
+  } else if (isWebsocketError(error)) {
+    errorDisp.name = error.name
+    errorDisp.message = error.message
+    if (error.session_id !== null) {
+      errorDisp.details = `sessionId: ${error.session_id}`
+    }
+  } else if (error instanceof Error) {
+    errorDisp.name = error.name
+    errorDisp.message = error.message
+    if (error.stack) {
+      errorDisp.details = error.stack
+    }
+  }
+
+  return errorDisp
+}
+
+export { iconSizeProps, projectImageSrc, splitProjectId, standardizeErrorMessage }
