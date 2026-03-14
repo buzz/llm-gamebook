@@ -1,7 +1,7 @@
 import { use, useEffect, useState } from 'react'
 
 import WebSocketContext from '@/contexts/WebSocketContext'
-import { assertNever } from '@/types/common'
+import { assertNever } from '@/types/typeguards'
 import type {
   WebSocketErrorMessage,
   WebSocketServerMessage,

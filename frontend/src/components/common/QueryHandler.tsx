@@ -2,7 +2,7 @@ import { Center, Loader } from '@mantine/core'
 import type { BaseQueryFn, TypedUseQueryHookResult } from '@reduxjs/toolkit/query/react'
 import type { ReactNode } from 'react'
 
-import { isApiQueryError } from '@/types/api'
+import { isApiQueryError } from '@/types/typeguards'
 
 import ErrorAlert from './ErrorAlert'
 import NotFound from './NotFound'

@@ -5,7 +5,7 @@ import type { ReadonlyDeep, WritableDeep } from 'type-fest'
 import { useShowErrorModal } from '@/hooks/modals'
 import useWebSocketConnection from '@/hooks/websocket'
 import sessionApi from '@/services/session'
-import { assertNever } from '@/types/common'
+import { assertNever } from '@/types/typeguards'
 import type { Delta, ModelMessage, ModelResponsePart, SessionFull } from '@/types/api'
 import type { WebSocketStreamStatusMessage } from '@/types/websocket'
 

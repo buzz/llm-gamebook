@@ -1,7 +1,7 @@
 import { Badge } from '@mantine/core'
 import { IconBulb, IconUserCircle } from '@tabler/icons-react'
 
-import { assertNever } from '@/types/common'
+import { assertNever } from '@/types/typeguards'
 import { iconSizeProps } from '@/utils'
 import type { ProjectSource } from '@/types/api'
 

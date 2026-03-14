@@ -1,12 +1,13 @@
-import { assertNever } from './types/common'
+import { assertNever } from './types/typeguards'
 import type { ProjectBasic } from './types/api'
+import type { IconSize } from './types/common'
 
 interface IconProps {
   size: number
   stroke: number
 }
 
-function iconSizeProps(size: 'lg' | 'md' | 'sm'): IconProps {
+function iconSizeProps(size: IconSize): IconProps {
   switch (size) {
     case 'lg': {
       return { size: 32, stroke: 1.1 }

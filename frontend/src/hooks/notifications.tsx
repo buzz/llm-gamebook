@@ -3,8 +3,7 @@ import { notifications } from '@mantine/notifications'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { useCallback } from 'react'
 
-import { isApiQueryError, isApiValidationError } from '@/types/api'
-import { isWebsocketError } from '@/types/websocket'
+import { isApiQueryError, isApiValidationError, isWebsocketError } from '@/types/typeguards'
 import { iconSizeProps } from '@/utils'
 
 function useShowError() {

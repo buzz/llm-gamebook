@@ -1,4 +1,3 @@
-import { isObject } from './common'
 import type { components } from './openapi'
 
 type WebSocketClientMessage = components['schemas']['WebSocketClientMessage']
@@ -10,15 +9,6 @@ type WebSocketStreamPartDeltaMessage = components['schemas']['WebSocketStreamPar
 type WebSocketStreamPartMessage = components['schemas']['WebSocketStreamPartMessage']
 type WebSocketStreamStatusMessage = components['schemas']['WebSocketStreamStatusMessage']
 
-function isWebsocketError(thing: unknown): thing is WebSocketErrorMessage {
-  return (
-    isObject(thing) &&
-    thing.kind === 'error' &&
-    typeof thing.name === 'string' &&
-    typeof thing.message === 'string'
-  )
-}
-
 export type {
   WebSocketClientMessage,
   WebSocketErrorMessage,
@@ -29,4 +19,3 @@ export type {
   WebSocketStreamPartMessage,
   WebSocketStreamStatusMessage,
 }
-export { isWebsocketError }

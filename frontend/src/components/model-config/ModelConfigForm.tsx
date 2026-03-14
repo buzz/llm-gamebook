@@ -31,7 +31,7 @@ import {
 } from '@/hooks/model-config'
 import { url } from '@/routes'
 import modelConfigApi from '@/services/model-config'
-import { isApiQueryError } from '@/types/api'
+import { isApiQueryError } from '@/types/typeguards'
 import { iconSizeProps } from '@/utils'
 import type { ModelProvider } from '@/types/api'
 
