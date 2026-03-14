@@ -12,10 +12,10 @@ export interface paths {
       readonly cookie?: never
     }
     /** Read Model Configs */
-    readonly get: operations['read_model_configs_api_model_configs__get']
+    readonly get: operations['readModelConfigs']
     readonly put?: never
     /** Create Model Config */
-    readonly post: operations['create_model_config_api_model_configs__post']
+    readonly post: operations['createModelConfig']
     readonly delete?: never
     readonly options?: never
     readonly head?: never
@@ -30,12 +30,12 @@ export interface paths {
       readonly cookie?: never
     }
     /** Read Model Config */
-    readonly get: operations['read_model_config_api_model_configs__config_id__get']
+    readonly get: operations['readModelConfig']
     /** Update Model Config */
-    readonly put: operations['update_model_config_api_model_configs__config_id__put']
+    readonly put: operations['updateModelConfig']
     readonly post?: never
     /** Delete Model Config */
-    readonly delete: operations['delete_model_config_api_model_configs__config_id__delete']
+    readonly delete: operations['deleteModelConfig']
     readonly options?: never
     readonly head?: never
     readonly patch?: never
@@ -49,7 +49,7 @@ export interface paths {
       readonly cookie?: never
     }
     /** List Providers */
-    readonly get: operations['list_providers_api_model_configs_providers__get']
+    readonly get: operations['listProviders']
     readonly put?: never
     readonly post?: never
     readonly delete?: never
@@ -66,10 +66,10 @@ export interface paths {
       readonly cookie?: never
     }
     /** List Projects */
-    readonly get: operations['list_projects_api_projects__get']
+    readonly get: operations['listProjects']
     readonly put?: never
     /** Create Project */
-    readonly post: operations['create_project_api_projects__post']
+    readonly post: operations['createProject']
     readonly delete?: never
     readonly options?: never
     readonly head?: never
@@ -84,11 +84,11 @@ export interface paths {
       readonly cookie?: never
     }
     /** Get Project */
-    readonly get: operations['get_project_api_projects__project_namespace___project_name__get']
+    readonly get: operations['getProject']
     readonly put?: never
     readonly post?: never
     /** Delete Project */
-    readonly delete: operations['delete_project_api_projects__project_namespace___project_name__delete']
+    readonly delete: operations['deleteProject']
     readonly options?: never
     readonly head?: never
     readonly patch?: never
@@ -102,7 +102,7 @@ export interface paths {
       readonly cookie?: never
     }
     /** Get Project Image */
-    readonly get: operations['get_project_image_api_projects__project_namespace___project_name__image_get']
+    readonly get: operations['getProjectImage']
     readonly put?: never
     readonly post?: never
     readonly delete?: never
@@ -119,10 +119,10 @@ export interface paths {
       readonly cookie?: never
     }
     /** Read Sessions */
-    readonly get: operations['read_sessions_api_sessions__get']
+    readonly get: operations['readSessions']
     readonly put?: never
     /** Create Session */
-    readonly post: operations['create_session_api_sessions__post']
+    readonly post: operations['createSession']
     readonly delete?: never
     readonly options?: never
     readonly head?: never
@@ -137,15 +137,15 @@ export interface paths {
       readonly cookie?: never
     }
     /** Read Session */
-    readonly get: operations['read_session_api_sessions__session_id__get']
+    readonly get: operations['readSession']
     readonly put?: never
     readonly post?: never
     /** Delete Session */
-    readonly delete: operations['delete_session_api_sessions__session_id__delete']
+    readonly delete: operations['deleteSession']
     readonly options?: never
     readonly head?: never
     /** Update Session */
-    readonly patch: operations['update_session_api_sessions__session_id__patch']
+    readonly patch: operations['updateSession']
     readonly trace?: never
   }
   readonly '/api/sessions/{session_id}/request': {
@@ -158,7 +158,7 @@ export interface paths {
     readonly get?: never
     readonly put?: never
     /** Create Model Request */
-    readonly post: operations['create_model_request_api_sessions__session_id__request_post']
+    readonly post: operations['createModelRequest']
     readonly delete?: never
     readonly options?: never
     readonly head?: never
@@ -1017,7 +1017,7 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  readonly read_model_configs_api_model_configs__get: {
+  readonly readModelConfigs: {
     readonly parameters: {
       readonly query?: {
         readonly skip?: number
@@ -1049,7 +1049,7 @@ export interface operations {
       }
     }
   }
-  readonly create_model_config_api_model_configs__post: {
+  readonly createModelConfig: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1082,7 +1082,7 @@ export interface operations {
       }
     }
   }
-  readonly read_model_config_api_model_configs__config_id__get: {
+  readonly readModelConfig: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1113,7 +1113,7 @@ export interface operations {
       }
     }
   }
-  readonly update_model_config_api_model_configs__config_id__put: {
+  readonly updateModelConfig: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1148,7 +1148,7 @@ export interface operations {
       }
     }
   }
-  readonly delete_model_config_api_model_configs__config_id__delete: {
+  readonly deleteModelConfig: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1179,7 +1179,7 @@ export interface operations {
       }
     }
   }
-  readonly list_providers_api_model_configs_providers__get: {
+  readonly listProviders: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1199,7 +1199,7 @@ export interface operations {
       }
     }
   }
-  readonly list_projects_api_projects__get: {
+  readonly listProjects: {
     readonly parameters: {
       readonly query?: {
         readonly source?: components['schemas']['ProjectSource'] | null
@@ -1230,7 +1230,7 @@ export interface operations {
       }
     }
   }
-  readonly create_project_api_projects__post: {
+  readonly createProject: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1263,7 +1263,7 @@ export interface operations {
       }
     }
   }
-  readonly get_project_api_projects__project_namespace___project_name__get: {
+  readonly getProject: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1295,7 +1295,7 @@ export interface operations {
       }
     }
   }
-  readonly delete_project_api_projects__project_namespace___project_name__delete: {
+  readonly deleteProject: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1327,7 +1327,7 @@ export interface operations {
       }
     }
   }
-  readonly get_project_image_api_projects__project_namespace___project_name__image_get: {
+  readonly getProjectImage: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1359,7 +1359,7 @@ export interface operations {
       }
     }
   }
-  readonly read_sessions_api_sessions__get: {
+  readonly readSessions: {
     readonly parameters: {
       readonly query?: {
         readonly project_id?: string | null
@@ -1392,7 +1392,7 @@ export interface operations {
       }
     }
   }
-  readonly create_session_api_sessions__post: {
+  readonly createSession: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1425,7 +1425,7 @@ export interface operations {
       }
     }
   }
-  readonly read_session_api_sessions__session_id__get: {
+  readonly readSession: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1456,7 +1456,7 @@ export interface operations {
       }
     }
   }
-  readonly delete_session_api_sessions__session_id__delete: {
+  readonly deleteSession: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1487,7 +1487,7 @@ export interface operations {
       }
     }
   }
-  readonly update_session_api_sessions__session_id__patch: {
+  readonly updateSession: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never
@@ -1522,7 +1522,7 @@ export interface operations {
       }
     }
   }
-  readonly create_model_request_api_sessions__session_id__request_post: {
+  readonly createModelRequest: {
     readonly parameters: {
       readonly query?: never
       readonly header?: never

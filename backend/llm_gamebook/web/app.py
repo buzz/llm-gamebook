@@ -3,8 +3,10 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import casefy
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.routing import APIRoute
 from starlette.types import Lifespan
 
 from llm_gamebook.constants import PROJECT_NAME, PROJECTS_PATH, USER_DATA_PATH
@@ -38,6 +40,11 @@ async def app_lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
 
 
+def generate_unique_id_function(route: APIRoute) -> str:
+    """Custom function to generate unique id for each endpoint"""
+    return casefy.camelcase(route.name)
+
+
 def create_app(
     log_file: Path | None = None,
     *,
@@ -48,7 +55,11 @@ def create_app(
     log_level = logging.DEBUG if debug or uvicorn_logger.level <= logging.DEBUG else logging.INFO
     setup_logger("web", log_level, log_file)
 
-    app = FastAPI(title=PROJECT_NAME, lifespan=lifespan or app_lifespan)
+    app = FastAPI(
+        generate_unique_id_function=generate_unique_id_function,
+        lifespan=lifespan or app_lifespan,
+        title=PROJECT_NAME,
+    )
 
     @app.get("/", include_in_schema=False)
     async def get() -> HTMLResponse:
