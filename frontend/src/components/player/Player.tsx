@@ -25,7 +25,11 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
 
   const handleModelChange = useCallback(
     (newConfigId: string) => {
-      updateSession({ id: session.id, config_id: newConfigId })
+      updateSession({
+        sessionId: session.id,
+        projectId: session.project_id,
+        config_id: newConfigId,
+      })
         .unwrap()
         .then(() => {
           setModelConfigId(newConfigId)
@@ -34,7 +38,7 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
           console.error('Failed to update session model')
         })
     },
-    [session.id, updateSession]
+    [session, updateSession]
   )
 
   return (
@@ -50,7 +54,7 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
       <Stack gap="md" justify="center" h="100%">
         <Box className={classes.container}>
           <Messages currentPartId={currentPartId} messages={messages} />
-          <Controls isGenerating={streamStatus === 'started'} sessionId={session.id} />
+          <Controls isGenerating={streamStatus === 'started'} session={session} />
         </Box>
       </Stack>
     </>

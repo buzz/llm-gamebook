@@ -6,19 +6,20 @@ import { IconSend } from '@tabler/icons-react'
 import { useShowError } from '@/hooks/notifications'
 import sessionApi from '@/services/session'
 import { iconSizeProps } from '@/utils'
+import type { Session } from '@/types/api'
 
 import classes from './Controls.module.css'
 
 interface ControlsProps {
   isGenerating: boolean
-  sessionId: string
+  session: Session
 }
 
 interface FormValues {
   content: string
 }
 
-function Controls({ isGenerating, sessionId }: ControlsProps) {
+function Controls({ isGenerating, session }: ControlsProps) {
   const form = useForm<FormValues>({
     mode: 'controlled',
     initialValues: { content: '' },
@@ -30,7 +31,8 @@ function Controls({ isGenerating, sessionId }: ControlsProps) {
   const send = async ({ content }: FormValues) => {
     try {
       await createRequest({
-        sessionId,
+        sessionId: session.id,
+        projectId: session.project_id,
         request: {
           kind: 'request',
           parts: [{ kind: 'user-prompt', content }],

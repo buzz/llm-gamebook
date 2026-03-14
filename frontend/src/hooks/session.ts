@@ -5,6 +5,7 @@ import { useShowConfirmationModal } from '@/hooks/modals'
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
 import { url } from '@/routes'
 import sessionApi from '@/services/session'
+import type { Session } from '@/types/api'
 
 function useCreateSession() {
   const [, navigate] = useLocation()
@@ -39,7 +40,7 @@ function useDeleteSession() {
 
   return {
     deleteSession: useCallback(
-      async (sessionId: string) => {
+      async (session: Session) => {
         try {
           if (
             await showConfirmationModal(
@@ -47,8 +48,8 @@ function useDeleteSession() {
               'Are you sure you want to delete this session?'
             )
           ) {
-            await deleteSession(sessionId).unwrap()
-            if (location === url('player.view', { id: sessionId })) {
+            await deleteSession({ sessionId: session.id, projectId: session.project_id }).unwrap()
+            if (location === url('player.view', { id: session.id })) {
               navigate(url('home'))
               showSuccess('Story session was deleted.')
             }
