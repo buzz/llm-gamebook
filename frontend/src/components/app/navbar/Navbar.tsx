@@ -10,13 +10,14 @@ import {
 import { ErrorBoundary } from 'react-error-boundary'
 
 import ErrorAlert from '@/components/common/ErrorAlert'
-import { CollapsibleNavLink, RouterNavLink } from '@/components/common/NavLink'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import modelConfigApi from '@/services/model-config'
 import projectApi from '@/services/project'
 
+import CollapsibleNavLink from './CollapsibleNavLink'
 import ModelConfigLink from './ModelConfigLink'
 import ProjectLink from './ProjectLink'
+import RouterNavLink from './RouterNavLink'
 
 const OFFSET = 16
 

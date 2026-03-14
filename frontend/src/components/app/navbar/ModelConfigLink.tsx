@@ -1,13 +1,13 @@
 import { ActionIcon, Group } from '@mantine/core'
 import { IconCategory, IconTrash } from '@tabler/icons-react'
 
-import { RouterNavLink } from '@/components/common/NavLink'
 import { useDeleteModelConfig } from '@/hooks/model-config'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import { iconSizeProps } from '@/utils'
 import type { ModelConfig } from '@/types/api'
 
 import classes from './Link.module.css'
+import RouterNavLink from './RouterNavLink'
 
 interface ActionIconsProps {
   modelConfigId: string

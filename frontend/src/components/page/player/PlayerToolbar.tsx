@@ -1,7 +1,7 @@
-import ChatViewControl from '@/components/common/ChatViewControl'
+import ChatViewControl from '@/components/common/form/ChatViewControl'
+import ModelConfigSelector from '@/components/common/form/ModelConfigSelector'
 import Toolbar from '@/components/common/toolbar/Toolbar'
 import ToolbarGroup from '@/components/common/toolbar/ToolbarGroup'
-import ModelConfigSelector from '@/components/model-config/ModelConfigSelector'
 
 interface PlayerToolbarProps {
   disabled: boolean

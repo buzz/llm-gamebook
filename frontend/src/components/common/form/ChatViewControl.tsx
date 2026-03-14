@@ -1,7 +1,7 @@
 import { IconBug, IconEye, IconListDetails } from '@tabler/icons-react'
 
-import SegmentedIconControl from '@/components/common/SegmentedIconControl'
-import type { SegmentedIconControlProps } from '@/components/common/SegmentedIconControl'
+import SegmentedIconControl from './SegmentedIconControl'
+import type { SegmentedIconControlProps } from './SegmentedIconControl'
 
 const viewControlData = [
   {

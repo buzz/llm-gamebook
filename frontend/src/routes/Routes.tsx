@@ -3,7 +3,7 @@ import { Route, Switch } from 'wouter'
 import NotFound from '@/components/common/NotFound'
 import type { RouteDef } from '@/types/routes'
 
-import { ROUTES } from './routes'
+import ROUTES from './routes'
 
 const regexpRoutes = Object.fromEntries(
   Object.entries(ROUTES).map(([name, route]: [string, RouteDef]) => [

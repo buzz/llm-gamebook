@@ -2,10 +2,10 @@ import { Alert, Button, SimpleGrid, Text } from '@mantine/core'
 import { IconBooks, IconInfoCircle, IconPlus } from '@tabler/icons-react'
 import { Link } from 'wouter'
 
+import PageShell from '@/components/common/PageShell'
 import QueryHandler from '@/components/common/QueryHandler'
-import PageShell from '@/components/layout/PageShell'
-import ProjectCard from '@/components/project/ProjectCard'
-import { url } from '@/routes'
+import ProjectCard from '@/components/page/project/ProjectCard'
+import url from '@/routes/url'
 import projectApi from '@/services/project'
 import type { Projects } from '@/types/api'
 

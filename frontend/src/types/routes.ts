@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import type { ROUTES } from '@/routes/routes'
+import type ROUTES from '@/routes/routes'
 
 interface RouteDef {
   path: string

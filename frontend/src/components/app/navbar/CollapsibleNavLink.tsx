@@ -4,14 +4,15 @@ import { use, useCallback } from 'react'
 
 import CollapseContext from '@/contexts/CollapseContext'
 
-import BasicNavLink, { type BasicNavLinkProps } from './BasicNavLink'
+import BaseNavLink from './BaseNavLink'
+import type { BaseNavLinkProps } from './BaseNavLink'
 
-const CollapsibleNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(
+const CollapsibleNavLink = createPolymorphicComponent<'a', BaseNavLinkProps>(
   function CollapsibleNavLink({
     children,
     ref,
     ...otherProps
-  }: BasicNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
+  }: BaseNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
     const [isOpen, { toggle, open }] = useDisclosure(false)
     const parentContext = use(CollapseContext)
 
@@ -26,7 +27,7 @@ const CollapsibleNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(
 
     return (
       <CollapseContext value={{ onChildActive }}>
-        <BasicNavLink
+        <BaseNavLink
           opened={isOpen}
           onClick={(event) => {
             toggle()
@@ -36,7 +37,7 @@ const CollapsibleNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(
           {...otherProps}
         >
           {children}
-        </BasicNavLink>
+        </BaseNavLink>
       </CollapseContext>
     )
   }

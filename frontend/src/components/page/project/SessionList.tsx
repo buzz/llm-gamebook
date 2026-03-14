@@ -2,7 +2,7 @@ import { Anchor, Text, Timeline } from '@mantine/core'
 import { Link } from 'wouter'
 
 import { formatDuration, useNow } from '@/hooks/time'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import type { Session } from '@/types/api'
 
 interface SessionProps {

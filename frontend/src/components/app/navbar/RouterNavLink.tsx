@@ -5,9 +5,9 @@ import type { LinkProps } from 'wouter'
 
 import CollapseContext from '@/contexts/CollapseContext'
 
-import BasicNavLink, { type BasicNavLinkProps } from './BasicNavLink'
+import BaseNavLink, { type BaseNavLinkProps } from './BaseNavLink'
 
-type RouterNavLinkProps = BasicNavLinkProps & LinkProps
+type RouterNavLinkProps = BaseNavLinkProps & LinkProps
 
 const RouterNavLink = createPolymorphicComponent<'a', RouterNavLinkProps>(function RouterNavLink({
   children,
@@ -28,7 +28,7 @@ const RouterNavLink = createPolymorphicComponent<'a', RouterNavLinkProps>(functi
   }, [context, isActive, location])
 
   return (
-    <BasicNavLink
+    <BaseNavLink
       active={isActive}
       component={Link}
       onClick={(event) => {
@@ -41,7 +41,7 @@ const RouterNavLink = createPolymorphicComponent<'a', RouterNavLinkProps>(functi
       ref={ref}
     >
       {children}
-    </BasicNavLink>
+    </BaseNavLink>
   )
 })
 

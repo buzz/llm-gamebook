@@ -22,14 +22,14 @@ import {
 import { useCallback, useEffect, useMemo } from 'react'
 import { useLocation, useParams } from 'wouter'
 
-import InputSlider from '@/components/common/InputSlider'
-import PageShell from '@/components/layout/PageShell'
+import InputSlider from '@/components/common/form/InputSlider'
+import PageShell from '@/components/common/PageShell'
 import {
   useCreateModelConfig,
   useDeleteModelConfig,
   useUpdateModelConfig,
 } from '@/hooks/model-config'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import modelConfigApi from '@/services/model-config'
 import { isApiQueryError } from '@/types/typeguards'
 import { iconSizeProps } from '@/utils'

@@ -2,7 +2,7 @@ import { Alert, Button, Group, Stack, Textarea, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconBook, IconPlus } from '@tabler/icons-react'
 
-import PageShell from '@/components/layout/PageShell'
+import PageShell from '@/components/common/PageShell'
 import { KEBAB_CASE_PATTERN } from '@/constants'
 import { useCreateProject } from '@/hooks/project'
 import { iconSizeProps } from '@/utils'

@@ -4,23 +4,23 @@ import type { Icon } from '@tabler/icons-react'
 
 import { iconSizeProps } from '@/utils'
 
-import classes from './NavLink.module.css'
+import classes from './Link.module.css'
 
-interface BasicNavLinkProps extends NavLinkProps {
+interface BaseNavLinkProps extends NavLinkProps {
   icon?: Icon
 }
 
-const BasicNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(function BasicNavLink({
+const BaseNavLink = createPolymorphicComponent<'a', BaseNavLinkProps>(function BaseNavLink({
   children,
   icon: Icon,
   ref,
   ...otherProps
-}: BasicNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
+}: BaseNavLinkProps & { ref?: React.RefObject<HTMLAnchorElement | null> }) {
   return (
     <NavLink
       classNames={{
         label: classes.label,
-        root: classes.navLink,
+        root: classes.navLinkRoot,
       }}
       leftSection={Icon ? <Icon {...iconSizeProps('md')} /> : null}
       noWrap
@@ -32,5 +32,5 @@ const BasicNavLink = createPolymorphicComponent<'a', BasicNavLinkProps>(function
   )
 })
 
-export type { BasicNavLinkProps }
-export default BasicNavLink
+export type { BaseNavLinkProps }
+export default BaseNavLink

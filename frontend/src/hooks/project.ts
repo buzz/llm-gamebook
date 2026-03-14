@@ -3,7 +3,7 @@ import { useLocation } from 'wouter'
 
 import { useShowConfirmationModal } from '@/hooks/modals'
 import { useShowError, useShowSuccess } from '@/hooks/notifications'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import projectApi from '@/services/project'
 import { splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'

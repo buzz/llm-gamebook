@@ -1,1 +1,0 @@
-export { url } from './routes'

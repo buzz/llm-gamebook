@@ -4,10 +4,10 @@ import cx from 'clsx'
 import { Link, useLocation } from 'wouter'
 import type { CardProps } from '@mantine/core'
 
-import StandardCard from '@/components/common/StandardCard'
-import ProjectSourceBadge from '@/components/project/ProjectSourceBadge'
+import Card from '@/components/common/Card'
+import ProjectSourceBadge from '@/components/page/project/ProjectSourceBadge'
 import { useDeleteProject } from '@/hooks/project'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import { iconSizeProps, projectImageSrc, splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'
 
@@ -73,7 +73,7 @@ function ProjectCard({ project, ...cardProps }: ProjectCardProps) {
   const imageAlt = project.image ? project.title : undefined
 
   return (
-    <StandardCard
+    <Card
       title={
         <Anchor
           className={cx(classes.title, classes.textShadow)}
@@ -100,7 +100,7 @@ function ProjectCard({ project, ...cardProps }: ProjectCardProps) {
       <Text className={cx(classes.description, classes.textShadow)} lineClamp={6} size="md">
         {project.description ?? 'No description…'}
       </Text>
-    </StandardCard>
+    </Card>
   )
 }
 

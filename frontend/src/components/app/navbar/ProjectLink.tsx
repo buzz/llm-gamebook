@@ -2,13 +2,13 @@ import { ActionIcon, Avatar, Group } from '@mantine/core'
 import { IconBook, IconPencil, IconTrash } from '@tabler/icons-react'
 import { Link } from 'wouter'
 
-import { RouterNavLink } from '@/components/common/NavLink'
 import { useDeleteProject } from '@/hooks/project'
-import { url } from '@/routes'
+import url from '@/routes/url'
 import { iconSizeProps, projectImageSrc, splitProjectId } from '@/utils'
 import type { ProjectBasic } from '@/types/api'
 
 import classes from './Link.module.css'
+import RouterNavLink from './RouterNavLink'
 
 interface ActionIconsProps {
   project: ProjectBasic

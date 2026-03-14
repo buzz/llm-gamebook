@@ -1,11 +1,11 @@
-import { Card, Group, Image, Title } from '@mantine/core'
-import type { CardProps } from '@mantine/core'
+import { Card as MantineCard, Group, Image, Title } from '@mantine/core'
+import type { CardProps as MantineCardProps } from '@mantine/core'
 import type { Icon } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 import { iconSizeProps } from '@/utils'
 
-interface StandardCardProps extends CardProps {
+interface CardProps extends MantineCardProps {
   icon?: Icon
   title: ReactNode
   rightSection?: ReactNode
@@ -15,7 +15,7 @@ interface StandardCardProps extends CardProps {
   imageAlt?: string
 }
 
-function StandardCard({
+function Card({
   icon: Icon,
   title,
   rightSection,
@@ -24,13 +24,13 @@ function StandardCard({
   imageSrc,
   imageAlt,
   ...cardProps
-}: StandardCardProps) {
+}: CardProps) {
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder {...cardProps}>
+    <MantineCard shadow="sm" padding="lg" radius="md" withBorder {...cardProps}>
       {imageSrc && (
-        <Card.Section>
+        <MantineCard.Section>
           <Image src={imageSrc} height={160} alt={imageAlt} />
-        </Card.Section>
+        </MantineCard.Section>
       )}
 
       <Group
@@ -56,8 +56,8 @@ function StandardCard({
           {actionButtons}
         </Group>
       )}
-    </Card>
+    </MantineCard>
   )
 }
 
-export default StandardCard
+export default Card

@@ -5,8 +5,8 @@ import { use, useEffect } from 'react'
 import WebSocketContext from '@/contexts/WebSocketContext'
 import { useShowErrorModal } from '@/hooks/modals'
 
-import Header from './Header/Header'
-import Navbar from './Navbar/Navbar'
+import Header from './Header'
+import Navbar from './navbar/Navbar'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const context = use(WebSocketContext)

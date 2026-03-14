@@ -1,8 +1,8 @@
 import { IconSettings } from '@tabler/icons-react'
 
-import PageShell from '@/components/layout/PageShell'
+import PageShell from '@/components/common/PageShell'
 
-function Settings() {
+function SettingsForm() {
   return (
     <PageShell icon={IconSettings} title="Settings">
       Settings
@@ -10,4 +10,4 @@ function Settings() {
   )
 }
 
-export default Settings
+export default SettingsForm
