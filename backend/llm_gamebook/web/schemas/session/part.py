@@ -4,10 +4,12 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 import pydantic_core
-from pydantic import BaseModel, Discriminator, Field
+from pydantic import Discriminator, Field
+
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
 
-class BaseUserPromptPart(BaseModel):
+class BaseUserPromptPart(CamelCasedBaseModel):
     kind: Literal["user-prompt"] = "user-prompt"
     """Part type identifier, this is available on all parts as a discriminator."""
 
@@ -29,7 +31,7 @@ class UserPromptPart(BaseUserPromptPart):
     """The timestamp of the prompt."""
 
 
-class ToolReturnPart(BaseModel):
+class ToolReturnPart(CamelCasedBaseModel):
     """A tool return message, this encodes the result of running a tool."""
 
     id: UUID
@@ -50,7 +52,7 @@ class ToolReturnPart(BaseModel):
     """The timestamp, when the tool returned."""
 
 
-class RetryPromptPart(BaseModel):
+class RetryPromptPart(CamelCasedBaseModel):
     """A message sent back to an LLM asking it to try again."""
 
     id: UUID
@@ -81,7 +83,7 @@ type ModelRequestPart = Annotated[
 """A message part sent to an LLM."""
 
 
-class TextPart(BaseModel):
+class TextPart(CamelCasedBaseModel):
     """A plain text response from an LLM."""
 
     id: UUID
@@ -96,7 +98,7 @@ class TextPart(BaseModel):
     """The text content of the response."""
 
 
-class ToolCallPart(BaseModel):
+class ToolCallPart(CamelCasedBaseModel):
     """A tool call from an LLM."""
 
     id: UUID
@@ -117,7 +119,7 @@ class ToolCallPart(BaseModel):
     """The tool call identifier."""
 
 
-class ThinkingPart(BaseModel):
+class ThinkingPart(CamelCasedBaseModel):
     """A thinking response from an LLM."""
 
     id: UUID

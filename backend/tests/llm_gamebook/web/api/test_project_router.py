@@ -53,7 +53,7 @@ def test_get_project_found(client: TestClient) -> None:
     assert data["id"] == "llm-gamebook/broken-bulb"
     assert data["title"] == "Broken Bulb"
     assert data["source"] == "example"
-    assert "entity_types" in data
+    assert "entityTypes" in data
 
 
 def test_get_project_not_found(client: TestClient) -> None:

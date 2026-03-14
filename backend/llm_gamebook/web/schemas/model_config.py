@@ -1,11 +1,12 @@
 from uuid import UUID
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import Field, RootModel
 
 from llm_gamebook.providers import ModelProvider, ModelProviderList
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
 
-class BaseModelConfig(BaseModel):
+class BaseModelConfig(CamelCasedBaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     """User-friendly display name"""
 
@@ -46,7 +47,7 @@ class ModelConfigUpdate(BaseModelConfig):
     """Update fields for a model config."""
 
 
-class ModelConfigs(BaseModel):
+class ModelConfigs(CamelCasedBaseModel):
     """A list of LLM models."""
 
     data: list[ModelConfig]

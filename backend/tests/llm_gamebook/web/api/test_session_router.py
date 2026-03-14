@@ -18,8 +18,8 @@ def test_read_sessions_with_pagination(
     client: TestClient, model_config: ModelConfig, project: Project
 ) -> None:
     session_data = {
-        "config_id": str(model_config.id),
-        "project_id": project.id,
+        "configId": str(model_config.id),
+        "projectId": project.id,
         "title": "Test Session",
     }
     response = client.post("/api/sessions/", json=session_data)
@@ -39,8 +39,8 @@ def test_read_session_found(
     client: TestClient, model_config: ModelConfig, project: Project
 ) -> None:
     session_data = {
-        "config_id": str(model_config.id),
-        "project_id": project.id,
+        "configId": str(model_config.id),
+        "projectId": project.id,
         "title": "Test Session",
     }
     create_response = client.post("/api/sessions/", json=session_data)
@@ -63,8 +63,8 @@ def test_create_session_success(
     client: TestClient, model_config: ModelConfig, project: Project
 ) -> None:
     session_data = {
-        "config_id": str(model_config.id),
-        "project_id": project.id,
+        "configId": str(model_config.id),
+        "projectId": project.id,
         "title": "New Session",
     }
     response = client.post("/api/sessions/", json=session_data)
@@ -72,13 +72,13 @@ def test_create_session_success(
     data = response.json()
     assert data["title"] == "New Session"
     assert "id" in data
-    assert data["config_id"] == str(model_config.id)
+    assert data["configId"] == str(model_config.id)
 
 
 def test_create_session_model_config_not_found(client: TestClient, project: Project) -> None:
     session_data = {
-        "config_id": "00000000-0000-0000-0000-000000000000",
-        "project_id": project.id,
+        "configId": "00000000-0000-0000-0000-000000000000",
+        "projectId": project.id,
         "title": "Invalid Session",
     }
     response = client.post("/api/sessions/", json=session_data)
@@ -91,8 +91,8 @@ def test_create_session_model_config_not_found(client: TestClient, project: Proj
 
 def test_create_session_project_not_found(client: TestClient, model_config: ModelConfig) -> None:
     session_data = {
-        "config_id": str(model_config.id),
-        "project_id": "llm-gamebook/does-not-exist",
+        "configId": str(model_config.id),
+        "projectId": "llm-gamebook/does-not-exist",
         "title": "Invalid Session",
     }
     response = client.post("/api/sessions/", json=session_data)
@@ -104,7 +104,7 @@ def test_create_session_project_not_found(client: TestClient, model_config: Mode
 
 
 def test_update_session(client: TestClient, model_config: ModelConfig, session: Session) -> None:
-    update_data = {"config_id": str(model_config.id), "title": "Updated Title"}
+    update_data = {"configId": str(model_config.id), "title": "Updated Title"}
     response = client.patch(f"/api/sessions/{session.id}", json=update_data)
     assert response.status_code == 200
     data = response.json()

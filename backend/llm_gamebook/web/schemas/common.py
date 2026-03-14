@@ -1,5 +1,5 @@
-from pydantic import BaseModel
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
 
-class ServerMessage(BaseModel):
+class ServerMessage(CamelCasedBaseModel):
     message: str

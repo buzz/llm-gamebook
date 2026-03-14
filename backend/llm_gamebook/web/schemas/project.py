@@ -1,12 +1,11 @@
 from collections.abc import Sequence
 
-from pydantic import BaseModel
-
 from llm_gamebook.story.schemas import ProjectId, ProjectSource
 from llm_gamebook.story.schemas.entity import EntityTypeDefinition
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
 
-class ProjectBasic(BaseModel):
+class ProjectBasic(CamelCasedBaseModel):
     id: ProjectId
     """Unique project ID in the format `namespace/name`."""
 
@@ -34,7 +33,7 @@ class ProjectCreate(ProjectBasic):
     """Create fields for a project."""
 
 
-class Projects(BaseModel):
+class Projects(CamelCasedBaseModel):
     """A list of projects."""
 
     data: Sequence[ProjectBasic]

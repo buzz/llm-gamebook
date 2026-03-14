@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING, Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Discriminator
+from pydantic import Discriminator
 
 from llm_gamebook.engine.message import Delta
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 from llm_gamebook.web.schemas.session.message import ModelMessage
 from llm_gamebook.web.schemas.session.part import ModelResponsePart
 
@@ -15,11 +16,11 @@ if TYPE_CHECKING:
     )
 
 
-class BaseWebSocketMessage(BaseModel):
+class BaseWebSocketMessage(CamelCasedBaseModel):
     kind: str
 
 
-class BaseSessionWebSocketMessage(BaseModel):
+class BaseSessionWebSocketMessage(CamelCasedBaseModel):
     session_id: UUID
 
 

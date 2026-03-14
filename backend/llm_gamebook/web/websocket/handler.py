@@ -109,7 +109,7 @@ class WebSocketHandler(BusSubscriber):
     async def _send_message(self, message: WebSocketServerMessage) -> None:
         """Send a WebSocket message."""
         if self._websocket.client_state == WebSocketState.CONNECTED:
-            await self._websocket.send_text(message.model_dump_json())
+            await self._websocket.send_text(message.model_dump_json(by_alias=True))
         else:
             _log.warning("Trying to send message while not connected")
 

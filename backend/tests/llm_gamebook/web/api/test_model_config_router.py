@@ -5,22 +5,22 @@ def test_create_model_config(client: TestClient) -> None:
     model_data = {
         "name": "Test Model",
         "provider": "openai",
-        "model_name": "gpt-4",
-        "base_url": "https://api.openai.com/v1",
-        "api_key": "test-key",
-        "context_window": 4096,
-        "max_tokens": 1024,
+        "modelName": "gpt-4",
+        "baseUrl": "https://api.openai.com/v1",
+        "apiKey": "test-key",
+        "contextWindow": 4096,
+        "maxTokens": 1024,
         "temperature": 0.7,
-        "top_p": 0.9,
-        "presence_penalty": 0.0,
-        "frequency_penalty": 0.0,
+        "topP": 0.9,
+        "presencePenalty": 0.0,
+        "frequencyPenalty": 0.0,
     }
     response = client.post("/api/model-configs/", json=model_data)
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Test Model"
     assert data["provider"] == "openai"
-    assert data["model_name"] == "gpt-4"
+    assert data["modelName"] == "gpt-4"
     assert "id" in data
 
 
@@ -37,13 +37,13 @@ def test_read_model_config(client: TestClient) -> None:
     model_data = {
         "name": "Test Model",
         "provider": "openai",
-        "model_name": "gpt-4",
-        "context_window": 4096,
-        "max_tokens": 1024,
+        "modelName": "gpt-4",
+        "contextWindow": 4096,
+        "maxTokens": 1024,
         "temperature": 0.7,
-        "top_p": 0.9,
-        "presence_penalty": 0.0,
-        "frequency_penalty": 0.0,
+        "topP": 0.9,
+        "presencePenalty": 0.0,
+        "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
     assert create_response.status_code == 200
@@ -60,13 +60,13 @@ def test_update_model_config(client: TestClient) -> None:
     model_data = {
         "name": "Original Name",
         "provider": "openai",
-        "model_name": "gpt-4",
-        "context_window": 4096,
-        "max_tokens": 1024,
+        "modelName": "gpt-4",
+        "contextWindow": 4096,
+        "maxTokens": 1024,
         "temperature": 0.7,
-        "top_p": 0.9,
-        "presence_penalty": 0.0,
-        "frequency_penalty": 0.0,
+        "topP": 0.9,
+        "presencePenalty": 0.0,
+        "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
     assert create_response.status_code == 200
@@ -75,13 +75,13 @@ def test_update_model_config(client: TestClient) -> None:
     update_data = {
         "name": "Updated Name",
         "provider": "openai",
-        "model_name": "gpt-4",
-        "context_window": 4096,
-        "max_tokens": 1024,
+        "modelName": "gpt-4",
+        "contextWindow": 4096,
+        "maxTokens": 1024,
         "temperature": 0.7,
-        "top_p": 0.9,
-        "presence_penalty": 0.0,
-        "frequency_penalty": 0.0,
+        "topP": 0.9,
+        "presencePenalty": 0.0,
+        "frequencyPenalty": 0.0,
     }
     response = client.put(f"/api/model-configs/{config_id}", json=update_data)
     assert response.status_code == 200
@@ -97,13 +97,13 @@ def test_delete_model_config(client: TestClient) -> None:
     model_data = {
         "name": "To Delete",
         "provider": "ollama",
-        "model_name": "llama3",
-        "context_window": 4096,
-        "max_tokens": 1024,
+        "modelName": "llama3",
+        "contextWindow": 4096,
+        "maxTokens": 1024,
         "temperature": 0.7,
-        "top_p": 0.9,
-        "presence_penalty": 0.0,
-        "frequency_penalty": 0.0,
+        "topP": 0.9,
+        "presencePenalty": 0.0,
+        "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
     assert create_response.status_code == 200

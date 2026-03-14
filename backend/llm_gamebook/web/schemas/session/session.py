@@ -2,12 +2,13 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 from llm_gamebook.web.schemas.session.message import ModelMessage
 
 
-class BaseSession(BaseModel):
+class BaseSession(CamelCasedBaseModel):
     title: str | None = None
     """An optional session title."""
 
@@ -53,7 +54,7 @@ class SessionFull(Session):
     messages: Sequence[ModelMessage]
 
 
-class Sessions(BaseModel):
+class Sessions(CamelCasedBaseModel):
     """A list of sessions."""
 
     data: Sequence[Session]
