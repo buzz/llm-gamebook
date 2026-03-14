@@ -1,12 +1,15 @@
-import { Box, Group, Input, Slider } from '@mantine/core'
+import { Group, Input, Slider } from '@mantine/core'
 import { memo, useEffect, useRef, useState } from 'react'
-import type { BoxProps, SliderProps } from '@mantine/core'
+import type { InputWrapperProps, SliderProps } from '@mantine/core'
 
 import classes from './InputSlider.module.css'
 
 const SNAP_RANGE_PX = 10
 
-interface InputSliderProps extends Pick<SliderProps, 'marks' | 'max' | 'min'>, BoxProps {
+type SliderPropsPicked = Pick<SliderProps, 'marks' | 'max' | 'min'>
+type InputWrapperPropsBase = Omit<InputWrapperProps, 'onChange'>
+
+interface InputSliderProps extends SliderPropsPicked, InputWrapperPropsBase {
   description?: string
   disabled?: boolean
   label: string
@@ -17,9 +20,7 @@ interface InputSliderProps extends Pick<SliderProps, 'marks' | 'max' | 'min'>, B
 }
 
 function InputSlider({
-  description,
   disabled,
-  label,
   marks,
   max = 100,
   min = 0,
@@ -144,9 +145,7 @@ function InputSlider({
   }
 
   return (
-    <Box {...otherProps}>
-      <Input.Label>{label}</Input.Label>
-      {description ? <Input.Description>{description}</Input.Description> : null}
+    <Input.Wrapper {...otherProps}>
       <Group align="center">
         <Input
           className={classes.input}
@@ -175,7 +174,7 @@ function InputSlider({
           />
         </div>
       </Group>
-    </Box>
+    </Input.Wrapper>
   )
 }
 
