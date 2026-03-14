@@ -13,25 +13,17 @@ function ModelConfigSelector({
   onModelConfigChange: onConfigChange,
   disabled,
 }: ModelConfigSelectorProps) {
-  const { data: configsData, isLoading: isLoadingConfigs } =
-    modelConfigApi.useGetModelConfigsQuery()
-  const { data: providers, isLoading: isLoadingProviders } = modelConfigApi.useGetProvidersQuery()
+  const { data: configsData, isLoading } = modelConfigApi.useGetModelConfigsQuery()
   const configs = configsData?.data ?? []
-  const isLoading = isLoadingConfigs || isLoadingProviders
   const noConfigs = configs.length === 0
 
-  const selectData =
-    configsData && providers
-      ? configs.map(({ id, name, provider }) => {
-          const providerLabel = providers[provider].label
-          return {
-            value: id,
-            label: name + (providerLabel ? ` (${providerLabel})` : ''),
-          }
-        })
-      : []
+  const selectData = configsData
+    ? configs.map(({ id, name }) => {
+        return { value: id, label: name }
+      })
+    : []
 
-  if (isLoading || !providers) {
+  if (isLoading) {
     return <Skeleton height={36} width={200} />
   }
 
