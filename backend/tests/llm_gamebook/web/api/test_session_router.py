@@ -23,7 +23,7 @@ def test_read_sessions_with_pagination(
         "title": "Test Session",
     }
     response = client.post("/api/sessions/", json=session_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response = client.get("/api/sessions/?skip=0&limit=10")
     assert response.status_code == 200
@@ -44,7 +44,7 @@ def test_read_session_found(
         "title": "Test Session",
     }
     create_response = client.post("/api/sessions/", json=session_data)
-    assert create_response.status_code == 200
+    assert create_response.status_code == 201
     session_id = create_response.json()["id"]
 
     response = client.get(f"/api/sessions/{session_id}")
@@ -68,7 +68,7 @@ def test_create_session_success(
         "title": "New Session",
     }
     response = client.post("/api/sessions/", json=session_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["title"] == "New Session"
     assert "id" in data
@@ -117,7 +117,7 @@ def test_create_model_request(client: TestClient, session: Session) -> None:
         "parts": [{"kind": "user-prompt", "content": "Hello"}],
     }
     response = client.post(f"/api/sessions/{session.id}/request", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["kind"] == "request"
     assert "id" in data

@@ -66,7 +66,7 @@ async def get_project_image(
     return Response(image_bytes, media_type=media_type or "application/octet-stream")
 
 
-@project_router.post("/", status_code=201)
+@project_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_project(
     project_manager: ProjectManagerDep, project_in: ProjectCreate
 ) -> ProjectBasic:

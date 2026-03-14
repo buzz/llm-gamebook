@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 from llm_gamebook.db.crud.model_config import create_model_config as crud_create_model_config
 from llm_gamebook.db.crud.model_config import delete_model_config as crud_delete_model_config
@@ -46,7 +46,7 @@ async def read_model_config(db_session: DbSessionDep, config_id: UUID) -> SqlMod
     return config
 
 
-@model_config_router.post("/", response_model=ModelConfig)
+@model_config_router.post("/", response_model=ModelConfig, status_code=status.HTTP_201_CREATED)
 async def create_model_config(
     db_session: DbSessionDep, config_in: ModelConfigCreate
 ) -> SqlModelModelConfig:

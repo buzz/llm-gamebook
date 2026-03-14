@@ -1063,7 +1063,7 @@ export interface operations {
     }
     readonly responses: {
       /** @description Successful Response */
-      readonly 200: {
+      readonly 201: {
         headers: {
           readonly [name: string]: unknown
         }
@@ -1406,7 +1406,7 @@ export interface operations {
     }
     readonly responses: {
       /** @description Successful Response */
-      readonly 200: {
+      readonly 201: {
         headers: {
           readonly [name: string]: unknown
         }
@@ -1538,7 +1538,7 @@ export interface operations {
     }
     readonly responses: {
       /** @description Successful Response */
-      readonly 200: {
+      readonly 201: {
         headers: {
           readonly [name: string]: unknown
         }

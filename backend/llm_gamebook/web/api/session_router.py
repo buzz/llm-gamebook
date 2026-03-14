@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 from llm_gamebook.db.crud.model_config import get_model_config
 from llm_gamebook.db.crud.session import create_session as crud_create_session
@@ -51,7 +51,7 @@ async def read_session(engine: StoryEngineDep, db_session: DbSessionDep) -> SqlM
     return session
 
 
-@session_router.post("/")
+@session_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_session(
     db_session: DbSessionDep, project_manager: ProjectManagerDep, session_in: SessionCreate
 ) -> Session:
@@ -95,7 +95,9 @@ async def update_session(
     return ServerMessage(message="Session updated successfully.")
 
 
-@session_router.post("/{session_id}/request", response_model=ModelRequest)
+@session_router.post(
+    "/{session_id}/request", response_model=ModelRequest, status_code=status.HTTP_201_CREATED
+)
 async def create_model_request(
     engine: StoryEngineDep, db_session: DbSessionDep, message_in: ModelRequestCreate
 ) -> Message:

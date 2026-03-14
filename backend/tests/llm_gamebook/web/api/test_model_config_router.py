@@ -16,7 +16,7 @@ def test_create_model_config(client: TestClient) -> None:
         "frequencyPenalty": 0.0,
     }
     response = client.post("/api/model-configs/", json=model_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["name"] == "Test Model"
     assert data["provider"] == "openai"
@@ -46,7 +46,7 @@ def test_read_model_config(client: TestClient) -> None:
         "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
-    assert create_response.status_code == 200
+    assert create_response.status_code == 201
     config_id = create_response.json()["id"]
 
     response = client.get(f"/api/model-configs/{config_id}")
@@ -69,7 +69,7 @@ def test_update_model_config(client: TestClient) -> None:
         "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
-    assert create_response.status_code == 200
+    assert create_response.status_code == 201
     config_id = create_response.json()["id"]
 
     update_data = {
@@ -106,7 +106,7 @@ def test_delete_model_config(client: TestClient) -> None:
         "frequencyPenalty": 0.0,
     }
     create_response = client.post("/api/model-configs/", json=model_data)
-    assert create_response.status_code == 200
+    assert create_response.status_code == 201
     config_id = create_response.json()["id"]
 
     response = client.delete(f"/api/model-configs/{config_id}")
