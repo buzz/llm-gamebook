@@ -12,7 +12,6 @@ from llm_gamebook.db.crud.model_config import (
 )
 from llm_gamebook.db.models import ModelConfig
 from llm_gamebook.providers import ModelProvider
-from llm_gamebook.web.schemas.model_config import ModelConfigUpdate
 
 
 async def test_create_model_config(db_session: AsyncDbSession) -> None:
@@ -107,23 +106,35 @@ async def test_get_model_config_not_found(db_session: AsyncDbSession) -> None:
 
 
 async def test_update_model_config(db_session: AsyncDbSession, model_config: ModelConfig) -> None:
-    update = ModelConfigUpdate(
+    await update_model_config(
+        db_session,
+        config_id=model_config.id,
         name="Updated Name",
         provider=ModelProvider.OPENAI,
-        model_name="gpt-4o",
-        context_window=4096,
+        model_name="GLM-4.7",
+        base_url="http://localhost:8000/v1",
+        api_key="sk-123456",
+        context_window=32768,
         max_tokens=2048,
         temperature=0.5,
         top_p=0.8,
         presence_penalty=0.1,
         frequency_penalty=0.1,
     )
-    await update_model_config(db_session, str(model_config.id), update)
+
     config = await get_model_config(db_session, model_config.id)
     assert config is not None
     assert config.name == "Updated Name"
-    assert config.model_name == "gpt-4o"
+    assert config.provider == ModelProvider.OPENAI
+    assert config.model_name == "GLM-4.7"
+    assert config.base_url == "http://localhost:8000/v1"
+    assert config.api_key == "sk-123456"
+    assert config.context_window == 32768
     assert config.max_tokens == 2048
+    assert config.temperature == 0.5
+    assert config.top_p == 0.8
+    assert config.presence_penalty == 0.1
+    assert config.frequency_penalty == 0.1
 
 
 async def test_delete_model_config(db_session: AsyncDbSession, model_config: ModelConfig) -> None:

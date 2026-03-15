@@ -1,11 +1,12 @@
 from collections.abc import Sequence
+from typing import TypedDict, Unpack
 from uuid import UUID
 
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import ModelConfig
-from llm_gamebook.web.schemas.model_config import ModelConfigUpdate
+from llm_gamebook.providers import ModelProvider
 
 
 async def create_model_config(db_session: AsyncDbSession, config: ModelConfig) -> ModelConfig:
@@ -33,23 +34,37 @@ async def get_model_config(db_session: AsyncDbSession, config_id: UUID) -> Model
     return await db_session.get(ModelConfig, config_id)
 
 
+class ModelConfigUpdate(TypedDict):
+    config_id: UUID
+    name: str
+    provider: ModelProvider
+    model_name: str
+    base_url: str | None
+    api_key: str | None
+    context_window: int
+    max_tokens: int
+    temperature: float
+    top_p: float
+    presence_penalty: float
+    frequency_penalty: float
+
+
 async def update_model_config(
-    db_session: AsyncDbSession,
-    config_id: str,
-    model_config_update: ModelConfigUpdate,
+    db_session: AsyncDbSession, /, **kwargs: Unpack[ModelConfigUpdate]
 ) -> None:
-    config = await db_session.get(ModelConfig, UUID(config_id))
+    config = await db_session.get(ModelConfig, kwargs["config_id"])
     if config:
-        config.name = model_config_update.name
-        config.provider = model_config_update.provider
-        config.model_name = model_config_update.model_name
-        config.base_url = model_config_update.base_url
-        config.api_key = model_config_update.api_key
-        config.max_tokens = model_config_update.max_tokens
-        config.temperature = model_config_update.temperature
-        config.top_p = model_config_update.top_p
-        config.presence_penalty = model_config_update.presence_penalty
-        config.frequency_penalty = model_config_update.frequency_penalty
+        config.name = kwargs["name"]
+        config.provider = kwargs["provider"]
+        config.model_name = kwargs["model_name"]
+        config.base_url = kwargs["base_url"]
+        config.api_key = kwargs["api_key"]
+        config.context_window = kwargs["context_window"]
+        config.max_tokens = kwargs["max_tokens"]
+        config.temperature = kwargs["temperature"]
+        config.top_p = kwargs["top_p"]
+        config.presence_penalty = kwargs["presence_penalty"]
+        config.frequency_penalty = kwargs["frequency_penalty"]
         await db_session.commit()
 
 

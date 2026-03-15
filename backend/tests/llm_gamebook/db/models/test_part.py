@@ -171,13 +171,7 @@ def test_part_unsupported_response_type() -> None:
 
 
 def test_part_to_model_request_part() -> None:
-    part = Part(
-        kind=PartKind.USER_PROMPT,
-        content="Foo",
-        tool_call_id=None,
-        tool_name=None,
-        args=None,
-    )
+    part = Part(kind=PartKind.USER_PROMPT, content="Foo")
     model_part = part.to_model_request_part()
 
     assert model_part.part_kind == "user-prompt"
@@ -185,13 +179,7 @@ def test_part_to_model_request_part() -> None:
 
 
 def test_part_to_model_response_part() -> None:
-    part = Part(
-        kind=PartKind.TEXT,
-        content="Bar",
-        tool_call_id=None,
-        tool_name=None,
-        args=None,
-    )
+    part = Part(kind=PartKind.TEXT, content="Bar")
     model_part = part.to_model_response_part()
 
     assert model_part.part_kind == "text"
@@ -199,26 +187,14 @@ def test_part_to_model_response_part() -> None:
 
 
 def test_part_to_model_request_part_fails_with_wrong_type() -> None:
-    part = Part(
-        kind=PartKind.TEXT,
-        content="Bar",
-        tool_call_id=None,
-        tool_name=None,
-        args=None,
-    )
+    part = Part(kind=PartKind.TEXT, content="Bar")
 
     with pytest.raises(ValueError, match="Expected kind"):
         part.to_model_request_part()
 
 
 def test_part_to_model_response_part_fails_with_wrong_type() -> None:
-    part = Part(
-        kind=PartKind.USER_PROMPT,
-        content="Bar",
-        tool_call_id=None,
-        tool_name=None,
-        args=None,
-    )
+    part = Part(kind=PartKind.USER_PROMPT, content="Bar")
 
     with pytest.raises(ValueError, match="Expected kind"):
         part.to_model_response_part()

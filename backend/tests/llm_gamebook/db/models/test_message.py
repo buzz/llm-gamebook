@@ -18,16 +18,7 @@ async def test_get_message_count(db_session: AsyncDbSession, session: Session) -
         session_id=session.id,
         kind=MessageKind.REQUEST,
         finish_reason=None,
-        parts=[
-            Part(
-                kind=PartKind.USER_PROMPT,
-                content="Hello",
-                timestamp=datetime.now(UTC),
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.USER_PROMPT, content="Hello")],
     )
     await message_crud.create_message(db_session, message)
 
@@ -47,31 +38,13 @@ async def test_get_messages_with_data(db_session: AsyncDbSession, session: Sessi
         session_id=session.id,
         kind=MessageKind.REQUEST,
         finish_reason=None,
-        parts=[
-            Part(
-                kind=PartKind.USER_PROMPT,
-                content="Hello 1",
-                timestamp=datetime.now(UTC),
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.USER_PROMPT, content="Hello 1")],
     )
     msg2 = Message(
         session_id=session.id,
         kind=MessageKind.RESPONSE,
         finish_reason=FinishReason.STOP,
-        parts=[
-            Part(
-                kind=PartKind.TEXT,
-                content="Hi there!",
-                timestamp=datetime.now(UTC),
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.TEXT, content="Hi there!")],
     )
     await message_crud.create_message(db_session, msg1)
     await message_crud.create_message(db_session, msg2)
@@ -86,16 +59,7 @@ async def test_create_message(db_session: AsyncDbSession, session: Session) -> N
         session_id=session.id,
         kind=MessageKind.REQUEST,
         finish_reason=None,
-        parts=[
-            Part(
-                kind=PartKind.USER_PROMPT,
-                content="Test message",
-                timestamp=datetime.now(UTC),
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.USER_PROMPT, content="Test message")],
     )
     created = await message_crud.create_message(db_session, message)
 
@@ -110,16 +74,7 @@ async def test_create_messages_batch(db_session: AsyncDbSession, session: Sessio
             session_id=session.id,
             kind=MessageKind.REQUEST,
             finish_reason=None,
-            parts=[
-                Part(
-                    kind=PartKind.USER_PROMPT,
-                    content=f"Message {i}",
-                    timestamp=datetime.now(UTC),
-                    tool_name=None,
-                    tool_call_id=None,
-                    args=None,
-                )
-            ],
+            parts=[Part(kind=PartKind.USER_PROMPT, content=f"Message {i}")],
         )
         for i in range(3)
     ]
@@ -160,24 +115,13 @@ def test_message_from_model_response() -> None:
 def test_message_to_model_message() -> None:
     session_id = uuid4()
     message_id = uuid4()
-    timestamp = datetime.now(UTC)
 
     message = Message(
         id=message_id,
         session_id=session_id,
-        timestamp=timestamp,
         kind=MessageKind.RESPONSE,
         finish_reason=FinishReason.STOP,
-        parts=[
-            Part(
-                kind=PartKind.TEXT,
-                content="Hello!",
-                timestamp=timestamp,
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.TEXT, content="Hello!")],
     )
 
     result = message.to_model_message()

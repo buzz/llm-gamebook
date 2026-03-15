@@ -1,10 +1,10 @@
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
 import pydantic_core
-from pydantic import Discriminator, Field
+from pydantic import Discriminator
 
 from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
@@ -15,11 +15,6 @@ class BaseUserPromptPart(CamelCasedBaseModel):
 
     content: str
     """The content of the prompt."""
-
-
-class UserPromptPartCreate(BaseUserPromptPart):
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    """The timestamp of the prompt."""
 
 
 class UserPromptPart(BaseUserPromptPart):

@@ -8,7 +8,7 @@ from pydantic import Discriminator
 from llm_gamebook.db.models.message import FinishReason
 from llm_gamebook.web.schemas.base import CamelCasedBaseModel
 
-from .part import ModelRequestPart, ModelResponsePart, UserPromptPartCreate
+from .part import ModelRequestPart, ModelResponsePart
 
 
 class Usage(CamelCasedBaseModel):
@@ -23,8 +23,8 @@ class BaseModelRequest(CamelCasedBaseModel):
     """Message type identifier, this is available on all parts as a discriminator."""
 
 
-class ModelRequestCreate(BaseModelRequest):
-    parts: Sequence[UserPromptPartCreate]
+class ModelRequestCreate(CamelCasedBaseModel):
+    content: str
 
 
 class ModelRequest(BaseModelRequest):

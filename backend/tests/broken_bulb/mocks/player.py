@@ -1,8 +1,6 @@
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.engine.engine import StoryEngine
-from llm_gamebook.web.schemas.session.message import ModelRequestCreate
-from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 
 class MockPlayer:
@@ -15,6 +13,4 @@ class MockPlayer:
         self._engine = story_engine
 
     async def send_text(self, content: str, db_session: AsyncDbSession) -> None:
-        parts = [UserPromptPartCreate(content=content)]
-        message_in = ModelRequestCreate(parts=parts)
-        await self._engine.session_adapter.create_user_request(db_session, message_in)
+        await self._engine.session_adapter.create_user_request(db_session, content)

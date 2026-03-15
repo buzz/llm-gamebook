@@ -95,15 +95,7 @@ def test_stream_part_message() -> None:
     msg = StreamPartMessage(
         session_id=session_id,
         message_id=message_id,
-        part=Part(
-            id=uuid4(),
-            message_id=message_id,
-            kind=PartKind.TEXT,
-            content="Hello",
-            tool_name=None,
-            tool_call_id=None,
-            args=None,
-        ),
+        part=Part(id=uuid4(), message_id=message_id, kind=PartKind.TEXT, content="Hello"),
     )
 
     assert isinstance(msg, BaseMessage)
@@ -184,15 +176,7 @@ def test_new_messages_are_immutable() -> None:
     msg2 = StreamPartMessage(
         session_id=session_id,
         message_id=uuid4(),
-        part=Part(
-            id=uuid4(),
-            message_id=uuid4(),
-            kind=PartKind.TEXT,
-            content="test",
-            tool_name=None,
-            tool_call_id=None,
-            args=None,
-        ),
+        part=Part(id=uuid4(), message_id=uuid4(), kind=PartKind.TEXT, content="test"),
     )
     with pytest.raises(FrozenInstanceError):
         msg2.session_id = uuid4()  # type: ignore[misc]

@@ -1,4 +1,3 @@
-from datetime import UTC, datetime
 from uuid import uuid4
 
 from llm_gamebook.db.models import Message, Part
@@ -24,16 +23,7 @@ def test_websocket_stream_message() -> None:
         session_id=session_id,
         kind=MessageKind.RESPONSE,
         finish_reason=None,
-        parts=[
-            Part(
-                kind=PartKind.TEXT,
-                content="Hello!",
-                timestamp=datetime.now(UTC),
-                tool_name=None,
-                tool_call_id=None,
-                args=None,
-            )
-        ],
+        parts=[Part(kind=PartKind.TEXT, content="Hello!")],
     )
     engine_msg = StreamMessageMessage(session_id=session_id, message=message)
 
@@ -47,16 +37,7 @@ def test_websocket_stream_message() -> None:
 def test_websocket_stream_part() -> None:
     session_id = uuid4()
     message_id = uuid4()
-    part = Part(
-        id=uuid4(),
-        message_id=message_id,
-        kind=PartKind.TEXT,
-        content="Hello!",
-        timestamp=datetime.now(UTC),
-        tool_name=None,
-        tool_call_id=None,
-        args=None,
-    )
+    part = Part(id=uuid4(), message_id=message_id, kind=PartKind.TEXT, content="Hello!")
     engine_msg = StreamPartMessage(
         session_id=session_id,
         message_id=message_id,

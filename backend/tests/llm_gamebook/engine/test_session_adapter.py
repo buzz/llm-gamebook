@@ -5,8 +5,6 @@ from llm_gamebook.db.models import Session
 from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.story.state import SessionStateData
-from llm_gamebook.web.schemas.session.message import ModelRequestCreate
-from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 
 async def test_session_adapter_get_session(
@@ -47,10 +45,7 @@ async def test_session_adapter_get_message_history(
 async def test_session_adapter_create_user_request(
     session_adapter: SessionAdapter, db_session: AsyncDbSession, session: Session
 ) -> None:
-    message_in = ModelRequestCreate(
-        parts=[UserPromptPartCreate(content="Test user request")],
-    )
-    result = await session_adapter.create_user_request(db_session, message_in)
+    result = await session_adapter.create_user_request(db_session, "Test user request")
 
     assert result is not None
     assert result.session_id == session.id
@@ -91,10 +86,7 @@ async def test_session_adapter_get_message_history_empty_generates_intro(
 async def test_session_adapter_get_message_history_not_empty_no_intro(
     session_adapter: SessionAdapter, db_session: AsyncDbSession, session: Session
 ) -> None:
-    message_in = ModelRequestCreate(
-        parts=[UserPromptPartCreate(content="Existing user message")],
-    )
-    await session_adapter.create_user_request(db_session, message_in)
+    await session_adapter.create_user_request(db_session, "Existing user message")
 
     messages = [msg async for msg in session_adapter.get_message_history(db_session)]
     assert len(messages) == 1

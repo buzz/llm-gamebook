@@ -112,10 +112,7 @@ def test_update_session(client: TestClient, model_config: ModelConfig, session: 
 
 
 def test_create_model_request(client: TestClient, session: Session) -> None:
-    request_data = {
-        "kind": "request",
-        "parts": [{"kind": "user-prompt", "content": "Hello"}],
-    }
+    request_data = {"content": "Hello"}
     response = client.post(f"/api/sessions/{session.id}/request", json=request_data)
     assert response.status_code == 201
     data = response.json()

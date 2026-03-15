@@ -118,22 +118,8 @@ async def sample_message_with_parts(db_session: AsyncDbSession, session: Session
 
     now = datetime.now(UTC)
     parts = [
-        Part(
-            kind=PartKind.USER_PROMPT,
-            content="Hello, world!",
-            timestamp=now,
-            tool_name=None,
-            tool_call_id=None,
-            args=None,
-        ),
-        Part(
-            kind=PartKind.TEXT,
-            content="This is a test message.",
-            timestamp=now,
-            tool_name=None,
-            tool_call_id=None,
-            args=None,
-        ),
+        Part(kind=PartKind.USER_PROMPT, content="Hello, world!", timestamp=now),
+        Part(kind=PartKind.TEXT, content="This is a test message.", timestamp=now),
     ]
     for part in parts:
         part.message_id = msg.id

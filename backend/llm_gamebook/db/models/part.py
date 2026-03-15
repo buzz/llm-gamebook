@@ -58,9 +58,9 @@ class PartBase(SQLModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     kind: PartKind = Field(sa_column=Column(Enum(PartKind)))
     content: str | None
-    tool_name: str | None
-    tool_call_id: str | None
-    args: str | None
+    tool_name: str | None = None
+    tool_call_id: str | None = None
+    args: str | None = None
     duration_seconds: int | None = None
 
 

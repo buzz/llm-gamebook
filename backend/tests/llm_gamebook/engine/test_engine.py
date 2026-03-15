@@ -33,8 +33,6 @@ from llm_gamebook.engine.message import (
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.traits.graph import GraphTransitionAction
-from llm_gamebook.web.schemas.session.message import ModelRequestCreate
-from llm_gamebook.web.schemas.session.part import UserPromptPartCreate
 
 from .conftest import EngineErrorMessages, EngineMessages, StreamMessages
 
@@ -367,8 +365,7 @@ async def test_generate_response_does_not_persist_input_request_messages(
     session: Session,
 ) -> None:
     adapter = SessionAdapter(session.id, story_engine._context, story_engine._bus)
-    user_request = ModelRequestCreate(parts=[UserPromptPartCreate(content="User input")])
-    await adapter.create_user_request(db_session, user_request)
+    await adapter.create_user_request(db_session, "User input")
 
     async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
         yield "Response"

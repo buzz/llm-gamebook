@@ -60,7 +60,21 @@ async def create_model_config(
 async def update_model_config(
     db_session: DbSessionDep, config_id: str, config_in: ModelConfigUpdate
 ) -> ServerMessage:
-    await crud_update_model_config(db_session, config_id, config_in)
+    await crud_update_model_config(
+        db_session,
+        config_id=UUID(config_id),
+        name=config_in.name,
+        provider=config_in.provider,
+        model_name=config_in.model_name,
+        base_url=config_in.base_url,
+        api_key=config_in.api_key,
+        context_window=config_in.context_window,
+        max_tokens=config_in.max_tokens,
+        temperature=config_in.temperature,
+        top_p=config_in.top_p,
+        presence_penalty=config_in.presence_penalty,
+        frequency_penalty=config_in.frequency_penalty,
+    )
     return ServerMessage(message="Model config updated successfully.")
 
 

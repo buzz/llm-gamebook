@@ -102,7 +102,7 @@ async def update_session(
 async def create_model_request(
     engine: StoryEngineDep, db_session: DbSessionDep, message_in: ModelRequestCreate
 ) -> Message:
-    return await engine.session_adapter.create_user_request(db_session, message_in)
+    return await engine.session_adapter.create_user_request(db_session, message_in.content)
 
 
 @session_router.delete("/{session_id}")
