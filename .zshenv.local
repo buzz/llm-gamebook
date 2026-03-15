@@ -1,0 +1,21 @@
+# For this file to be picked up, put a line like this into your ~/.zshenv
+# [[ $PWD == $HOME/path/to/this/folder* ]] && [[ -f .zshenv.local ]] && source .zshenv.local
+
+# Determine directory containing this file
+_local_dir=${0:A:h}
+_backend_dir="$_local_dir/backend"
+
+# Activate venv
+source "$_backend_dir/.venv/bin/activate"
+
+export UV_PROJECT="$_backend_dir/"
+export MYPYPATH="$_backend_dir/"
+export PYTEST_ADDOPTS="-c $_backend_dir/pyproject.toml"
+
+mypy() {
+  command mypy --config-file="$_backend_dir/pyproject.toml" "$@"
+}
+
+pnpm() {
+  command pnpm --dir "$_local_dir/frontend" "$@"
+}

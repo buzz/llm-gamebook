@@ -16,24 +16,16 @@ llm-gamebook/
 ## Commands
 
 ### Python
-Run inside `backend/` directory:
-
-- Lint: `uv run ruff check`
-- Type check: `uv run mypy llm_gamebook`
-- Format: `uv run ruff format llm_gamebook`
-- Format (only check): `uv run ruff format --check llm_gamebook`
-- Test single: `uv run pytest tests/path/to/test_file.py::test_name -v`
-- Test single file: `uv run pytest tests/foo/test_bar.py -v`
-- All tests: `uv run pytest`
-- Test with coverage: `uv run pytest --cov --cov-report markdown`
-- Install dependencies: `uv sync`
-- Add package: `uv add PKG` or `uv add --dev PKG` (dev dependency)
-- Remove package: `uv remove PKG`
+- Lint: `ruff check backend/`
+- Type check: `mypy backend/`
+- Format: `ruff format backend/`
+- Format (only check): `ruff format --check backend/`
+- Test single: `pytest backend/tests/path/to/test_file.py::test_name -v`
+- Test single file: `pytest backend/tests/foo/test_bar.py -v`
+- All tests: `pytest backend/`
+- Test with coverage: `pytest --cov --cov-report markdown backend/`
 
 ### Node.js
-Run inside `frontend/` directory:
-
-- Dev server: `pnpm dev`
 - Build: `pnpm build`
 - Lint: `pnpm lint`
 - Lint with fix: `pnpm lint:fix`
@@ -42,14 +34,10 @@ Run inside `frontend/` directory:
 - Type check: `pnpm typecheck`
 - Tests: `pnpm test`
 - Generate API types: `pnpm generate-api-types` (requires backend running at localhost:8000)
-- Install dependencies: `pnpm install`
-- Add package: `pnpm add PKG` or `pnpm add --save-dev PKG` (dev dependency)
-- Remove package: `pnpm remove PKG`
 
 ## Code Style
 
 ### Python
-
 - **Imports**: Use absolute imports, group in sections (stdlib, third-party, local), use explicit imports (`import *` forbidden), follow isort configuration in ruff_defaults.toml, imports must only appear at the top of a file.
 - **Formatting**: 100-char line limit, use ruff formatter, follow PEP 8 standards.
 - **Types**: Use type hints consistently, use modern Python 3.14+ type hints, prefer `T | None` over `Union[T, None]`, prefer `list` over `List`, avoid adding `from __future__ import annotations`.
@@ -61,7 +49,6 @@ Run inside `frontend/` directory:
 - **Tests**: Tests live under `tests/`, mirroring the package tree, name tests `test_*.py`, avoid coverage-driven tests without behavior.
 
 ### TypeScript
-
 - **Imports**: Use explicit imports (`import *` forbidden), organize in sections (stdlib, third-party, local), keep imports at the top of files, use ESLint/Prettier configuration.
 - **Formatting**: Prettier for code style, 2-space indentation, single quotes for strings.
 - **Types**: Use type hints consistently, use type inference where possible, don't add redundant type annotations.
@@ -88,7 +75,6 @@ Run inside `frontend/` directory:
 - Vitest for testing
 
 ## Best Practices
-
 1. **Before committing**: Run lint, typecheck, and tests for both backend and frontend.
 2. **API types**: Regenerate after backend API changes using `pnpm generate-api-types`.
 3. **Database**: Uses SQLModel with SQLite (aiosqlite) for async database operations.
