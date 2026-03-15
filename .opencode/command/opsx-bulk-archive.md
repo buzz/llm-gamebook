@@ -18,7 +18,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
 2. **Prompt for change selection**
 
-   Use **AskUserQuestion tool** with multi-select to let user choose changes:
+   Use **question tool** with multi-select to let user choose changes:
    - Show each change with its schema
    - Include an option for "All changes"
    - Allow any number of selections (1+ works, 2+ is the typical use case)
@@ -99,7 +99,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
 7. **Confirm batch operation**
 
-   Use **AskUserQuestion tool** with a single confirmation:
+   Use **question tool** with a single confirmation:
 
    - "Archive N changes?" with options based on status
    - Options might include:
