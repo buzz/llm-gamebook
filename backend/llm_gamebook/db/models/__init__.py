@@ -3,6 +3,7 @@ from .model_config import ModelConfig, ModelConfigBase
 from .part import Part, PartBase
 from .session import Session, SessionBase
 from .usage import Usage, UsageBase
+from .user_settings import UserSettings
 
 __all__ = [
     "Message",
@@ -15,4 +16,5 @@ __all__ = [
     "SessionBase",
     "Usage",
     "UsageBase",
+    "UserSettings",
 ]

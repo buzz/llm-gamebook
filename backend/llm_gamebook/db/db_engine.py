@@ -13,7 +13,14 @@ log = logger.getChild("database")
 @asynccontextmanager
 async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
     # Make sure all models are imported
-    from .models import Message, ModelConfig, Part, Session, Usage  # noqa: F401, PLC0415
+    from .models import (  # noqa: F401, PLC0415
+        Message,
+        ModelConfig,
+        Part,
+        Session,
+        Usage,
+        UserSettings,
+    )
 
     sqlite_file_name = f"{PROJECT_NAME}.db"
     sqlite_database_path = USER_DATA_PATH / sqlite_file_name

@@ -5,3 +5,4 @@ class ApiTags(Enum):
     model_configs = "model-configs"
     projects = "projects"
     sessions = "sessions"
+    settings = "settings"
