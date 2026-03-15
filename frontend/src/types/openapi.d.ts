@@ -165,6 +165,24 @@ export interface paths {
     readonly patch?: never
     readonly trace?: never
   }
+  readonly '/api/settings/': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    /** Read Settings */
+    readonly get: operations['readSettings']
+    /** Update Settings */
+    readonly put: operations['updateSettings']
+    readonly post?: never
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -409,14 +427,8 @@ export interface components {
     }
     /** ModelRequestCreate */
     readonly ModelRequestCreate: {
-      /**
-       * Kind
-       * @default request
-       * @constant
-       */
-      readonly kind: 'request'
-      /** Parts */
-      readonly parts: readonly components['schemas']['UserPromptPartCreate'][]
+      /** Content */
+      readonly content: string
     }
     readonly ModelRequestPart:
       | components['schemas']['UserPromptPart']
@@ -798,21 +810,35 @@ export interface components {
        */
       readonly timestamp: string
     }
-    /** UserPromptPartCreate */
-    readonly UserPromptPartCreate: {
+    /** UserSettings */
+    readonly UserSettings: {
       /**
-       * Kind
-       * @default user-prompt
-       * @constant
+       * Chatview
+       * @default standard
+       * @enum {string}
        */
-      readonly kind: 'user-prompt'
-      /** Content */
-      readonly content: string
+      readonly chatView: 'standard' | 'details' | 'debug'
       /**
-       * Timestamp
-       * Format: date-time
+       * Entersubmitsmessage
+       * @default true
        */
-      readonly timestamp?: string
+      readonly enterSubmitsMessage: boolean
+      /** Id */
+      readonly id: string
+    }
+    /** UserSettingsUpdate */
+    readonly UserSettingsUpdate: {
+      /**
+       * Chatview
+       * @default standard
+       * @enum {string}
+       */
+      readonly chatView: 'standard' | 'details' | 'debug'
+      /**
+       * Entersubmitsmessage
+       * @default true
+       */
+      readonly enterSubmitsMessage: boolean
     }
     /** ValidationError */
     readonly ValidationError: {
@@ -1544,6 +1570,59 @@ export interface operations {
         }
         content: {
           readonly 'application/json': components['schemas']['ModelRequest']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly readSettings: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly requestBody?: never
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['UserSettings']
+        }
+      }
+    }
+  }
+  readonly updateSettings: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['UserSettingsUpdate']
+      }
+    }
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['ServerMessage']
         }
       }
       /** @description Validation Error */

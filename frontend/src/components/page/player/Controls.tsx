@@ -33,10 +33,7 @@ function Controls({ isGenerating, session }: ControlsProps) {
       await createRequest({
         sessionId: session.id,
         projectId: session.projectId,
-        request: {
-          kind: 'request',
-          parts: [{ kind: 'user-prompt', content }],
-        },
+        request: { content },
       }).unwrap()
     } catch (error) {
       showError('Failed to send message!', error)
