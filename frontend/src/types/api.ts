@@ -27,6 +27,8 @@ type ProjectDetail = components['schemas']['ProjectDetail']
 type Projects = components['schemas']['Projects']
 type ProjectSource = components['schemas']['ProjectSource']
 
+type UserSettings = components['schemas']['UserSettings']
+
 type Delta = components['schemas']['Delta']
 type ThinkingPart = components['schemas']['ThinkingPart']
 
@@ -68,5 +70,6 @@ export type {
   Sessions,
   SessionUpdate,
   ThinkingPart,
+  UserSettings,
 }
 export type { paths } from './openapi'

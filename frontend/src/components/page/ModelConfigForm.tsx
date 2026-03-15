@@ -122,11 +122,10 @@ function ModelConfigForm() {
     }
 
     const formValues = form.getValues()
-    const config = { ...formValues }
 
     await (isEditing && modelConfig
-      ? updateModelConfig(modelConfig.id, config)
-      : createModelConfig(config))
+      ? updateModelConfig(modelConfig.id, formValues)
+      : createModelConfig(formValues))
   })
 
   const providerSelectData = useMemo(

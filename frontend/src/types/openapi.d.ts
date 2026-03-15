@@ -823,22 +823,6 @@ export interface components {
        * @default true
        */
       readonly enterSubmitsMessage: boolean
-      /** Id */
-      readonly id: string
-    }
-    /** UserSettingsUpdate */
-    readonly UserSettingsUpdate: {
-      /**
-       * Chatview
-       * @default standard
-       * @enum {string}
-       */
-      readonly chatView: 'standard' | 'details' | 'debug'
-      /**
-       * Entersubmitsmessage
-       * @default true
-       */
-      readonly enterSubmitsMessage: boolean
     }
     /** ValidationError */
     readonly ValidationError: {
@@ -1612,7 +1596,7 @@ export interface operations {
     }
     readonly requestBody: {
       readonly content: {
-        readonly 'application/json': components['schemas']['UserSettingsUpdate']
+        readonly 'application/json': components['schemas']['UserSettings']
       }
     }
     readonly responses: {

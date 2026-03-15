@@ -21,7 +21,7 @@ const viewControlData = [
   },
 ] as const
 
-type ChatViewControlProps = Omit<SegmentedIconControlProps, 'data'>
+type ChatViewControlProps = Omit<SegmentedIconControlProps<typeof viewControlData>, 'data'>
 
 function ChatViewControl(props: ChatViewControlProps) {
   return <SegmentedIconControl data={viewControlData} {...props} />
