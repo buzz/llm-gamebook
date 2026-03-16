@@ -37,7 +37,11 @@ function projectImageSrc(project: ProjectBasic) {
  * Split a project ID into namespace and name
  */
 function splitProjectId(projectId: string) {
-  const [namespace, name] = projectId.split('/', 2)
+  const parts = projectId.split('/')
+  if (parts.length !== 2) {
+    throw new Error(`Invalid project ID format: ${projectId}. Expected "namespace/name"`)
+  }
+  const [namespace, name] = parts
   if (!namespace || !name) {
     throw new Error(`Invalid project ID format: ${projectId}. Expected "namespace/name"`)
   }
