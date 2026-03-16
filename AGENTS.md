@@ -46,7 +46,7 @@ llm-gamebook/
 - **Docstrings**: Follow Google Python style guide, document all public functions/classes/methods, include parameter types/descriptions and return value descriptions for non-trivial functions.
 - **Linting**: Never silence linter issues like BLE001, PLR0904, PLR0912, PLR0914, PLR0915, C901.
 - **`__init__.py`**: Keep free of logic; only re-exports and metadata.
-- **Tests**: Tests live under `tests/`, mirroring the package tree, name tests `test_*.py`, avoid coverage-driven tests without behavior.
+- **Tests**: Tests live under `backend/tests/`, mirroring the package tree, name tests `test_*.py`, avoid coverage-driven tests without behavior.
 
 ### TypeScript
 - **Imports**: Use explicit imports (`import *` forbidden), organize in sections (stdlib, third-party, local), keep imports at the top of files, use ESLint/Prettier configuration.
