@@ -5,6 +5,9 @@
     "source.organizeImports": "explicit"
   },
   "js/ts.tsdk.path": "./frontend/node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.preferences.importModuleSpecifier": "project-relative",
   "mypy.configFile": "backend/pyproject.toml",
   "search.exclude": {
     "**/.venv": true,
