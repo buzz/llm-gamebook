@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING, cast
 
 import pytest
+from pydantic import BaseModel
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
-from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator, ExpressionEvalError
+from llm_gamebook.story.conditions.evaluator import MAX_EVAL_DEPTH, BoolExprEvaluator
 from llm_gamebook.story.conditions.grammar import ComparisonOperatorValue
+from llm_gamebook.story.errors import DynamicFieldEvalError, ExpressionEvalError
 
 if TYPE_CHECKING:
     from llm_gamebook.story.traits.described import DescribedTrait
@@ -328,3 +330,161 @@ def test_bool_expr_evaluator_all_operators(
         right=g.IntLiteral(value=right),
     )
     assert evaluator.eval(expr) == expected
+
+
+# Value evaluation (eval_value)
+def test_eval_value_literals(evaluator: BoolExprEvaluator) -> None:
+    assert evaluator.eval_value(g.IntLiteral(7)) == 7
+    assert evaluator.eval_value(g.FloatLiteral(1.5)) == 1.5
+    assert evaluator.eval_value(g.StrLiteral("hello")) == "hello"
+    assert evaluator.eval_value(g.BoolLiteral(value=True)) is True
+    assert evaluator.eval_value(g.BoolLiteral(value=False)) is False
+
+
+def test_eval_value_dot_path(evaluator: BoolExprEvaluator) -> None:
+    expr = g.DotPath(
+        entity_id=g.SnakeCase(value="node_a"),
+        property_chain=(g.SnakeCase(value="name"),),
+    )
+    assert evaluator.eval_value(expr) == "Node A"
+
+
+def test_eval_value_dot_path_stored_bool_expr_is_returned_as_is(
+    evaluator: BoolExprEvaluator,
+) -> None:
+    # Value context does not evaluate a stored BoolExprDefinition (design D5)
+    expr = g.DotPath(
+        entity_id=g.SnakeCase(value="node_b"),
+        property_chain=(g.SnakeCase(value="enabled"),),
+    )
+    assert isinstance(evaluator.eval_value(expr), BaseModel)
+
+
+def test_eval_value_comparison_is_boolean(evaluator: BoolExprEvaluator) -> None:
+    comp = g.Comparison(
+        left=g.DotPath(g.SnakeCase(value="node_a"), (g.SnakeCase(value="name"),)),
+        op=g.ComparisonOperator(value="=="),
+        right=g.StrLiteral(value="Node A"),
+    )
+    assert evaluator.eval_value(comp) is True
+
+    comp_false = g.Comparison(
+        left=g.DotPath(g.SnakeCase(value="node_a"), (g.SnakeCase(value="name"),)),
+        op=g.ComparisonOperator(value="=="),
+        right=g.StrLiteral(value="Node B"),
+    )
+    assert evaluator.eval_value(comp_false) is False
+
+
+def test_eval_value_boolean_combinators(evaluator: BoolExprEvaluator) -> None:
+    and_expr = g.AndExpr(left=g.BoolLiteral(value=True), right=g.BoolLiteral(value=False))
+    assert evaluator.eval_value(and_expr) is False
+
+    or_expr = g.OrExpr(left=g.BoolLiteral(value=True), right=g.BoolLiteral(value=False))
+    assert evaluator.eval_value(or_expr) is True
+
+    not_expr = g.NotExpr(expr=g.BoolLiteral(value=True))
+    assert evaluator.eval_value(not_expr) is False
+
+
+# Arithmetic (design D2 type rules)
+def _arith(op: g.ArithOperatorValue, left: g.Expr, right: g.Expr) -> g.ArithExpr:
+    return g.ArithExpr(left=left, operator=g.ArithOperator(op), right=right)
+
+
+@pytest.mark.parametrize(
+    ("left", "op", "right", "expected", "expected_type"),
+    [
+        (g.IntLiteral(3), "+", g.IntLiteral(4), 7, int),
+        (g.IntLiteral(10), "-", g.IntLiteral(4), 6, int),
+        (g.IntLiteral(3), "*", g.IntLiteral(4), 12, int),
+        (g.IntLiteral(7), "/", g.IntLiteral(2), 3.5, float),
+        (g.FloatLiteral(1.5), "+", g.IntLiteral(1), 2.5, float),
+        (g.IntLiteral(3), "+", g.FloatLiteral(0.5), 3.5, float),
+        (g.IntLiteral(7), "/", g.IntLiteral(4), 1.75, float),
+        (g.IntLiteral(2), "-", g.IntLiteral(5), -3, int),
+    ],
+)
+def test_eval_value_arith_type_rules(
+    evaluator: BoolExprEvaluator,
+    left: g.Expr,
+    op: g.ArithOperatorValue,
+    right: g.Expr,
+    expected: float,
+    expected_type: type[int] | type[float],
+) -> None:
+    result = evaluator.eval_value(_arith(op, left, right))
+    assert result == expected
+    assert type(result) is expected_type
+
+
+@pytest.mark.parametrize(
+    ("left", "op"),
+    [
+        (g.StrLiteral("player"), "+"),
+        (g.BoolLiteral(value=True), "+"),
+        (
+            g.DotPath(
+                entity_id=g.SnakeCase(value="test_graph"),
+                property_chain=(g.SnakeCase(value="node_ids"),),
+            ),
+            "+",
+        ),
+    ],
+)
+def test_eval_value_arith_non_numeric_operand_is_error(
+    evaluator: BoolExprEvaluator,
+    left: g.Expr,
+    op: g.ArithOperatorValue,
+) -> None:
+    expr = _arith(op, left, g.IntLiteral(1))
+    with pytest.raises(ExpressionEvalError, match="requires numeric operands"):
+        evaluator.eval_value(expr)
+
+
+def test_eval_value_arith_nested(evaluator: BoolExprEvaluator) -> None:
+    # ((2 + 3) * 4) / 2 == 10.0
+    expr = _arith(
+        "/",
+        _arith("*", _arith("+", g.IntLiteral(2), g.IntLiteral(3)), g.IntLiteral(4)),
+        g.IntLiteral(2),
+    )
+    result = evaluator.eval_value(expr)
+    assert result == 10.0
+    assert type(result) is float
+
+
+def test_eval_arith_zero_division_is_error(evaluator: BoolExprEvaluator) -> None:
+    expr = _arith("/", g.IntLiteral(1), g.IntLiteral(0))
+    with pytest.raises(ZeroDivisionError):
+        evaluator.eval_value(expr)
+
+
+def test_eval_arith_expr_as_condition(evaluator: BoolExprEvaluator) -> None:
+    # `2 + 3 > 4` parses and evaluates as a boolean condition
+    expr = g.parse_bool_expr("2 + 3 > 4")
+    assert evaluator.eval(expr) is True
+
+    expr = g.parse_bool_expr("2 + 2 > 4")
+    assert evaluator.eval(expr) is False
+
+
+# Evaluation depth cap
+def test_eval_value_depth_cap(evaluator: BoolExprEvaluator) -> None:
+    evaluator._depth = MAX_EVAL_DEPTH
+    with pytest.raises(DynamicFieldEvalError, match="Maximum expression evaluation depth"):
+        evaluator.eval_value(g.IntLiteral(1))
+
+
+def test_eval_value_depth_is_restored(evaluator: BoolExprEvaluator) -> None:
+    evaluator.eval_value(g.IntLiteral(1))
+    assert evaluator._depth == 0
+
+    with pytest.raises(ExpressionEvalError):
+        evaluator.eval_value(
+            g.DotPath(
+                entity_id=g.SnakeCase(value="nonexistent"),
+                property_chain=(g.SnakeCase(value="any"),),
+            )
+        )
+    assert evaluator._depth == 0

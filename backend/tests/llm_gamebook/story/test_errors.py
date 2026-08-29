@@ -1,13 +1,45 @@
 from llm_gamebook.story.errors import (
+    DynamicFieldEvalError,
+    DynamicFieldReadOnlyError,
     EntityFieldNotFoundError,
     EntityNotFoundError,
     EntityTypeNotFoundError,
+    ExpressionEvalError,
     ProjectError,
     ProjectExistsError,
     ProjectNotFoundError,
     StateAccessError,
     TraitNotFoundError,
 )
+
+
+def test_expression_eval_error_is_exception() -> None:
+    assert issubclass(ExpressionEvalError, Exception)
+
+
+def test_dynamic_field_eval_error_inherits_from_expression_eval_error() -> None:
+    assert issubclass(DynamicFieldEvalError, ExpressionEvalError)
+
+
+def test_dynamic_field_eval_error_with_field_and_source() -> None:
+    error = DynamicFieldEvalError("bad operand", field="player.health", source="=player.a * 2")
+    assert error.field == "player.health"
+    assert error.source == "=player.a * 2"
+    message = str(error)
+    assert "player.health" in message
+    assert "=player.a * 2" in message
+    assert "bad operand" in message
+
+
+def test_dynamic_field_eval_error_without_field() -> None:
+    error = DynamicFieldEvalError("Maximum expression evaluation depth (32) exceeded")
+    assert error.field is None
+    assert error.source is None
+    assert str(error) == "Maximum expression evaluation depth (32) exceeded"
+
+
+def test_dynamic_field_read_only_error_is_exception() -> None:
+    assert issubclass(DynamicFieldReadOnlyError, Exception)
 
 
 def test_project_error_is_exception() -> None:

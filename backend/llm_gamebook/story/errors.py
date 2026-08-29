@@ -30,6 +30,31 @@ class EntityFieldNotFoundError(StateAccessError):
     """Raised when an unknown entity field was accessed."""
 
 
+class ExpressionEvalError(Exception):
+    """Raised when evaluation of an expression failed."""
+
+
+class DynamicFieldEvalError(ExpressionEvalError):
+    """Raised when evaluation of a dynamic field's expression failed.
+
+    Attributes:
+        field: The `entity_id.field_name` of the dynamic field, if known.
+        source: The expression source string of the dynamic field, if known.
+    """
+
+    def __init__(self, message: str, field: str | None = None, source: str | None = None) -> None:
+        self.field = field
+        self.source = source
+        if field is not None:
+            expression = f" (expression: {source})" if source is not None else ""
+            message = f"Failed to evaluate dynamic field '{field}'{expression}: {message}"
+        super().__init__(message)
+
+
+class DynamicFieldReadOnlyError(Exception):
+    """Raised when a read-only dynamic field is written."""
+
+
 class CoreActionError(Exception):
     """Raised when a core action cannot be executed."""
 

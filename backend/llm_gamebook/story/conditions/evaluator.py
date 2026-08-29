@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING, assert_never, cast
 from pydantic import BaseModel
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
-from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
+from llm_gamebook.story.errors import (
+    DynamicFieldEvalError,
+    EntityFieldNotFoundError,
+    EntityNotFoundError,
+    ExpressionEvalError,
+)
 from llm_gamebook.story.schemas.entity import BaseEntity, EntityProperty
 
 if TYPE_CHECKING:
@@ -14,14 +19,20 @@ if TYPE_CHECKING:
     from llm_gamebook.story.schemas.project import Project
 
 
-class ExpressionEvalError(Exception):
-    """Raised when evaluation of an expression failed."""
+MAX_EVAL_DEPTH = 32
+"""Runtime backstop for nested dynamic field evaluation depth.
+
+Static cycle detection (at project load) makes this unreachable in practice;
+it guards against future grammar features that make dependencies dynamic
+(cf. the store's MAX_DISPATCH_DEPTH).
+"""
 
 
 class BoolExprEvaluator:
     def __init__(self, project: "Project", story_context: "StoryContext | None" = None) -> None:
         self._project = project
         self._story_context = story_context
+        self._depth = 0
 
     def eval(self, expr: g.BoolExpr) -> bool:
         if isinstance(expr, g.Literal):
@@ -30,6 +41,8 @@ class BoolExprEvaluator:
             return self._eval_dot_path(expr)
         if isinstance(expr, g.Comparison):
             return self._eval_comparison(expr)
+        if isinstance(expr, g.ArithExpr):
+            return bool(self.eval_value(expr))
         if isinstance(expr, g.AndExpr):
             return self.eval(expr.left) and self.eval(expr.right)
         if isinstance(expr, g.OrExpr):
@@ -38,6 +51,47 @@ class BoolExprEvaluator:
             return not self.eval(expr.expr)
 
         assert_never(expr)
+
+    def eval_value(self, expr: g.Expr) -> EntityProperty:
+        """Evaluate a value expression to a field value.
+
+        Dot paths and literals resolve to their (effective) values,
+        comparisons evaluate to a boolean, arithmetic applies the numeric
+        type rules, and boolean combinators evaluate to a boolean.
+
+        Args:
+            expr: The parsed value expression AST.
+
+        Returns:
+            The evaluated field value.
+
+        Raises:
+            ExpressionEvalError: If a reference or operand cannot be resolved.
+            DynamicFieldEvalError: If the evaluation depth cap is exceeded.
+        """
+        if self._depth >= MAX_EVAL_DEPTH:
+            msg = f"Maximum expression evaluation depth ({MAX_EVAL_DEPTH}) exceeded"
+            raise DynamicFieldEvalError(msg)
+        self._depth += 1
+        try:
+            if isinstance(expr, g.Literal):
+                return expr.value
+            if isinstance(expr, g.DotPath):
+                return self._resolve_dot_path(expr)
+            if isinstance(expr, g.ArithExpr):
+                return self._eval_arith(expr)
+            if isinstance(expr, g.Comparison):
+                return self._eval_comparison(expr)
+            if isinstance(expr, g.AndExpr):
+                return self.eval(expr.left) and self.eval(expr.right)
+            if isinstance(expr, g.OrExpr):
+                return self.eval(expr.left) or self.eval(expr.right)
+            if isinstance(expr, g.NotExpr):
+                return not self.eval(expr.expr)
+
+            assert_never(expr)
+        finally:
+            self._depth -= 1
 
     def _eval_dot_path(self, dot_path: g.DotPath) -> bool:
         value = self._resolve_dot_path(dot_path)
@@ -55,6 +109,32 @@ class BoolExprEvaluator:
                     return self.eval(maybe_bool_expr)
 
         return bool(value)
+
+    def _eval_arith(self, expr: g.ArithExpr) -> int | float:
+        left = self._eval_numeric_operand(expr.left, expr.operator.value)
+        right = self._eval_numeric_operand(expr.right, expr.operator.value)
+
+        if expr.operator.value == "+":
+            return left + right
+        if expr.operator.value == "-":
+            return left - right
+        if expr.operator.value == "*":
+            return left * right
+        if expr.operator.value == "/":
+            return left / right
+
+        assert_never(expr.operator.value)
+
+    def _eval_numeric_operand(self, operand: g.Expr, operator: str) -> int | float:
+        """Evaluate an arithmetic operand, enforcing the numeric-only rule."""
+        value = self.eval_value(operand)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            msg = (
+                f"Arithmetic operator '{operator}' requires numeric operands, "
+                f"got {type(value).__name__}"
+            )
+            raise ExpressionEvalError(msg)
+        return value
 
     def _eval_comparison(self, comp: g.Comparison) -> bool:
         left = self.resolve_comparison_operand(comp.left)
@@ -90,8 +170,10 @@ class BoolExprEvaluator:
 
         assert_never(op)
 
-    def resolve_comparison_operand(self, operand: g.DotPath | g.Literal) -> EntityProperty:
-        return self._resolve_dot_path(operand) if isinstance(operand, g.DotPath) else operand.value
+    def resolve_comparison_operand(self, operand: g.Expr) -> EntityProperty:
+        if isinstance(operand, g.Literal):
+            return operand.value
+        return self.eval_value(operand)
 
     def _resolve_dot_path(self, dot_path: g.DotPath) -> EntityProperty:
         entity = self._resolve_entity(dot_path.entity_id.value)

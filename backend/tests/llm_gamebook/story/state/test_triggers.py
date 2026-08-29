@@ -1,12 +1,13 @@
 """Tests for the trigger system (Stage 4)."""
 
 import logging
+from typing import cast
 
 import pytest
 from pydantic import BaseModel
 
-from llm_gamebook.story.conditions.evaluator import ExpressionEvalError
 from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.errors import ExpressionEvalError
 from llm_gamebook.story.schemas import Project, ProjectSource, TriggerDefinition
 from llm_gamebook.story.state import Action, Reducer, SessionState, is_trigger_condition_true
 from llm_gamebook.story.traits.graph import GraphTransitionAction
@@ -254,6 +255,34 @@ def test_trigger_evaluation_is_logged(caplog: pytest.LogCaptureFixture) -> None:
     assert any(
         "Trigger fired: dispatching 'test/flag'" in record.message for record in caplog.records
     )
+
+
+def test_trigger_condition_reads_dynamic_field() -> None:
+    # A trigger condition referencing a dynamic field is evaluated
+    # transparently against the current effective state.
+    data = trigger_project_data([
+        {
+            "name": "test/flag",
+            "condition": "main.at_end",
+            "args": {"entity_id": "main", "value": "flagged"},
+        }
+    ])
+    entity_types = cast("list[dict[str, object]]", data["entity_types"])
+    main_entities = cast("list[dict[str, object]]", entity_types[0]["entities"])
+    main = main_entities[0]
+    main["at_end"] = "=main.current_node_id == 'end'"
+
+    context = StoryContext(Project.from_data(data))
+    log: list[str] = []
+    context.store._register_reducer("test/flag", make_flag_reducer(log))
+
+    assert context.get_field("main", "at_end") is False
+    dispatch_transition(context, "middle")
+    assert log == []
+
+    dispatch_transition(context, "end")
+    assert log == ["test/flag"]
+    assert context.session_state.get_field("main", "flag") == "flagged"
 
 
 def test_integration_full_trigger_flow() -> None:

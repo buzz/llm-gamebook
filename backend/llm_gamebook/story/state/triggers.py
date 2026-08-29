@@ -3,8 +3,8 @@
 import logging
 from typing import TYPE_CHECKING, cast
 
-from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator, ExpressionEvalError
 from llm_gamebook.story.conditions.grammar import parse_bool_expr
+from llm_gamebook.story.errors import ExpressionEvalError
 from llm_gamebook.story.schemas import TriggerDefinition
 
 from .actions import Action, GenericPayload
@@ -38,7 +38,7 @@ def is_trigger_condition_true(context: "StoryContext", trigger: TriggerDefinitio
         msg = f"Invalid trigger condition {trigger.condition!r}: {err}"
         raise ExpressionEvalError(msg) from err
 
-    evaluator = BoolExprEvaluator(context.project, context)
+    evaluator = context.evaluator
     return evaluator.eval(condition)
 
 
