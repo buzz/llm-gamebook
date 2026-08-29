@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Action System
+
+## Purpose
+
+Changes session state through a Redux-inspired action system: namespaced actions (`namespace/action`) dispatched to a `Store`, processed by an ordered middleware chain (Logger, MessageBusPublisher, TriggerEval, AutoSave), and applied by a composed reducer registry that traits populate. Actions are the only way state changes.
+
+## Requirements
 
 ### Requirement: Action base class defines structure
 The system SHALL provide a base `Action` class that all actions extend, containing a `type` field with namespaced action name and a `payload`.
@@ -82,12 +88,22 @@ The system SHALL allow traits to register reducers for actions they handle.
 - **THEN** the graph reducer SHALL handle the action and update current_node
 
 ### Requirement: Built-in middleware
-The system SHALL provide built-in middleware: Logger, TriggerEval (stub), AutoSave (stub).
+The system SHALL provide built-in middleware: Logger, MessageBusPublisher, TriggerEval (stub), AutoSave (stub).
 
 #### Scenario: Logger middleware
 - **GIVEN** Logger middleware is configured
 - **WHEN** an action is dispatched
 - **THEN** the action details SHALL be logged
+
+#### Scenario: MessageBusPublisher publishes when bound
+- **GIVEN** a MessageBusPublisher middleware configured with a message bus and session ID
+- **WHEN** an action is dispatched
+- **THEN** an `ActionDispatched` message SHALL be published to the message bus
+
+#### Scenario: MessageBusPublisher is a no-op when unbound
+- **GIVEN** a MessageBusPublisher middleware configured without a message bus or without a session ID
+- **WHEN** an action is dispatched
+- **THEN** it SHALL pass the action through unchanged without publishing (behavior specified in the `message-bus-bridge` capability)
 
 #### Scenario: TriggerEval middleware is stub
 - **GIVEN** TriggerEval middleware is configured
