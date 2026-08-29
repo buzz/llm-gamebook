@@ -35,6 +35,31 @@ llm-gamebook/
 - Tests: `pnpm test`
 - Generate API types: `pnpm generate-api-types` (requires backend running at localhost:8000)
 
+## Git & Worktree Workflow
+
+**This is the default workflow for any change to the codebase, unless the user explicitly states otherwise.** Parallel sessions may be active in the main source tree at the same time, so never work directly in the main worktree.
+
+1. **Create a worktree in the parent directory.** From the main worktree, for work on `<topic>` (e.g. an OpenSpec change name):
+   ```bash
+   git worktree add ../<topic> -b feat/<topic>
+   ```
+   This creates `<parent>/<topic>` on a new `feat/<topic>` branch, following the naming of existing worktrees (e.g. `../session-state-stage-5` → `feat/session-state-stage-5`).
+2. **Work inside the worktree and commit there.** All edits, tests, and commits happen in the worktree (conventional commits). The Python venv (`backend/.venv`) is gitignored — if the worktree is based on the same commit (or compatible dependencies), symlink it from the main worktree instead of reinstalling:
+   ```bash
+   ln -sfn <main-worktree>/backend/.venv <worktree>/backend/.venv
+   ```
+   Otherwise create a fresh environment with `uv`.
+3. **Merge back into the main worktree only after explicit user confirmation.** Present the diff/summary of the work and wait for the user to review and explicitly confirm. Then, in the main worktree:
+   ```bash
+   git merge --no-ff feat/<topic>
+   ```
+   Verify the merge with lint, typecheck, and tests in the main worktree. Never merge without the user's explicit go-ahead.
+4. **Remove the worktree and branch.** Once the merge is done (and after the user confirms cleanup if in doubt):
+   ```bash
+   git worktree remove ../<topic>
+   git branch -d feat/<topic>
+   ```
+
 ## Code Style
 
 ### Python
