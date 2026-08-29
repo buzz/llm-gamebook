@@ -11,10 +11,11 @@ The codebase has:
 - **Session state** (Stage 1): `SessionState` entity-field overrides, serialized with model responses
 - **Action system** (Stage 2): `Store`, namespaced `Action` classes, reducer registry, middleware chain
 - **Action-driven state changes** (Stage 3): tools dispatch actions via the store; state persists after agent steps
+- **Trigger system** (Stage 4): trigger definitions on entity types, evaluated after each action's state changes, dispatching configured actions
+- **State history/undo** (Stage 5): full state snapshots on response messages, traversal, restore/fork, end-game and reset-game actions
+- **Message bus bridge** (Stage 6): `MessageBusPublisher` middleware publishes `ActionDispatched` for every dispatched story action
 
 Not yet implemented:
-- Trigger system (Stage 4)
-- State history/undo (Stage 5)
 - Dynamic field evaluation (`=expression`)
 
 ## OpenSpec Changes
@@ -26,9 +27,9 @@ Each stage maps to an OpenSpec change under `openspec/changes/`:
 | 1 | `archive/2026-02-15-session-state-stage-1` | Done |
 | 2 | `archive/2026-02-18-session-state-stage-2` | Done |
 | 3 | `archive/2026-02-18-session-state-stage-3` | Done |
-| 4 | `session-state-stage-4` | In progress |
-| 5 | `session-state-stage-5` | In progress |
-| 6 | `session-state-stage-6` | In progress |
+| 4 | `archive/2026-08-29-session-state-stage-4` | Done |
+| 5 | `archive/2026-08-29-session-state-stage-5` | Done |
+| 6 | `archive/2026-08-29-session-state-stage-6` | Done |
 
 ## Stage 1: Core State Infrastructure
 

@@ -88,7 +88,7 @@ The system SHALL allow traits to register reducers for actions they handle.
 - **THEN** the graph reducer SHALL handle the action and update current_node
 
 ### Requirement: Built-in middleware
-The system SHALL provide built-in middleware: Logger, MessageBusPublisher, TriggerEval (stub), AutoSave (stub).
+The system SHALL provide built-in middleware: Logger, MessageBusPublisher, TriggerEval, and AutoSave (stub). The default `StoryContext` middleware chain SHALL run them in the order Logger → MessageBusPublisher → TriggerEval → AutoSave.
 
 #### Scenario: Logger middleware
 - **GIVEN** Logger middleware is configured
@@ -105,15 +105,15 @@ The system SHALL provide built-in middleware: Logger, MessageBusPublisher, Trigg
 - **WHEN** an action is dispatched
 - **THEN** it SHALL pass the action through unchanged without publishing (behavior specified in the `message-bus-bridge` capability)
 
-#### Scenario: TriggerEval middleware is stub
+#### Scenario: TriggerEval middleware evaluates triggers
 - **GIVEN** TriggerEval middleware is configured
-- **WHEN** an action is dispatched
-- **THEN** it SHALL pass the action through without evaluation (Stage 4 feature)
+- **WHEN** an action's state changes are committed
+- **THEN** it SHALL evaluate project triggers and dispatch actions for triggers with true conditions (behavior specified in the `trigger-system` capability)
 
 #### Scenario: AutoSave middleware is stub
 - **GIVEN** AutoSave middleware is configured
 - **WHEN** an action is dispatched
-- **THEN** it SHALL pass the action through without saving (Stage 3/5 feature)
+- **THEN** it SHALL pass the action through without saving
 
 ### Requirement: Action types for game operations
 The system SHALL provide concrete action classes for common game operations.
