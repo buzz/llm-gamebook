@@ -14,9 +14,7 @@ The codebase has:
 - **Trigger system** (Stage 4): trigger definitions on entity types, evaluated after each action's state changes, dispatching configured actions
 - **State history/undo** (Stage 5): full state snapshots on response messages, traversal, restore/fork, end-game and reset-game actions
 - **Message bus bridge** (Stage 6): `MessageBusPublisher` middleware publishes `ActionDispatched` for every dispatched story action
-
-Not yet implemented:
-- Dynamic field evaluation (`=expression`)
+- **Dynamic field evaluation** (Stage 7): `=expression` fields parsed at load, evaluated at read time against effective state, read-only with load-time cycle detection
 
 ## OpenSpec Changes
 
@@ -30,6 +28,7 @@ Each stage maps to an OpenSpec change under `openspec/changes/`:
 | 4 | `archive/2026-08-29-session-state-stage-4` | Done |
 | 5 | `archive/2026-08-29-session-state-stage-5` | Done |
 | 6 | `archive/2026-08-29-session-state-stage-6` | Done |
+| 7 | `dynamic-field-evaluation` | In progress |
 
 ## Stage 1: Core State Infrastructure
 
@@ -234,6 +233,38 @@ Implement the MessageBusPublisher middleware to bridge the action system to the 
 
 ---
 
+## Stage 7: Dynamic Field Evaluation
+
+### Overview
+Extend the condition grammar into a general value-expression language and let entity fields hold `=expression` values that are evaluated at read time against the current effective state.
+
+### Units of Work
+
+1. **Unify the expression grammar**
+   - Extend the condition grammar with arithmetic (`+`, `-`, `*`, `/`) and use it for both conditions and field values
+   - Add a `parse_value_expr` entry point and `eval_value` on the evaluator
+
+2. **Load-time conversion**
+   - String fields starting with `=` become `ValueExprDefinition` when the project loads
+   - Fail the load on syntax errors and cyclic dynamic-field dependencies
+
+3. **Runtime evaluation and read-only semantics**
+   - `StoryContext.get_field` resolves: session override → dynamic expression → entity default
+   - `SessionState` refuses writes to dynamic fields; snapshots store only stored overrides
+   - Runtime evaluation errors surface as `DynamicFieldEvalError` (field + expression)
+
+### Test Cases
+- Dynamic field reflects session overrides of its inputs on every read
+- Writes to dynamic fields are rejected and dynamic fields never enter snapshots
+- Restoring a historical state re-evaluates dynamic fields against the restored state
+- Trigger conditions read dynamic fields transparently
+- Cyclic dynamic-field dependencies and expression syntax errors fail project load
+
+### Dependencies
+- Stage 4 (trigger system) and Stage 5 (history/undo) for the integration paths
+
+---
+
 ## Dependencies Between Stages
 
 ```
@@ -248,6 +279,8 @@ Stage 1: Core State Infrastructure
     │               └─ Stage 5: History and Undo
     │
     └─ Stage 6: Message Bus Bridge
+
+Stage 7: Dynamic Field Evaluation (after Stages 4 and 5)
 ```
 
 - Stage 1 is foundational (all subsequent stages depend on it)
@@ -256,6 +289,7 @@ Stage 1: Core State Infrastructure
 - Stage 4 and 5 can be developed somewhat independently after Stage 3
 - Stage 4 (triggers) and 5 (history) could run in parallel after Stage 3
 - Stage 6 depends on Stage 2 (middleware chain) but is otherwise independent
+- Stage 7 reuses the Stage 1 condition grammar/evaluator and the Stage 4/5 read and restore paths
 
 ## Non-Disruptive Considerations
 

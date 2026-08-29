@@ -31,18 +31,59 @@ Persisted separately. Contains:
   - enables going back in time (undo)
 - Latest state is the latest model response that has its `state` field set (responses may omit storing state if there were no changes)
 
-### Dynamic Fields
+### Dynamic Fields (implemented)
 
-Any field can be:
+Any entity field can be either:
 - **Static**: literal value in YAML
-- **Dynamic**: expression prefixed with `=`, evaluated at runtime
+- **Dynamic**: string prefixed with `=`, parsed at load time into a
+  value-expression AST (`ValueExprDefinition`) and evaluated lazily on every read
 
 ```yaml
 entities:
-  - id: main
-    current_node_id: start           # static
-    current_node_id: =other_entity.x # dynamic
+  - id: player
+    max_hp: 10                       # static
+    health: =player.max_hp - 5       # dynamic
 ```
+
+**Expression language.** Dynamic fields share the condition grammar:
+- References: `entity.property` dot paths (traversable into collections)
+- Literals: numbers, strings, `true` / `false`
+- Comparisons: `==`, `!=`, `<`, `<=`, `>`, `>=`, `in` (single comparison, no chaining)
+- Arithmetic: `+`, `-`, `*`, `/` (numeric operands only; `/` yields a float,
+  int `/` int is exact float division; int `+`/`-`/`*` stay int)
+- Boolean combinators: `not`, `and`, `or` (comparison results and plain
+  references are usable as boolean values)
+
+**Read-only semantics.** Dynamic fields are computed, not stored:
+- They are never written into session state and never appear in state snapshots
+- `SessionState.set_field` / `remove_field` on a dynamic field raises
+  `DynamicFieldReadOnlyError`; `restore_defaults` ignores them
+- Reads always re-evaluate against the current effective state
+
+**Resolution order** (`StoryContext.get_field`):
+1. Session-state override (of another, stored field)
+2. Dynamic expression, evaluated against effective state
+3. Entity default value
+
+Session overrides of the fields a dynamic expression *reads* are picked up
+(overrides shadow defaults as expression inputs); the dynamic field itself
+cannot be overridden.
+
+**Load-time guarantees.** When the project loads:
+- Every `=...` string field is parsed; a syntax error fails the load
+- Cyclic dependencies between dynamic fields (via dot-path head references)
+  fail the load, e.g. `a.x → b.y → a.x`
+- Fields managed by trait properties (e.g. `current_node_id` on graph
+  entities) cannot be dynamic; this also fails the load
+
+**Runtime errors.** A dynamic field whose expression fails at runtime (e.g.
+missing reference, division by zero, non-numeric arithmetic operand) raises
+`DynamicFieldEvalError` naming the `entity.field` and the source expression.
+Trigger conditions, templates, and tools read dynamic fields transparently
+through `StoryContext.get_field` and inherit this behavior.
+
+See the broken-bulb example for a dynamic field read by a trigger:
+`main.meeting_progress: =the_meeting.current_node_id == "leaflet_found"`.
 
 ## Action System
 

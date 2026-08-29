@@ -1,6 +1,8 @@
+import logging
 from collections import Counter
 from uuid import UUID
 
+import pytest
 from pydantic_ai import ModelResponse, TextPart, ToolCallPart
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
@@ -31,7 +33,10 @@ async def test_story_flow(
     test_player: MockPlayer,
     story_engine: StoryEngine,
     db_session: AsyncDbSession,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
+    caplog.set_level(logging.INFO, logger="llm_gamebook.story.state.triggers")
+
     # Bedroom
     test_model.add_responses(
         lambda _, info: len(info.function_tools) == 0,  # No tool calls on introduction
@@ -67,6 +72,7 @@ async def test_story_flow(
     message_count = await story_engine.session_adapter.get_message_count(db_session)
     assert message_count == 5
     await assert_no_duplicate_user_prompts(story_engine.session_adapter.session_id, db_session)
+    assert not any("meeting_unlocked" in record.message for record in caplog.records)
 
     # Take leaflet: triggers The Meeting story arc transition
     await test_player.send_text("take the leaflet", db_session)
@@ -84,3 +90,12 @@ async def test_story_flow(
     message_count = await story_engine.session_adapter.get_message_count(db_session)
     assert message_count == 8
     await assert_no_duplicate_user_prompts(story_engine.session_adapter.session_id, db_session)
+
+    # The story/meeting_unlocked trigger reads the dynamic field
+    # main.meeting_progress (=the_meeting.current_node_id == "leaflet_found")
+    # and fires once the meeting arc reaches the leaflet_found node.
+    fired = sum(
+        "Trigger fired: dispatching 'story/meeting_unlocked'" in record.message
+        for record in caplog.records
+    )
+    assert fired == 1

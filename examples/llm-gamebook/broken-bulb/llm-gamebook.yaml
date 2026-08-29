@@ -17,10 +17,14 @@ entity_types:
       - described
       - name: graph
         node_type_id: StoryArcNode
+    triggers:
+      - name: story/meeting_unlocked
+        condition: main.meeting_progress
     entities:
       - name: Main
         description: The main storyline.
         current_node_id: the_beginning
+        meeting_progress: =the_meeting.current_node_id == "leaflet_found"
         node_ids:
           - the_beginning
           - spark_of_hope
