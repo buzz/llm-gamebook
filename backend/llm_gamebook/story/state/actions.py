@@ -1,4 +1,10 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
+
+
+class GenericPayload(BaseModel):
+    """A payload accepting arbitrary key-value data, e.g. trigger action args."""
+
+    model_config = ConfigDict(extra="allow")
 
 
 class Action[T: BaseModel](BaseModel):

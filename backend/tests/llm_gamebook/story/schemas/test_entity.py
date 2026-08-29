@@ -4,8 +4,8 @@ from typing import cast
 import pytest
 
 from llm_gamebook.story.errors import EntityNotFoundError, TraitNotFoundError
-from llm_gamebook.story.schemas import BaseEntity, EntityType, Project
-from llm_gamebook.story.schemas.entity import id_from_name
+from llm_gamebook.story.schemas import BaseEntity, EntityType, Project, TriggerDefinition
+from llm_gamebook.story.schemas.entity import EntityTypeDefinition, id_from_name
 from llm_gamebook.story.traits.graph import GraphNodeTrait, GraphTrait, GraphTraitOptions
 
 
@@ -182,3 +182,31 @@ def test_entity_type_from_definition(simple_project: Project) -> None:
     assert "node_b" in entity_type.entity_map
     assert "node_c" in entity_type.entity_map
     assert "node_d" in entity_type.entity_map
+
+
+def test_trigger_definition_fields() -> None:
+    trigger = TriggerDefinition(
+        name="graph/transition",
+        condition="=main.current_node_id == 'end'",
+        args={"to": "end"},
+    )
+
+    assert trigger.name == "graph/transition"
+    assert trigger.condition == "=main.current_node_id == 'end'"
+    assert trigger.args == {"to": "end"}
+
+
+def test_trigger_definition_args_default_empty() -> None:
+    trigger = TriggerDefinition(name="core/end-game", condition="main.current_node_id == 'end'")
+
+    assert trigger.args == {}
+
+
+def test_entity_type_definition_triggers_default_empty() -> None:
+    entity_type_def = EntityTypeDefinition.model_validate({
+        "id": "TestType",
+        "name": "Test Type",
+        "entities": [{"id": "test_entity", "name": "Test Entity"}],
+    })
+
+    assert entity_type_def.triggers == []

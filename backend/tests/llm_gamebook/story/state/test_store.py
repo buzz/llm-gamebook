@@ -1,7 +1,9 @@
+from typing import cast
+
 import pytest
 from pydantic import BaseModel
 
-from llm_gamebook.story.state import Action, SessionState, Store
+from llm_gamebook.story.state import Action, Next, SessionState, Store
 
 
 class DictPayload(BaseModel):
@@ -42,12 +44,12 @@ def test_store_dispatch_depth_protection() -> None:
     store = Store()
     call_count = 0
 
-    def recursive_middleware(s: Store, a: Action[BaseModel]) -> Action[BaseModel]:
+    def recursive_middleware(s: Store, a: Action[BaseModel], n: Next) -> SessionState:
         nonlocal call_count
         call_count += 1
-        if call_count < 5:
+        if call_count < 12:
             s.dispatch(Action[DictPayload](name="test/another", payload=DictPayload()))
-        return a
+        return n(a)
 
     store._middleware = [recursive_middleware]
 
@@ -105,13 +107,13 @@ def test_store_multiple_reducers_composition() -> None:
 def test_store_middleware_chain_order() -> None:
     order: list[str] = []
 
-    def middleware1(s: Store, a: Action[BaseModel]) -> Action[BaseModel]:
+    def middleware1(s: Store, a: Action[BaseModel], n: Next) -> SessionState:
         order.append("mw1")
-        return a
+        return n(a)
 
-    def middleware2(s: Store, a: Action[BaseModel]) -> Action[BaseModel]:
+    def middleware2(s: Store, a: Action[BaseModel], n: Next) -> SessionState:
         order.append("mw2")
-        return a
+        return n(a)
 
     store = Store(middleware=[middleware1, middleware2])
     store.dispatch(Action[DictPayload](name="test/action", payload=DictPayload()))
@@ -120,8 +122,9 @@ def test_store_middleware_chain_order() -> None:
 
 
 def test_store_middleware_can_modify_action() -> None:
-    def modify_middleware(s: Store, a: Action[BaseModel]) -> Action[BaseModel]:
-        return Action[DictPayload](name="test/modified", payload=DictPayload())  # type: ignore[return-value]
+    def modify_middleware(s: Store, a: Action[BaseModel], n: Next) -> SessionState:
+        modified = Action[DictPayload](name="test/modified", payload=DictPayload())
+        return n(cast("Action[BaseModel]", modified))
 
     store = Store(middleware=[modify_middleware])
 
@@ -142,9 +145,9 @@ def test_full_dispatch_flow_integration() -> None:
     middleware_log: list[str] = []
     reducer_log: list[str] = []
 
-    def logging_middleware(s: Store, a: Action[BaseModel]) -> Action[BaseModel]:
+    def logging_middleware(s: Store, a: Action[BaseModel], n: Next) -> SessionState:
         middleware_log.append(f"mw:{a.name}")
-        return a
+        return n(a)
 
     def test_reducer(state: SessionState, action: Action[BaseModel]) -> SessionState:
         reducer_log.append(f"reducer:{action.name}")

@@ -7,7 +7,16 @@ import jinja2
 from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
 from llm_gamebook.story.schemas import Project
 
-from .state import FieldValue, SessionState, SessionStateData, Store
+from .state import (
+    FieldValue,
+    SessionState,
+    SessionStateData,
+    Store,
+    auto_save_middleware,
+    logging_middleware,
+    message_bus_publisher_middleware,
+    trigger_eval_middleware,
+)
 from .template_view import TemplateContext
 
 if TYPE_CHECKING:
@@ -26,7 +35,15 @@ class StoryContext:
         super().__init__()
         self._project = project
         initial_state = SessionState(session_state)
-        self._store = Store(initial_state)
+        self._store = Store(
+            initial_state,
+            middleware=[
+                logging_middleware,
+                message_bus_publisher_middleware,
+                trigger_eval_middleware(self),
+                auto_save_middleware,
+            ],
+        )
 
     @property
     def project(self) -> "Project":

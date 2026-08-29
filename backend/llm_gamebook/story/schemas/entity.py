@@ -115,6 +115,22 @@ class FunctionDefinition(BaseModel):
     """Maps function argument properties to description."""
 
 
+class TriggerDefinition(BaseModel):
+    """A condition-based trigger that dispatches an action when its condition holds."""
+
+    name: str
+    """The action name to dispatch when the trigger fires (format: 'namespace/action')."""
+
+    condition: str
+    """Boolean expression evaluated against the effective state.
+
+    An optional leading '=' is accepted.
+    """
+
+    args: dict[str, object] = Field(default_factory=dict)
+    """Action payload values dispatched when the trigger fires."""
+
+
 class EntityDefinition(BaseModel):
     """The base class to all story entities."""
 
@@ -150,6 +166,9 @@ class EntityTypeDefinition(BaseModel):
 
     entities: list[EntityDefinition]
     """List of entity definitions."""
+
+    triggers: list[TriggerDefinition] = []
+    """List of condition-based triggers evaluated after agent steps."""
 
     @model_validator(mode="before")
     @classmethod
@@ -247,6 +266,10 @@ class EntityType(EntityTypeDefinition):
     def get_tools(self) -> "Iterable[StoryTool]":
         for entity in self.entity_map.values():
             yield from entity.get_tools()
+
+    def get_triggers(self) -> list[TriggerDefinition]:
+        """Return the triggers defined for this entity type, in YAML order."""
+        return self.triggers
 
     @overload
     def get_entity(self, entity_id: str) -> BaseEntity: ...

@@ -1,5 +1,6 @@
 import typing
 from dataclasses import dataclass
+from typing import cast
 
 import pyparsing as pp
 
@@ -158,3 +159,29 @@ bool_expr = pp.infix_notation(
         (pp.Keyword("or"), 2, pp.opAssoc.LEFT, create_binary_expr(OrExpr)),
     ],
 )
+
+
+def parse_bool_expr(expression: str) -> BoolExpr:
+    """Parse a boolean expression string into a BoolExpr AST.
+
+    An optional leading "=" (dynamic expression marker) is stripped before
+    parsing, e.g. "=foo.bar == 'x'" parses like "foo.bar == 'x'".
+
+    Args:
+        expression: The expression string to parse.
+
+    Returns:
+        The parsed boolean expression AST.
+
+    Raises:
+        ValueError: If the expression cannot be parsed.
+    """
+    try:
+        return cast(
+            "BoolExpr",
+            (pp.StringStart() + bool_expr + pp.StringEnd()).parse_string(
+                expression.removeprefix("=")
+            )[0],
+        )
+    except pp.ParseException as err:
+        raise ValueError(err.explain()) from err

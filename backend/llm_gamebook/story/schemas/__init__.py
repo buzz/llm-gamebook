@@ -1,4 +1,4 @@
-from .entity import BaseEntity, EntityProperty, EntityType, FunctionDefinition
+from .entity import BaseEntity, EntityProperty, EntityType, FunctionDefinition, TriggerDefinition
 from .expression import BoolExprDefinition
 from .project import Project, ProjectDefinition, ProjectId, ProjectSource
 
@@ -12,4 +12,5 @@ __all__ = [
     "ProjectDefinition",
     "ProjectId",
     "ProjectSource",
+    "TriggerDefinition",
 ]

@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Annotated, Self, overload
 
 import yaml
-from pydantic import AfterValidator, BaseModel, Field, PrivateAttr
+from pydantic import AfterValidator, BaseModel, Field, PrivateAttr, model_validator
 
 from llm_gamebook.constants import PROJECT_FILENAME
+from llm_gamebook.story.conditions.grammar import parse_bool_expr
 from llm_gamebook.story.errors import (
     EntityNotFoundError,
     EntityTypeNotFoundError,
@@ -69,6 +70,21 @@ class ProjectDefinition(BaseModel):
 
         yaml_path = save_path / PROJECT_FILENAME
         yaml_path.write_text(yaml.dump(self.model_dump()))
+
+    @model_validator(mode="after")
+    def validate_trigger_conditions(self) -> Self:
+        """Validate that all trigger conditions are parseable boolean expressions."""
+        for entity_type in self.entity_types:
+            for trigger in entity_type.triggers:
+                try:
+                    parse_bool_expr(trigger.condition)
+                except ValueError as err:
+                    msg = (
+                        f"Invalid trigger condition for entity type '{entity_type.id}' "
+                        f"and trigger '{trigger.name}': {err}"
+                    )
+                    raise ValueError(msg) from err
+        return self
 
     @classmethod
     def from_path(cls, project_path: Path) -> Self:

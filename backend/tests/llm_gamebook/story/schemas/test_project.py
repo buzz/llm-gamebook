@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from llm_gamebook.story import ProjectManager
 from llm_gamebook.story.errors import (
@@ -104,6 +105,55 @@ def test_project_from_definition(project_data: dict[str, object]) -> None:
     assert project.description == "A test project"
     assert "TestType" in project.entity_type_map
     assert "test_entity" in project.entity_type_map["TestType"].entity_map
+
+
+def test_project_definition_trigger_valid_condition(project_data: dict[str, object]) -> None:
+    data = {
+        **project_data,
+        "entity_types": [
+            {
+                "id": "TestType",
+                "name": "Test Type",
+                "traits": ["described"],
+                "entities": [{"id": "test_entity", "name": "Test Entity"}],
+                "triggers": [
+                    {
+                        "name": "graph/transition",
+                        "condition": "=test_entity.id == 'test_entity'",
+                        "args": {"to": "end"},
+                    },
+                    {
+                        "name": "core/end-game",
+                        "condition": "test_entity.id != 'other'",
+                    },
+                ],
+            }
+        ],
+    }
+
+    project_def = ProjectDefinition.model_validate(data)
+
+    assert len(project_def.entity_types[0].triggers) == 2
+
+
+def test_project_definition_invalid_trigger_condition(project_data: dict[str, object]) -> None:
+    data = {
+        **project_data,
+        "entity_types": [
+            {
+                "id": "TestType",
+                "name": "Test Type",
+                "traits": ["described"],
+                "entities": [{"id": "test_entity", "name": "Test Entity"}],
+                "triggers": [
+                    {"name": "graph/transition", "condition": "not a valid expression !!!"}
+                ],
+            }
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="Invalid trigger condition"):
+        ProjectDefinition.model_validate(data)
 
 
 def test_project_entity_type_map_property(simple_project: Project) -> None:
