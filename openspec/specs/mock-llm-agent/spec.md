@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Mock LLM Agent
+
+## Purpose
+
+Test double simulating LLM behavior for StoryEngine integration tests: queues deterministic tool call responses, validates that system prompts contain expected content, and exposes the async interface the engine queries.
+
+## Requirements
 
 ### Requirement: MockLLMAgent class provides tool call responses
 The MockLLMAgent class SHALL implement an interface for providing deterministic LLM responses during StoryEngine testing, supporting tool call returns and system prompt validation.

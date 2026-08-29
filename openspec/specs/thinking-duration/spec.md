@@ -1,10 +1,14 @@
 # Thinking Duration Display
 
-## ADDED Requirements
+## Purpose
+
+Displays the actual LLM thinking duration in the `ThinkingPart` button — "Thinking for X seconds…" while streaming and "Thought for X seconds" after streaming ends — using the backend-tracked duration instead of placeholder text.
+
+## Requirements
 
 ### Requirement: Show thinking duration after streaming ends
 
-The `ThinkingPart` component button must display the actual thinking duration in seconds, regardless of whether streaming is active.
+The `ThinkingPart` component button MUST display the actual thinking duration in seconds, regardless of whether streaming is active.
 
 #### Scenario: Button shows duration during streaming
 

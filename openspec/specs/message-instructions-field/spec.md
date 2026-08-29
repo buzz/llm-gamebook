@@ -1,4 +1,4 @@
-# Capability: Persist Instructions Field on Message
+# Message Instructions Field
 
 ## Purpose
 
@@ -6,35 +6,38 @@ Persist the `instructions` field from Pydantic AI's `ModelRequest` to the databa
 
 ## Requirements
 
-### FR1: Database Schema
-The `Message` SQLAlchemy model MUST include an `instructions` column:
-- Type: `String` (or `Text`)
-- Nullable: `true`
-- Default: `null`
+### Requirement: Message model stores instructions
 
-### FR2: API Schema
-The message response DTOs MUST include an `instructions` field:
-- Type: `string` or `null`
-- Optional: `true`
-- Serialized in API responses
+The `Message` database model SHALL include an `instructions` column of type `String` (or `Text`) that is nullable with a default of `null`.
 
-### FR3: TypeScript Types
-The frontend OpenAPI types MUST include `instructions` on message types after running `pnpm generate-api-types`.
+#### Scenario: New message persists instructions
+- **WHEN** Pydantic AI creates a `ModelRequest` containing `instructions`
+- **AND** the engine creates a `Message` for the request
+- **THEN** the engine SHALL extract `instructions` from the request
+- **AND** `Message.instructions` SHALL be set from the extracted value
+- **AND** the value SHALL be persisted to the database
 
-## Behavior
+#### Scenario: Missing instructions stored as null
+- **WHEN** the `ModelRequest` has `null` or `undefined` `instructions`
+- **THEN** `Message.instructions` SHALL be stored as `null`
 
-### Normal Flow
-1. Pydantic AI creates `ModelRequest` containing `instructions`
-2. Engine extracts `instructions` when creating `Message`
-3. `Message.instructions` is set from the extracted value
-4. Database persists the value
-5. API responses include `instructions` field
+#### Scenario: Existing messages default to null
+- **GIVEN** messages created before the field existed
+- **WHEN** they are read
+- **THEN** their `instructions` value SHALL be `null`
 
-### Edge Cases
-- If `instructions` is `null`/`undefined` in `ModelRequest`, store `null`
-- Existing messages without `instructions` have `null` value
+### Requirement: API responses include instructions
 
-## Out of Scope
+Message response DTOs SHALL include an `instructions` field of type `string` or `null`, optional, serialized in API responses.
 
-- Displaying `instructions` in the GUI (separate change)
-- Modifying message creation/retrieval logic beyond adding the field
+#### Scenario: Message response serialized
+- **WHEN** a message is returned from the API
+- **THEN** the response SHALL include the `instructions` field with the stored value or `null`
+
+### Requirement: Frontend types include instructions
+
+The frontend OpenAPI types SHALL include `instructions` on message types.
+
+#### Scenario: API types regenerated
+- **WHEN** `pnpm generate-api-types` is run after the backend change
+- **THEN** the generated message types SHALL include `instructions` as an optional string field

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Engine Model Update
+
+## Purpose
+
+Allows a running StoryEngine to swap its underlying LLM model at runtime via `set_model()` without recreating the engine, preserving the engine's story state, session message history, and agent configuration.
+
+## Requirements
 
 ### Requirement: StoryEngine can update its model at runtime without recreation
 

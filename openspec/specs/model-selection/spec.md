@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Model Selection
+
+## Purpose
+
+Per-session LLM model selection: a model selector UI in the session interface, default-model fallback when no model is selected or the selected model is deleted, and per-message model usage logging with a configuration snapshot for reproducibility.
+
+## Requirements
 
 ### Requirement: Select Model for Session
 The system SHALL allow users to select which model configuration to use for their game session.

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Type-Safe Routes
+
+## Purpose
+
+Centralized single source of truth for all frontend routes in `frontend/src/routes.ts`, with hierarchical dot-separated route names, type-safe `buildUrl(routeName, params)` URL construction, auto-generated wouter routes, and safe parameter encoding.
+
+## Requirements
 
 ### Requirement: Centralized route definitions
 All frontend routes SHALL be defined in a single source of truth (`frontend/src/routes.ts`) using path strings with named parameters (e.g., `/gamebook/:namespace/:name`).

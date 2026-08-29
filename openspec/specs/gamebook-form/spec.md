@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Gamebook Form
+
+## Purpose
+
+Frontend page and form for creating new gamebooks at `/gamebook/new`: namespace, name, title, description, and author fields with client-side validation (required fields, kebab-case namespace/name) and submission to the story API using the `namespace/name` ID, reachable from a "New Gamebook" navbar link.
+
+## Requirements
 
 ### Requirement: Create Gamebook page
 
@@ -72,21 +78,9 @@ The system SHALL provide a form with fields for creating a new gamebook.
 - **AND** a loading indicator SHALL be displayed
 
 ### Requirement: Navigation to create page
+The frontend SHALL provide a navbar entry point to the gamebook creation page.
 
 #### Scenario: Create link in navbar
 
 - **WHEN** the navbar is displayed
 - **THEN** a "New Gamebook" link SHALL be visible linking to `/gamebook/new`
-
-## API
-
-### Components
-
-- `CreateGamebook.tsx` - Page component
-- `CreateGamebookForm.tsx` - Form component
-
-### Routes
-
-```
-/gamebook/new -> ProjectForm
-```

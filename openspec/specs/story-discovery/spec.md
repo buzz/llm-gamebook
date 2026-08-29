@@ -1,6 +1,10 @@
 # Story Discovery
 
-## ADDED Requirements
+## Purpose
+
+Discovers stories from two directories — example stories bundled with the app and user stories under `STORIES_DIR` — deriving story names from the `{namespace}/{story}` directory path, and marking example stories read-only and user stories editable.
+
+## Requirements
 
 ### Requirement: List stories from multiple sources
 
@@ -40,6 +44,7 @@ Story names SHALL be derived from directory structure.
 - **AND** each story SHALL have `source: "user"`
 
 ### Requirement: Story source properties
+Stories SHALL expose their source type, which determines whether the story is editable.
 
 #### Scenario: Example stories are read-only
 
@@ -50,24 +55,3 @@ Story names SHALL be derived from directory structure.
 
 - **WHEN** a story has `source: "user"`
 - **THEN** the story SHALL be marked as editable (`is_editable: true`)
-
-## API
-
-### Endpoint: `GET /api/stories`
-
-Response:
-```json
-{
-  "data": [
-    {
-      "id": "example:buzz/broken-bulb",
-      "name": "buzz/broken-bulb",
-      "title": "The Broken Bulb",
-      "description": "A simple example story",
-      "source": "example",
-      "is_editable": false
-    }
-  ],
-  "count": 1
-}
-```

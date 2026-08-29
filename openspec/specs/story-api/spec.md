@@ -1,6 +1,10 @@
 # Story API
 
-## ADDED Requirements
+## Purpose
+
+REST endpoints for managing stories: listing (with source filtering), fetching details, creating an empty story directory with an `llm-gamebook.yaml` stub, deleting, and referencing a story by ID when creating a session.
+
+## Requirements
 
 ### Requirement: List stories endpoint
 
@@ -81,42 +85,3 @@ Sessions SHALL reference stories by ID.
 
 - **WHEN** a client creates a session with `POST /api/sessions` including `story_id`
 - **THEN** the engine SHALL load the specified story
-
-## API
-
-### Endpoints
-
-```
-GET    /api/stories              -> Stories
-GET    /api/stories?source={str} -> Stories
-GET    /api/stories/{id}         -> StoryDetail
-POST   /api/stories              -> Story (201 Created)
-DELETE /api/stories/{id}         -> 200
-```
-
-### Schemas
-
-```typescript
-interface StoryCreate {
-  name: string;      // "user/my-story"
-  title: string;
-  description?: string;
-}
-
-interface Stories {
-  data: Story[];
-  count: number;
-}
-
-interface Story {
-  name: string;      // "buzz/broken-bulb"
-  title: string;
-  description?: string;
-  source: "example" | "user";
-  is_editable: boolean;
-}
-
-interface StoryDetail extends Story {
-  entity_types: EntityTypeSummary[];
-}
-```

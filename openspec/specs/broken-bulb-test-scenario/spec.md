@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Broken Bulb Test Scenario
+
+## Purpose
+
+Integration test scenario exercising the Broken Bulb example story to verify end-to-end StoryEngine behavior: location transitions from the bedroom to the living room, conditional content activation (leaflet under the door), and correct system prompt content across a complete story run.
+
+## Requirements
 
 ### Requirement: Broken Bulb test scenario verifies location transition
 The Broken Bulb integration test scenario SHALL verify that the StoryEngine correctly handles location transitions from bedroom to living room, including proper system prompt generation and state updates.

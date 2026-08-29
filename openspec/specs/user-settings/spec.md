@@ -1,4 +1,10 @@
-## ADDED Requirements
+# User Settings
+
+## Purpose
+
+Server-side persistence of single-user preferences (chat view, color theme, enter-key behavior) in a single `UserSettings` SQLite row, exposed through `GET /settings` and `PUT /settings`, with default values applied on first access.
+
+## Requirements
 
 ### Requirement: User settings model stores user preferences
 

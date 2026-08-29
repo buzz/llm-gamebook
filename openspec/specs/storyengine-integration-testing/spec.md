@@ -1,4 +1,10 @@
-## ADDED Requirements
+# StoryEngine Integration Testing
+
+## Purpose
+
+Pytest-based integration test framework for the StoryEngine with fixtures for a mock LLM agent and mock player, enabling complete story runs with deterministic, simulated LLM and player behavior so state transitions, system prompt content, and conditional content activation are verified without a real LLM.
+
+## Requirements
 
 ### Requirement: Integration test framework for StoryEngine
 The system SHALL provide a pytest-based integration test framework for the StoryEngine that enables testing complete story runs with simulated player and LLM agent behavior.

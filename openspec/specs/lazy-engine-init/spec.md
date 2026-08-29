@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Lazy Engine Init
+
+## Purpose
+
+Defers Model and StoryContext instantiation until the first engine request for a session, so cached engines are returned without re-parsing project YAML or recreating LLM clients, and idle engines are evicted after a configured timeout.
+
+## Requirements
 
 ### Requirement: EngineManager defers model/state creation until engine actually needed
 

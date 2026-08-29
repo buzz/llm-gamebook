@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Entity-Level Functions
+
+## Purpose
+
+Lets each story entity define its own Pydantic AI tool functions via a `functions` field on the entity definition instead of the entity type, so multiple entities of the same type (e.g., story arcs) can have uniquely named transition functions without tool name collisions.
+
+## Requirements
 
 ### Requirement: Entity functions field
 The system SHALL allow entities to define their own Pydantic AI tool functions via a `functions` field in the entity definition.

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# LLM Model CRUD
+
+## Purpose
+
+API and UI for managing LLM model configurations: creating, listing, fetching, updating, and deleting provider configurations (name, provider, model name, base URL, API key) stored in the `model_config` database table, with provider-specific validation.
+
+## Requirements
 
 ### Requirement: Create LLM Model
 The system SHALL allow users to create a new model configuration with provider, model name, and optional API credentials.

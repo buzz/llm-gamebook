@@ -1,6 +1,10 @@
 # Story List UI
 
-## ADDED Requirements
+## Purpose
+
+Frontend page at `/stories` listing all discovered stories as cards with source badges ("Example" / "My Story"), a Play action that creates a new session with the story and navigates to the player, and a "Stories" navbar link.
+
+## Requirements
 
 ### Requirement: Stories page
 
@@ -49,22 +53,9 @@ Users SHALL be able to play a story from the list.
 - **AND** navigate to the player page
 
 ### Requirement: Navigation to stories
+The frontend SHALL provide a navbar entry point to the stories list page.
 
 #### Scenario: Stories link in navbar
 
 - **WHEN** the navbar is displayed
 - **THEN** a "Stories" link SHALL be visible linking to `/stories`
-
-## API
-
-### Components
-
-- `StoryList.tsx` - Page component
-- `StoryCard.tsx` - Card component
-- `StorySourceBadge.tsx` - Badge component
-
-### Routes
-
-```
-/stories -> StoryList
-```

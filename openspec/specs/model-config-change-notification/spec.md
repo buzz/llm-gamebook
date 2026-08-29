@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Model Config Change Notification
+
+## Purpose
+
+Publishes a `session.model_config.changed` message bus event when a session's model configuration is updated in the database, so the EngineManager can hot-swap the model of the session's active engine, while sessions without an active engine pick up the new configuration on their next lazy initialization.
+
+## Requirements
 
 ### Requirement: Event system notifies engine manager of model config changes per session
 

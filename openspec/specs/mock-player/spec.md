@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Mock Player
+
+## Purpose
+
+Test double simulating player actions against the StoryEngine during integration tests: wraps engine instantiation with a mock LLM agent, action submission, and state verification (current location, conditional content) with readable test output.
+
+## Requirements
 
 ### Requirement: MockPlayer class provides test interface
 The MockPlayer class SHALL provide a simplified interface for interacting with the StoryEngine during tests, wrapping engine instantiation, action submission, and state verification.
