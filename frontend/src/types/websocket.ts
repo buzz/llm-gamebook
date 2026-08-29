@@ -1,5 +1,6 @@
 import type { components } from './openapi'
 
+type WebSocketActionDispatchedMessage = components['schemas']['WebSocketActionDispatchedMessage']
 type WebSocketClientMessage = components['schemas']['WebSocketClientMessage']
 type WebSocketErrorMessage = components['schemas']['WebSocketErrorMessage']
 type WebSocketPingMessage = components['schemas']['WebSocketPingMessage']
@@ -10,6 +11,7 @@ type WebSocketStreamPartMessage = components['schemas']['WebSocketStreamPartMess
 type WebSocketStreamStatusMessage = components['schemas']['WebSocketStreamStatusMessage']
 
 export type {
+  WebSocketActionDispatchedMessage,
   WebSocketClientMessage,
   WebSocketErrorMessage,
   WebSocketPingMessage,

@@ -19,7 +19,9 @@ from llm_gamebook.engine.message import (
 )
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import BusSubscriber, MessageBus
+from llm_gamebook.story.state import ActionDispatched
 from llm_gamebook.web.schemas.websocket.message import (
+    WebSocketActionDispatchedMessage,
     WebSocketClientMessage,
     WebSocketErrorMessage,
     WebSocketPingMessage,
@@ -60,6 +62,7 @@ class WebSocketHandler(BusSubscriber):
         self._subscribe(StreamMessageMessage, self._on_engine_stream_message)
         self._subscribe(StreamPartMessage, self._on_engine_stream_part)
         self._subscribe(StreamPartDeltaMessage, self._on_engine_stream_part_delta)
+        self._subscribe(ActionDispatched, self._on_action_dispatched)
 
     async def handle_connection(self, websocket: WebSocket) -> None:
         """Main connection handler for WebSocket connections."""
@@ -142,3 +145,6 @@ class WebSocketHandler(BusSubscriber):
 
     async def _on_engine_stream_part_delta(self, message: StreamPartDeltaMessage) -> None:
         await self._send_message(WebSocketStreamPartDeltaMessage.from_message(message))
+
+    async def _on_action_dispatched(self, message: ActionDispatched) -> None:
+        await self._send_message(WebSocketActionDispatchedMessage.from_message(message))

@@ -3,6 +3,7 @@ import { use, useEffect, useState } from 'react'
 import WebSocketContext from '@/contexts/WebSocketContext'
 import { assertNever } from '@/types/typeguards'
 import type {
+  WebSocketActionDispatchedMessage,
   WebSocketErrorMessage,
   WebSocketServerMessage,
   WebSocketStreamMessageMessage,
@@ -44,6 +45,10 @@ function useWebSocketConnection(sessionId: string) {
           setLastMessage(message)
           break
         }
+        case 'action_dispatched': {
+          // Delivered to consumers through useActionDispatched
+          break
+        }
         default: {
           assertNever(message)
         }
@@ -62,4 +67,36 @@ function useWebSocketConnection(sessionId: string) {
   }
 }
 
+/**
+ * Subscribe to dispatched story action events for a session.
+ *
+ * Exposes the most recently received `action_dispatched` message for the
+ * given session (latest-only, no buffer), or `null` before the first event.
+ * Events for other sessions are not delivered.
+ */
+function useActionDispatched(sessionId: string) {
+  const context = use(WebSocketContext)
+  const [lastEvent, setLastEvent] = useState<WebSocketActionDispatchedMessage | null>(null)
+
+  useEffect(() => {
+    if (!context) {
+      return
+    }
+
+    const handleMessage = (message: WebSocketServerMessage) => {
+      if (message.kind === 'action_dispatched') {
+        setLastEvent(message)
+      }
+    }
+
+    context.subscribe(sessionId, handleMessage)
+    return () => {
+      context.unsubscribe(sessionId, handleMessage)
+    }
+  }, [sessionId, context])
+
+  return lastEvent
+}
+
+export { useActionDispatched }
 export default useWebSocketConnection

@@ -162,6 +162,8 @@ def on_action_dispatched(message: ActionDispatched) -> None:
 bus.subscribe(ActionDispatched, on_action_dispatched)
 ```
 
+**Frontend delivery.** The game UI is one of these subscribers: the per-connection `WebSocketHandler` subscribes to `ActionDispatched` and forwards every published message as an `action_dispatched` server message over the app-wide WebSocket connection. The frontend fans received messages out to per-session subscribers by `sessionId`, and the `useActionDispatched(sessionId)` hook exposes the latest typed event for a session. The WebSocket layer performs **no filtering** — the publisher middleware's filter patterns are the only filtering control point, so what a session's client receives is exactly what the bound publisher published.
+
 **End-game listener example** — a UI plugin that shows the ending when the game ends:
 
 ```python

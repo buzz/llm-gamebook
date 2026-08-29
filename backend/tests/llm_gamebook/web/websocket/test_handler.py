@@ -1,4 +1,6 @@
 from contextlib import suppress
+from datetime import UTC, datetime
+from json import loads
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -21,7 +23,15 @@ from llm_gamebook.engine.message import (
     ResponseUserRequestMessage,
     StreamMessageMessage,
 )
+from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story import ProjectManager
+from llm_gamebook.story.state import (
+    ActionDispatched,
+    EndGameAction,
+    Store,
+    message_bus_publisher_middleware,
+)
+from llm_gamebook.story.traits.graph import GraphTransitionAction
 from llm_gamebook.web.schemas.websocket.message import WebSocketPingMessage, WebSocketPongMessage
 from llm_gamebook.web.websocket.handler import WebSocketHandler
 
@@ -285,3 +295,113 @@ async def test_on_engine_response_user_request(
         await handler._on_engine_response_user_request(message)
 
         mock_generate.assert_called_once_with(engine)
+
+
+async def test_on_action_dispatched_forwards_any_action_type(
+    handler: WebSocketHandler, mock_websocket: AsyncMock, session: Session
+) -> None:
+    """The WS layer forwards every published action type without filtering."""
+    handler._websocket = mock_websocket
+
+    for action_type in ("graph/transition", "core/end-game"):
+        message = ActionDispatched(
+            session_id=session.id,
+            action_type=action_type,
+            payload={},
+            timestamp=datetime.now(UTC),
+        )
+        await handler._on_action_dispatched(message)
+
+    sent = [loads(c.args[0]) for c in mock_websocket.send_text.call_args_list]
+    assert len(sent) == 2
+    assert all(m["kind"] == "action_dispatched" for m in sent)
+    assert [m["actionType"] for m in sent] == ["graph/transition", "core/end-game"]
+    assert all(m["sessionId"] == str(session.id) for m in sent)
+
+
+async def test_publisher_filter_excludes_action_from_ws_delivery(
+    handler: WebSocketHandler,
+    mock_websocket: AsyncMock,
+    session: Session,
+    message_bus: MessageBus,
+) -> None:
+    """Actions excluded by the bus-level publisher filter are never delivered."""
+    handler._websocket = mock_websocket
+
+    store = Store(
+        middleware=[
+            message_bus_publisher_middleware(message_bus, session.id, filter_pattern="graph/*")
+        ]
+    )
+    store.dispatch(GraphTransitionAction(entity_id="locations", to="living_room"))
+    store.dispatch(EndGameAction(reason="done"))
+    await message_bus.wait_all()
+
+    sent = [loads(c.args[0]) for c in mock_websocket.send_text.call_args_list]
+    assert [m["actionType"] for m in sent] == ["graph/transition"]
+
+
+async def test_on_action_dispatched_disconnected_socket(
+    handler: WebSocketHandler, mock_websocket: AsyncMock, session: Session
+) -> None:
+    """Forwarding to a disconnected socket is a no-op, not an error."""
+    handler._websocket = mock_websocket
+    mock_websocket.client_state = WebSocketState.DISCONNECTED
+
+    message = ActionDispatched(
+        session_id=session.id,
+        action_type="core/end-game",
+        payload={},
+        timestamp=datetime.now(UTC),
+    )
+    await handler._on_action_dispatched(message)
+
+    mock_websocket.send_text.assert_not_called()
+
+
+async def test_action_dispatched_forwarding_failure_isolated(
+    handler: WebSocketHandler,
+    mock_websocket: AsyncMock,
+    session: Session,
+    message_bus: MessageBus,
+) -> None:
+    """A failing forward must not stop other subscribers or propagate into publish."""
+    handler._websocket = mock_websocket
+    mock_websocket.send_text = AsyncMock(side_effect=RuntimeError("socket broken"))
+
+    received: list[ActionDispatched] = []
+    message_bus.subscribe(ActionDispatched, received.append)
+
+    message = ActionDispatched(
+        session_id=session.id,
+        action_type="core/end-game",
+        payload={},
+        timestamp=datetime.now(UTC),
+    )
+    message_bus.publish(message)
+    await message_bus.wait_all()
+
+    assert received == [message]
+
+
+async def test_no_action_dispatched_forwarded_after_close(
+    handler: WebSocketHandler,
+    mock_websocket: AsyncMock,
+    session: Session,
+    message_bus: MessageBus,
+) -> None:
+    """close() on connection end removes the subscription: no send attempt afterwards."""
+    handler._websocket = mock_websocket
+    handler.close()
+
+    message_bus.publish(
+        ActionDispatched(
+            session_id=session.id,
+            action_type="core/end-game",
+            payload={},
+            timestamp=datetime.now(UTC),
+        )
+    )
+    await message_bus.wait_all()
+
+    mock_websocket.send_text.assert_not_called()

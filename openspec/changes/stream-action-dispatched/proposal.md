@@ -22,7 +22,7 @@ Stage 6 bridged the story action system to the application message bus (`ActionD
 
 ## Impact
 
-- **Backend**: `web/schemas/websocket/message.py` (new message type + union member), `web/websocket/handler.py` (bus subscription + forwarding)
+- **Backend**: `web/schemas/websocket/message.py` (new message type + union member), `web/websocket/handler.py` (bus subscription + forwarding), `message_bus/message_bus.py` (thread-aware publish: async handlers are schedulable from non-loop threads, e.g. pydantic-ai tool executor threads — required because tool-driven dispatches publish `ActionDispatched` off-loop)
 - **Frontend**: `types/websocket.ts` (regenerated), `hooks/websocket.ts` (new kind handling), consumer hook + tests (Vitest/RTL)
 - **API types**: `pnpm generate-api-types` after the backend union change
 - **Docs**: `docs/session-state/architecture.md`

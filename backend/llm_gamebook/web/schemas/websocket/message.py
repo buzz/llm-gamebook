@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import Discriminator
+from pydantic import Discriminator, JsonValue
 
 from llm_gamebook.engine.message import Delta
 from llm_gamebook.web.schemas.base import CamelCasedBaseModel
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
         StreamPartDeltaMessage,
         StreamPartMessage,
     )
+    from llm_gamebook.story.state import ActionDispatched
 
 
 class BaseWebSocketMessage(CamelCasedBaseModel):
@@ -94,13 +96,32 @@ class WebSocketStreamPartDeltaMessage(BaseSessionWebSocketMessage):
         )
 
 
+class WebSocketActionDispatchedMessage(BaseSessionWebSocketMessage):
+    """A story action was dispatched on the session."""
+
+    kind: Literal["action_dispatched"] = "action_dispatched"
+    action_type: str
+    payload: JsonValue
+    timestamp: datetime
+
+    @classmethod
+    def from_message(cls, msg: "ActionDispatched") -> Self:
+        return cls(
+            session_id=msg.session_id,
+            action_type=msg.action_type,
+            payload=msg.payload,
+            timestamp=msg.timestamp,
+        )
+
+
 type WebSocketServerMessage = Annotated[
     WebSocketPongMessage
     | WebSocketErrorMessage
     | WebSocketStreamStatusMessage
     | WebSocketStreamMessageMessage
     | WebSocketStreamPartMessage
-    | WebSocketStreamPartDeltaMessage,
+    | WebSocketStreamPartDeltaMessage
+    | WebSocketActionDispatchedMessage,
     Discriminator("kind"),
 ]
 """A WebSocket message sent from the backend."""

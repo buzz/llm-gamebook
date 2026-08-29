@@ -95,3 +95,31 @@ async def test_multiple_subscribers_cleanup_independent() -> None:
 
     s2.close()
     assert not bus._subs
+
+
+async def test_publish_from_worker_thread_reaches_async_subscriber() -> None:
+    """Publishing from a thread without a running loop still delivers async handlers."""
+    bus = MessageBus()
+    sub = DummySubscriber(bus)
+
+    await asyncio.to_thread(bus.publish, PingMessage("off-loop"))
+    await bus.wait_all()
+
+    assert sub.messages == ["off-loop"]
+
+
+async def test_publish_without_bound_loop_does_not_raise() -> None:
+    """A bus with no bound loop skips async handlers instead of raising."""
+    received: list[PingMessage] = []
+
+    async def handler(message: PingMessage) -> None:
+        received.append(message)
+
+    def publish_on_fresh_bus() -> None:
+        bus = MessageBus()  # constructed off-loop: no loop captured
+        bus.subscribe(PingMessage, handler)
+        bus.publish(PingMessage("dropped"))  # must not raise
+
+    await asyncio.to_thread(publish_on_fresh_bus)
+
+    assert received == []

@@ -48,10 +48,16 @@ New hook (e.g. `useActionDispatched(sessionId)`) built on the context's existing
 ### D5: Ordering semantics
 Events are delivered in bus-publish order (publish happens before reducers apply the state change). There is **no ordering guarantee relative to stream messages** of the step that caused the action; consumers must treat action events as independent signals.
 
+### D6: Thread-aware MessageBus (added during implementation)
+Pydantic-ai executes **sync tool functions in a worker thread** (`run_in_executor` → `anyio.to_thread.run_sync`). Story tools dispatch actions through the store, so the publisher middleware calls `MessageBus.publish` from a non-loop thread — where `asyncio.create_task` (used for async handlers) raises `RuntimeError: no running event loop`. Before this change no async subscriber listened to `ActionDispatched` (stage-6 tests subscribe with sync handlers, which run inline), so the gap was latent; the WebSocket handler is the first async subscriber and without a fix every tool-driven story action would fail (the tool swallows the error, so neither the bus message nor the reducer would be produced).
+
+`MessageBus` therefore captures its event loop (at construction if a loop is running, and on every on-loop `publish`) and, when `publish` is called from a thread without a running loop, schedules each async handler's task on the captured loop via `loop.call_soon_threadsafe`. Tasks are still added to the bus's task set, so `wait_all` and the done-callback error isolation are unchanged. If no loop was ever captured, or the captured loop is closed, the bus logs an error and skips the async handlers instead of raising, preserving the "no exception propagates into the bus publish path" guarantee.
+*Alternative considered:* schedule the publish from the story publisher middleware instead. *Rejected:* that would hard-code a story-specific workaround where the bus's general delivery contract should live; any future async subscriber would hit the same wall.
+
 ## Risks / Trade-offs
 
 - **Event churn** (e.g. `graph/transition` on every node hop) → socket chatter. Mitigation: publisher filter patterns exist for this; monitor in practice; the WS layer deliberately does not add its own filter (D3).
-- **Failing forward must not disturb the bus** → mitigated by existing isolation: async handlers run as isolated tasks (errors logged, not raised), `_send_message` no-ops when disconnected, and the handler's `close()` unsubscribes on disconnect.
+- **Failing forward must not disturb the bus** → mitigated by existing isolation: async handlers run as isolated tasks (errors logged, not raised), `_send_message` no-ops when disconnected, the handler's `close()` unsubscribes on disconnect, and `publish` is safe from non-loop threads (D6).
 - **No backward-compat window** → the frontend is in-repo and `assertNever` forces handling of the new kind in the same change; no stale-client risk in this deployment model.
 
 ## Migration Plan

@@ -215,6 +215,11 @@ export interface components {
       readonly traits: readonly components['schemas']['TraitDefinition'][]
       /** Entities */
       readonly entities: readonly components['schemas']['EntityDefinition'][]
+      /**
+       * Triggers
+       * @default []
+       */
+      readonly triggers: readonly components['schemas']['TriggerDefinition'][]
     }
     /** ErrorDetails */
     readonly ErrorDetails: {
@@ -776,6 +781,20 @@ export interface components {
         readonly [key: string]: unknown
       }
     }
+    /**
+     * TriggerDefinition
+     * @description A condition-based trigger that dispatches an action when its condition holds.
+     */
+    readonly TriggerDefinition: {
+      /** Name */
+      readonly name: string
+      /** Condition */
+      readonly condition: string
+      /** Args */
+      readonly args?: {
+        readonly [key: string]: unknown
+      }
+    }
     /** Usage */
     readonly Usage: {
       /** Inputtokens */
@@ -823,6 +842,11 @@ export interface components {
        * @default true
        */
       readonly enterSubmitsMessage: boolean
+      /**
+       * Maxstatehistory
+       * @default 50
+       */
+      readonly maxStateHistory: number
     }
     /** ValidationError */
     readonly ValidationError: {
@@ -851,6 +875,7 @@ export interface components {
       | components['schemas']['ContentDelta']
       | components['schemas']['ToolArgsDelta']
       | components['schemas']['ToolNameDelta']
+    readonly JsonValue: unknown
     /** ToolArgsDelta */
     readonly ToolArgsDelta: {
       /** Args */
@@ -870,6 +895,30 @@ export interface components {
        * @enum {string}
        */
       readonly kind: 'tool_name'
+    }
+    /**
+     * WebSocketActionDispatchedMessage
+     * @description A story action was dispatched on the session.
+     */
+    readonly WebSocketActionDispatchedMessage: {
+      /**
+       * Sessionid
+       * Format: uuid
+       */
+      readonly sessionId: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      readonly kind: 'action_dispatched'
+      /** Actiontype */
+      readonly actionType: string
+      readonly payload: components['schemas']['JsonValue']
+      /**
+       * Timestamp
+       * Format: date-time
+       */
+      readonly timestamp: string
     }
     /**
      * WebSocketErrorMessage
@@ -996,6 +1045,7 @@ export interface components {
       | components['schemas']['WebSocketStreamMessageMessage']
       | components['schemas']['WebSocketStreamPartMessage']
       | components['schemas']['WebSocketStreamPartDeltaMessage']
+      | components['schemas']['WebSocketActionDispatchedMessage']
     /** WebSocketDummyMessage */
     readonly WebSocketDummyMessage: {
       /**
