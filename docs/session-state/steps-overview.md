@@ -15,7 +15,6 @@ The codebase has:
 Not yet implemented:
 - Trigger system (Stage 4)
 - State history/undo (Stage 5)
-- Message bus bridge (Stage 6)
 - Dynamic field evaluation (`=expression`)
 
 ## OpenSpec Changes
@@ -29,7 +28,7 @@ Each stage maps to an OpenSpec change under `openspec/changes/`:
 | 3 | `archive/2026-02-18-session-state-stage-3` | Done |
 | 4 | `session-state-stage-4` | In progress |
 | 5 | `session-state-stage-5` | In progress |
-| 6 | — (no change yet) | Not started |
+| 6 | `session-state-stage-6` | In progress |
 
 ## Stage 1: Core State Infrastructure
 

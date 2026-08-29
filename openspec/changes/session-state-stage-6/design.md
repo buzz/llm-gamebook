@@ -53,7 +53,7 @@ Stages 1-3 (session state, action system, action-driven changes) are complete. T
 
 **Decision:** `message_bus_publisher_middleware(bus: MessageBus | None, session_id: UUID | None, filter_pattern: str | list[str] | None = None) -> Middleware`. If `bus` or `session_id` is `None`, the returned middleware is a pass-through no-op. `filter_pattern` is `fnmatch`-style glob(s) on `action.name`; `None` means publish everything.
 
-**Rationale:** The `Middleware` type is a plain `(Store, Action) -> Action` callable; a factory preserves that shape while carrying configuration. The no-op path satisfies the "middleware doesn't block if message bus is not available" requirement without try/except.
+**Adaptation (Stage 4 landed first):** Stage 4 refactored the middleware chain to the onion model — `Middleware` is now `Callable[[Store, Action[BaseModel], Next], SessionState]`. The factory keeps its signature and returns an onion middleware that publishes (when the filter matches) **before** calling `next_chain(action)`, preserving the before-reducers timing. The unbound pass-through simply calls `next_chain(action)`.
 
 **Alternatives considered:**
 - Config object on `Store`: Rejected — couples Store to bus configuration.
@@ -61,17 +61,13 @@ Stages 1-3 (session state, action system, action-driven changes) are complete. T
 
 ### 4. Chain assembly is owned by this change, in `StoryContext.__init__`
 
-**Decision:** `StoryContext` builds `middleware = [logging_middleware, publisher, trigger_eval_middleware, auto_save_middleware]` (fixed order per `docs/session-state/architecture.md`) and passes it to `Store`. The stub slots are wired in now; Stage 4/5 replace the stub function bodies, never the assembly or the order.
+**Decision:** `StoryContext` builds `middleware = [logging_middleware, publisher, trigger_eval_middleware(self), auto_save_middleware]` (fixed order per `docs/session-state/architecture.md`) and passes it to `Store`. The stub slots are wired in now; later stages replace the stub function bodies, never the assembly or the order.
 
-**Rationale:** The chain is currently dead code; someone must wire it, and Stage 6's publisher must sit between Logger and TriggerEval. Centralizing assembly in one place gives the order a single source of truth instead of letting three changes each append to a list.
-
-**Alternatives considered:**
-- Each stage wires its own middleware: Rejected — three parallel edits to the same constructor with no agreed order; exactly the seam this change is meant to close.
-- Module-level default chain constant: Possible refinement; the assembly can extract a `default_middleware(bus, session_id)` helper in `middleware.py` so both `StoryContext` and tests share it.
+**Adaptation (Stage 4 landed first):** Stage 4 already assembled this exact chain inline in `StoryContext.__init__`, with the publisher left as its (old-signature) stub. Stage 6 keeps that assembly and only replaces the bare stub entry with the bound factory call `message_bus_publisher_middleware(message_bus, session_id)`; no `default_middleware` helper was extracted, keeping the Stage 6 diff in `middleware.py` limited to the publisher function as coordinated.
 
 ### 5. Publish timing: inside the chain, before reducers
 
-**Decision:** The publisher runs at its chain position (after Logger, before TriggerEval), so the `ActionDispatched` message is emitted after the action is dispatched but before reducers apply the state change — matching the architecture doc. Actions that middleware dispatches additionally (e.g., Stage 4 trigger actions) re-enter the chain and are each published exactly once.
+**Decision:** The publisher runs at its chain position (after Logger, before TriggerEval), so the `ActionDispatched` message is emitted after the action is dispatched but before reducers apply the state change — matching the architecture doc. In the onion chain this means publishing before calling `next_chain`. Actions that middleware dispatches additionally (e.g., Stage 4 trigger actions) re-enter the chain and are each published exactly once.
 
 **Rationale:** Observers get a notification of *intent*; they never see intermediate reducer output, and the action system remains the authority over state. Per-dispatch publishing (no dedup) is correct: each dispatched action is a distinct event.
 
@@ -91,7 +87,7 @@ Stages 1-3 (session state, action system, action-driven changes) are complete. T
 
 ## Risks / Trade-offs
 
-- [Parallel-change seam: S4/S5 edit `middleware.py` and `StoryContext` concurrently] → This change owns chain assembly; S4 replaces only the `trigger_eval` function body, S5 avoids the constructor. Recommended sequencing: land Stage 4 first, then Stage 6. Keep the Stage 6 diff in `middleware.py` limited to the publisher function.
+- [Parallel-change seam: S4/S5 edit `middleware.py` and `StoryContext` concurrently] → This change owns chain assembly; S4 replaces only the `trigger_eval` function body, S5 avoids the constructor. Recommended sequencing: land Stage 4 first, then Stage 6. Keep the Stage 6 diff in `middleware.py` limited to the publisher function. **Outcome: Stage 4 landed into main before Stage 6 was implemented, as recommended. Stage 4 went further than anticipated (onion middleware refactor + chain assembly), so the publisher was adapted to the new `Middleware` signature and the pre-existing assembly was kept; see Decisions 3–4.
 - [Sync dispatch vs async bus: `publish` spawns `asyncio.create_task` for async handlers, requiring a running loop] → Engine dispatch happens inside the running loop (agent step), which is the real path. Tests with a live bus + async handlers must be async tests. Sync-only subscribers work without a loop. Documented in the subscription guide.
 - [A failing sync subscriber raises through `publish` and aborts the dispatch] → Pre-existing `MessageBus` semantics, not introduced here. Documented: subscribers must be robust (log and continue); the bus's async path already isolates failures to the task.
 - [Wiring the chain activates `logging_middleware` (one INFO log per action)] → Acceptable default; volume can be controlled via the `llm_gamebook.story.state.middleware` logger level at runtime.

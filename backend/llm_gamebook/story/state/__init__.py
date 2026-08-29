@@ -10,6 +10,7 @@ from .actions import (
     StepPayload,
 )
 from .core import CORE_RESET_GAME, reset_game_reducer
+from .messages import ActionDispatched
 from .middleware import (
     auto_save_middleware,
     logging_middleware,
@@ -30,6 +31,7 @@ __all__ = [
     "CORE_RESET_GAME",
     "MAX_DISPATCH_DEPTH",
     "Action",
+    "ActionDispatched",
     "EndGameAction",
     "EndGamePayload",
     "EntityRef",

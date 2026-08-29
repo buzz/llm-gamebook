@@ -147,6 +147,41 @@ class ActionDispatched(BaseMessage):
     timestamp: datetime
 ```
 
+### Subscribing to `ActionDispatched`
+
+Plugins and application components observe story actions by subscribing to `ActionDispatched` on the application's `MessageBus` — no coupling to the action system required:
+
+```python
+from llm_gamebook.story.state import ActionDispatched
+
+
+def on_action_dispatched(message: ActionDispatched) -> None:
+    print(f"{message.session_id}: {message.action_type} {message.payload}")
+
+
+bus.subscribe(ActionDispatched, on_action_dispatched)
+```
+
+**End-game listener example** — a UI plugin that shows the ending when the game ends:
+
+```python
+from llm_gamebook.story.state import ActionDispatched
+
+
+def show_ending(message: ActionDispatched) -> None:
+    reason = message.payload.get("reason") if isinstance(message.payload, dict) else None
+    ui.show_ending_cinematic(session_id=message.session_id, reason=reason)
+
+
+bus.subscribe(ActionDispatched, show_ending)
+```
+
+**Notes for plugin authors:**
+
+- **Async handlers require a running event loop.** `MessageBus` schedules async handlers as `asyncio` tasks. Engine dispatches happen inside the running loop (agent steps), so async handlers work there; if you subscribe for code paths outside a running loop, use sync handlers.
+- **Subscribers must be robust.** A failing *sync* handler raises through `bus.publish` and aborts the dispatch that triggered it (pre-existing `MessageBus` semantics). Log and continue instead of re-raising. Async handler failures are isolated to their task and logged by the bus.
+- Handlers see the message at dispatch time — *before* reducers apply the state change. `ActionDispatched` deliberately carries no state; query the session state later if you need the post-action view.
+
 This unidirectional bridge (actions → message bus) is sufficient. The action system remains the authority over story state; no reverse communication is needed.
 
 ### History

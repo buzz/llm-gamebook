@@ -113,7 +113,9 @@ class EngineManager(BusSubscriber):
 
         project_def = project_manager.get_project(session.project_id)
         project = Project.from_definition(project_def)
-        context = StoryContext(project, session_state_data)
+        context = StoryContext(
+            project, session_state_data, session_id=session_id, message_bus=self._bus
+        )
 
         model = (
             create_model_from_db_config(

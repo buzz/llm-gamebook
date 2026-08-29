@@ -1,9 +1,14 @@
+import logging
+from uuid import uuid4
+
 import pytest
 
+from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
 from llm_gamebook.story.errors import EntityFieldNotFoundError
 from llm_gamebook.story.schemas import Project
-from llm_gamebook.story.state import SessionStateData
+from llm_gamebook.story.state import ActionDispatched, EndGameAction, SessionStateData
+from llm_gamebook.story.state.middleware import auto_save_middleware, logging_middleware
 
 
 async def test_story_context_get_system_prompt(story_context: StoryContext) -> None:
@@ -75,3 +80,69 @@ def test_missing_field_in_session_new_in_project(story_context: StoryContext) ->
 def test_invalid_entity_id_raises(story_context: StoryContext) -> None:
     with pytest.raises(EntityFieldNotFoundError):
         story_context.get_field("nonexistent", "some_field")
+
+
+def test_story_context_default_middleware_chain_order(
+    project: Project, message_bus: MessageBus
+) -> None:
+    context = StoryContext(project, session_id=uuid4(), message_bus=message_bus)
+
+    # Chain: Logger -> MessageBusPublisher -> TriggerEval -> AutoSave
+    chain = context.store._middleware
+    assert len(chain) == 4
+    assert chain[0] is logging_middleware
+    assert chain[3] is auto_save_middleware
+    # The publisher and trigger slots are factory-created callables
+    assert chain[1] is not logging_middleware
+    assert chain[2] is not auto_save_middleware
+
+    order: list[str] = []
+
+    class _LoggerProbe(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            order.append("logger")
+
+    middleware_logger = logging.getLogger("llm_gamebook.story.state.middleware")
+    probe = _LoggerProbe()
+    old_level = middleware_logger.level
+    middleware_logger.addHandler(probe)
+    middleware_logger.setLevel(logging.INFO)
+    try:
+        message_bus.subscribe(ActionDispatched, lambda msg: order.append("publisher"))
+        context.store.dispatch(EndGameAction(reason="done"))
+    finally:
+        middleware_logger.removeHandler(probe)
+        middleware_logger.setLevel(old_level)
+
+    assert order == ["logger", "publisher"]
+
+
+def test_story_context_chain_executes_without_bus(
+    project: Project, message_bus: MessageBus, caplog: pytest.LogCaptureFixture
+) -> None:
+    context = StoryContext(project)
+
+    received: list[ActionDispatched] = []
+    message_bus.subscribe(ActionDispatched, received.append)
+
+    with caplog.at_level(logging.INFO, logger="llm_gamebook.story.state.middleware"):
+        context.store.dispatch(EndGameAction(reason="done"))
+
+    # Logger middleware ran (chain executed) but the unbound publisher published nothing
+    assert any("Action dispatched" in r.message for r in caplog.records)
+    assert received == []
+
+
+def test_story_context_optional_construction_params(project: Project) -> None:
+    # Plain construction (existing call sites) still works and dispatches
+    plain = StoryContext(project)
+    plain.store.dispatch(EndGameAction(reason="done"))
+
+    # Session ID without bus: publisher is a no-op, dispatch works
+    sid_only = StoryContext(project, session_id=uuid4())
+    sid_only.store.dispatch(EndGameAction(reason="done"))
+
+    # Session state param still accepted alongside the new optional params
+    data = SessionStateData(entities={"main": {"custom_field": 50}})
+    full = StoryContext(project, data, session_id=uuid4())
+    assert full.session_state.get_field("main", "custom_field") == 50

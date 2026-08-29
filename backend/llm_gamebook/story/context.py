@@ -1,9 +1,11 @@
 from contextlib import suppress
 from functools import cached_property
 from typing import TYPE_CHECKING, cast
+from uuid import UUID
 
 import jinja2
 
+from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
 from llm_gamebook.story.schemas import Project
 
@@ -31,6 +33,8 @@ class StoryContext:
         self,
         project: Project,
         session_state: SessionStateData | None = None,
+        session_id: UUID | None = None,
+        message_bus: MessageBus | None = None,
     ) -> None:
         super().__init__()
         self._project = project
@@ -39,7 +43,7 @@ class StoryContext:
             initial_state,
             middleware=[
                 logging_middleware,
-                message_bus_publisher_middleware,
+                message_bus_publisher_middleware(message_bus, session_id),
                 trigger_eval_middleware(self),
                 auto_save_middleware,
             ],
