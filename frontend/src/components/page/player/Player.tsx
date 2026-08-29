@@ -1,4 +1,5 @@
-import { Box, Stack } from '@mantine/core'
+import { Alert, Box, Stack } from '@mantine/core'
+import { IconLock } from '@tabler/icons-react'
 import { useCallback, useState } from 'react'
 import { useParams } from 'wouter'
 
@@ -6,6 +7,7 @@ import Fill from '@/components/common/portal/Fill'
 import QueryHandler from '@/components/common/QueryHandler'
 import useMessages from '@/hooks/messages'
 import sessionApi from '@/services/session'
+import { iconSizeProps } from '@/utils'
 import type { SessionFull } from '@/types/api'
 import type { RouteParams } from '@/types/routes'
 
@@ -46,15 +48,26 @@ function PlayerLoaded({ session }: PlayerLoadedProps) {
       <Fill name="toolbar">
         <PlayerToolbar
           disabled={isUpdating || streamStatus === 'started'}
+          session={session}
           handleModelChange={handleModelChange}
           modelConfigId={modelConfigId}
         />
       </Fill>
 
       <Stack gap="md" justify="center" h="100%">
+        {session.endedAt != null && (
+          <Alert icon={<IconLock {...iconSizeProps('md')} />} variant="light">
+            Game over — this session has ended. Restore an earlier state, fork, or reset to play
+            again.
+          </Alert>
+        )}
         <Box className={classes.container}>
           <Messages currentPartId={currentPartId} messages={messages} />
-          <Controls isGenerating={streamStatus === 'started'} session={session} />
+          <Controls
+            ended={session.endedAt != null}
+            isGenerating={streamStatus === 'started'}
+            session={session}
+          />
         </Box>
       </Stack>
     </>

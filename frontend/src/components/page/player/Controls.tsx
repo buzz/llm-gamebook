@@ -13,13 +13,15 @@ import classes from './Controls.module.css'
 interface ControlsProps {
   isGenerating: boolean
   session: Session
+  /** The session is ended: no further user requests can be sent. */
+  ended: boolean
 }
 
 interface FormValues {
   content: string
 }
 
-function Controls({ isGenerating, session }: ControlsProps) {
+function Controls({ isGenerating, session, ended }: ControlsProps) {
   const form = useForm<FormValues>({
     mode: 'controlled',
     initialValues: { content: '' },
@@ -54,14 +56,15 @@ function Controls({ isGenerating, session }: ControlsProps) {
           aria-label="User message"
           autosize
           className={classes.textArea}
-          disabled={isLoading || isGenerating}
+          disabled={isLoading || isGenerating || ended}
           maxRows={4}
           minRows={1}
-          placeholder="Type a message…"
+          placeholder={ended ? 'This session has ended' : 'Type a message…'}
           onKeyUp={getHotkeyHandler([['mod+Enter', form.onSubmit(handleSubmit)]])}
         />
         <Button
           className={classes.sendButton}
+          disabled={ended}
           leftSection={<IconSend {...iconSizeProps('md')} />}
           loading={isLoading || isGenerating}
           type="submit"

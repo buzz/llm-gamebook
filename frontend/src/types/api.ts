@@ -21,6 +21,9 @@ type ModelConfigs = components['schemas']['ModelConfigs']
 type ModelProvider = components['schemas']['ModelProvider']
 type ModelProviders = components['schemas']['ModelProviders']
 
+type StateEntry = components['schemas']['StateEntry']
+type StateHistory = components['schemas']['StateHistory']
+
 type ProjectCreate = components['schemas']['ProjectCreate']
 type ProjectBasic = components['schemas']['ProjectBasic']
 type ProjectDetail = components['schemas']['ProjectDetail']
@@ -69,6 +72,8 @@ export type {
   SessionFull,
   Sessions,
   SessionUpdate,
+  StateEntry,
+  StateHistory,
   ThinkingPart,
   UserSettings,
 }

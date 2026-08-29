@@ -165,6 +165,91 @@ export interface paths {
     readonly patch?: never
     readonly trace?: never
   }
+  readonly '/api/sessions/{session_id}/restore': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly get?: never
+    readonly put?: never
+    /** Restore State */
+    readonly post: operations['restoreState']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
+  readonly '/api/sessions/{session_id}/fork': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly get?: never
+    readonly put?: never
+    /** Fork State */
+    readonly post: operations['forkState']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
+  readonly '/api/sessions/{session_id}/end-game': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly get?: never
+    readonly put?: never
+    /** End Game */
+    readonly post: operations['endGame']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
+  readonly '/api/sessions/{session_id}/reset': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    readonly get?: never
+    readonly put?: never
+    /** Reset Session */
+    readonly post: operations['resetSession']
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
+  readonly '/api/sessions/{session_id}/states': {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path?: never
+      readonly cookie?: never
+    }
+    /** Get States */
+    readonly get: operations['getStates']
+    readonly put?: never
+    readonly post?: never
+    readonly delete?: never
+    readonly options?: never
+    readonly head?: never
+    readonly patch?: never
+    readonly trace?: never
+  }
   readonly '/api/settings/': {
     readonly parameters: {
       readonly query?: never
@@ -187,6 +272,14 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /**
+     * EndGameRequest
+     * @description Request body for ending a game session.
+     */
+    readonly EndGameRequest: {
+      /** Reason */
+      readonly reason?: string | null
+    }
     /**
      * EntityDefinition
      * @description The base class to all story entities.
@@ -601,6 +694,8 @@ export interface components {
       readonly timestamp?: string
       /** Messagecount */
       readonly messageCount: number
+      /** Endedat */
+      readonly endedAt?: string | null
     }
     /**
      * SessionCreate
@@ -640,6 +735,8 @@ export interface components {
       readonly timestamp?: string
       /** Messagecount */
       readonly messageCount: number
+      /** Endedat */
+      readonly endedAt?: string | null
       /** Messages */
       readonly messages: readonly components['schemas']['ModelMessage'][]
     }
@@ -662,6 +759,34 @@ export interface components {
       readonly data: readonly components['schemas']['Session'][]
       /** Count */
       readonly count: number
+    }
+    /**
+     * StateEntry
+     * @description A single stored state snapshot in a session's history.
+     */
+    readonly StateEntry: {
+      /** Step */
+      readonly step: number
+      /** Timestamp */
+      readonly timestamp?: string | null
+      /** Fieldcount */
+      readonly fieldCount: number
+    }
+    /**
+     * StateHistory
+     * @description A session's stored state snapshots in ascending step order.
+     */
+    readonly StateHistory: {
+      /** Data */
+      readonly data: readonly components['schemas']['StateEntry'][]
+    }
+    /**
+     * StepRequest
+     * @description Request body for core actions targeting a point in the session history.
+     */
+    readonly StepRequest: {
+      /** Step */
+      readonly step: number
     }
     /**
      * TextPart
@@ -1604,6 +1729,173 @@ export interface operations {
         }
         content: {
           readonly 'application/json': components['schemas']['ModelRequest']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly restoreState: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
+      }
+      readonly cookie?: never
+    }
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['StepRequest']
+      }
+    }
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly forkState: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
+      }
+      readonly cookie?: never
+    }
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['StepRequest']
+      }
+    }
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 201: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['SessionFull']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly endGame: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
+      }
+      readonly cookie?: never
+    }
+    readonly requestBody?: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['EndGameRequest'] | null
+      }
+    }
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly resetSession: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
+      }
+      readonly cookie?: never
+    }
+    readonly requestBody?: never
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['ServerMessage']
+        }
+      }
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  readonly getStates: {
+    readonly parameters: {
+      readonly query?: never
+      readonly header?: never
+      readonly path: {
+        readonly session_id: string
+      }
+      readonly cookie?: never
+    }
+    readonly requestBody?: never
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown
+        }
+        content: {
+          readonly 'application/json': components['schemas']['StateHistory']
         }
       }
       /** @description Validation Error */

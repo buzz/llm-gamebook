@@ -10,6 +10,7 @@ import type {
   SessionFull,
   Sessions,
   SessionUpdate,
+  StateHistory,
 } from '@/types/api'
 
 /** Helper function to handle the global and project-specific list tags. */
@@ -94,6 +95,65 @@ const sessionApi = createApi({
         { type: 'Session', id: sessionId },
         ...getListTags(projectId),
       ],
+    }),
+
+    restoreState: build.mutation<
+      ServerMessage,
+      { sessionId: string; projectId: string; step: number }
+    >({
+      query: ({ sessionId, step }) => ({
+        url: `${sessionId}/restore`,
+        method: 'POST',
+        body: { step },
+      }),
+      invalidatesTags: (_result, _error, { sessionId, projectId }) => [
+        { type: 'Session', id: sessionId },
+        ...getListTags(projectId),
+      ],
+    }),
+
+    forkState: build.mutation<SessionFull, { sessionId: string; projectId: string; step: number }>({
+      query: ({ sessionId, step }) => ({
+        url: `${sessionId}/fork`,
+        method: 'POST',
+        body: { step },
+      }),
+      invalidatesTags: (_result, _error, { sessionId, projectId }) => [
+        { type: 'Session', id: sessionId },
+        ...getListTags(projectId),
+      ],
+    }),
+
+    endGame: build.mutation<
+      ServerMessage,
+      { sessionId: string; projectId: string; reason?: string }
+    >({
+      query: ({ sessionId, reason }) => ({
+        url: `${sessionId}/end-game`,
+        method: 'POST',
+        body: reason === undefined ? {} : { reason },
+      }),
+      invalidatesTags: (_result, _error, { sessionId, projectId }) => [
+        { type: 'Session', id: sessionId },
+        ...getListTags(projectId),
+      ],
+    }),
+
+    resetSession: build.mutation<ServerMessage, { sessionId: string; projectId: string }>({
+      query: ({ sessionId }) => ({
+        url: `${sessionId}/reset`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, { sessionId, projectId }) => [
+        { type: 'Session', id: sessionId },
+        ...getListTags(projectId),
+      ],
+    }),
+
+    // Consumed lazily via useLazyGetStatesQuery (e.g. by the player toolbar).
+    getStates: build.query<StateHistory, string>({
+      query: (id) => `${id}/states`,
+      providesTags: (_result, _error, id) => [{ type: 'Session', id: `STATES_${id}` }],
     }),
   }),
 })

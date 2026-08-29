@@ -1,4 +1,4 @@
-import { Input, Kbd, Stack, Switch, useMantineColorScheme } from '@mantine/core'
+import { Input, Kbd, NumberInput, Stack, Switch, useMantineColorScheme } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconSettings } from '@tabler/icons-react'
 
@@ -67,6 +67,14 @@ function SettingsFormLoaded({ settings }: SettingsFormLoadedProps) {
               {...form.getInputProps('chatView')}
             />
           </Input.Wrapper>
+
+          <NumberInput
+            label="Max State History"
+            description="Maximum number of saved game states kept per session. Older states are cleaned up automatically."
+            min={1}
+            step={1}
+            {...form.getInputProps('maxStateHistory')}
+          />
 
           <Switch
             label="Enter submits message"
