@@ -5,16 +5,31 @@
 The codebase has:
 - **Project loading**: YAML → `Project` / `EntityType` objects with trait mixins
 - **Condition system**: Boolean expression grammar with dot-path resolution
-- **Graph trait**: Nodes with transitions (modifies entity state directly)
+- **Graph trait**: Nodes with transitions, exposed to the LLM as tools that dispatch `graph/transition` actions
 - **Message bus**: Publish/subscribe event system
-- **Session storage**: Database models for conversation history
+- **Session storage**: Database models for conversation history, incl. `state` JSON snapshots on messages
+- **Session state** (Stage 1): `SessionState` entity-field overrides, serialized with model responses
+- **Action system** (Stage 2): `Store`, namespaced `Action` classes, reducer registry, middleware chain
+- **Action-driven state changes** (Stage 3): tools dispatch actions via the store; state persists after agent steps
 
-Not implemented (from architecture.md):
-- Session state persistence layer (separate from project)
-- Action system (actions, reducers, middleware)
+Not yet implemented:
+- Trigger system (Stage 4)
+- State history/undo (Stage 5)
+- Message bus bridge (Stage 6)
 - Dynamic field evaluation (`=expression`)
-- Trigger system
-- State history/undo
+
+## OpenSpec Changes
+
+Each stage maps to an OpenSpec change under `openspec/changes/`:
+
+| Stage | OpenSpec change | Status |
+|-------|-----------------|--------|
+| 1 | `archive/2026-02-15-session-state-stage-1` | Done |
+| 2 | `archive/2026-02-18-session-state-stage-2` | Done |
+| 3 | `archive/2026-02-18-session-state-stage-3` | Done |
+| 4 | `session-state-stage-4` | In progress |
+| 5 | `session-state-stage-5` | In progress |
+| 6 | — (no change yet) | Not started |
 
 ## Stage 1: Core State Infrastructure
 

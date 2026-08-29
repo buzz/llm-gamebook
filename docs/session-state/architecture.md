@@ -1,5 +1,9 @@
 # Session State Architecture
 
+> **Status:** This is the **authoritative design** for session state in llm-gamebook.
+> The current implementation state is described in [`docs/architecture.md`](../architecture.md);
+> the stage-by-stage rollout plan (mapped to OpenSpec changes) is in [steps-overview.md](steps-overview.md).
+
 ## Overview
 
 Separates the static project definition (from YAML) from dynamic session state, enabling:
