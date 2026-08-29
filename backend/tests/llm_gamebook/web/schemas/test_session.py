@@ -238,3 +238,20 @@ def test_session_with_message_count() -> None:
     )
 
     assert session.message_count == 5
+
+
+def test_session_ended_at_defaults_to_none() -> None:
+    """Active sessions expose endedAt as null."""
+    session = Session(id=uuid4(), project_id="foo/bar", message_count=0)
+
+    assert session.ended_at is None
+    assert session.model_dump(by_alias=True)["endedAt"] is None
+
+
+def test_session_with_ended_at() -> None:
+    """Ended sessions expose the end timestamp under the endedAt alias."""
+    ended_at = datetime(2024, 6, 1, 12, 0, 0, tzinfo=UTC)
+    session = Session(id=uuid4(), project_id="foo/bar", message_count=3, ended_at=ended_at)
+
+    assert session.ended_at == ended_at
+    assert session.model_dump(by_alias=True)["endedAt"] == ended_at

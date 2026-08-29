@@ -40,6 +40,9 @@ class Session(BaseSession):
     message_count: int
     """The number of messages in this session."""
 
+    ended_at: datetime | None = None
+    """The timestamp at which the session ended (null while active)."""
+
 
 class SessionUpdate(BaseSession):
     """Update fields for a session."""

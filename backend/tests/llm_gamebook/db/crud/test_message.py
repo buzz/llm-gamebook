@@ -183,6 +183,47 @@ async def test_find_previous_state_invalid_step(
         await message_crud.find_previous_state(db_session, session.id, -2)
 
 
+async def test_get_state_snapshots_ascending_with_gaps(
+    db_session: AsyncDbSession, session: Session
+) -> None:
+    """Snapshots are listed in ascending step order, skipping gap messages."""
+    base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+    naive_base = base.replace(tzinfo=None)  # SQLite round-trip drops tzinfo
+    states: list[dict[str, object] | None] = [
+        None,
+        None,
+        {"entities": {"a": {"f": "1"}}},
+        None,
+        None,
+        {"entities": {"a": {"f": "2"}, "b": {"g": "3"}}},
+        None,
+        {"entities": {"c": {"h": "4"}}},
+    ]
+    await message_crud.create_messages(db_session, _seed_state_messages(session, states))
+
+    snapshots = await message_crud.get_state_snapshots(db_session, session.id)
+
+    assert [s.step for s in snapshots] == [2, 5, 7]
+    assert [s.field_count for s in snapshots] == [1, 2, 1]
+    assert [s.created_at for s in snapshots] == [
+        naive_base + timedelta(minutes=2),
+        naive_base + timedelta(minutes=5),
+        naive_base + timedelta(minutes=7),
+    ]
+
+
+async def test_get_state_snapshots_empty_when_stateless(
+    db_session: AsyncDbSession, session: Session
+) -> None:
+    """No snapshots for a session without messages or without any state."""
+    assert await message_crud.get_state_snapshots(db_session, session.id) == []
+
+    gap_states: list[dict[str, object] | None] = [None, None]
+    await message_crud.create_messages(db_session, _seed_state_messages(session, gap_states))
+
+    assert await message_crud.get_state_snapshots(db_session, session.id) == []
+
+
 async def test_cleanup_state_history_noop_under_limit(
     db_session: AsyncDbSession, session: Session
 ) -> None:

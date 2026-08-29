@@ -1,10 +1,27 @@
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import asc, col, desc, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
 from llm_gamebook.db.models import Message
+
+
+@dataclass(frozen=True)
+class StateSnapshot:
+    """A stored state snapshot of a session message.
+
+    Attributes:
+        step: 0-based index of the snapshot's message within the session's messages.
+        created_at: The snapshot message's timestamp.
+        field_count: The number of entity fields changed in this snapshot.
+    """
+
+    step: int
+    created_at: datetime | None
+    field_count: int
 
 
 async def get_message_count(db_session: AsyncDbSession, session_id: UUID) -> int:
@@ -122,3 +139,52 @@ async def cleanup_state_history(
         message.state = None
     await db_session.commit()
     return overflow
+
+
+def count_state_fields(state: dict[str, object]) -> int:
+    """Count the number of entity fields changed in a raw state dict.
+
+    Args:
+        state: A raw state dict shaped like {"entities": {entity: {field: value}}}.
+
+    Returns:
+        The total number of entity fields present in the state dict (0 for
+        malformed or empty state).
+    """
+    entities = state.get("entities")
+    if not isinstance(entities, dict):
+        return 0
+
+    return sum(len(fields) for fields in entities.values() if isinstance(fields, dict))
+
+
+async def get_state_snapshots(
+    db_session: AsyncDbSession, session_id: UUID
+) -> Sequence[StateSnapshot]:
+    """List a session's stored state snapshots in ascending step order.
+
+    Every message carrying a state yields one snapshot entry keyed by its
+    0-based index within the session's message list. Messages without state
+    (gaps) are skipped.
+
+    Args:
+        db_session: The async database session.
+        session_id: The session to query.
+
+    Returns:
+        A sequence of snapshots in ascending step order (empty if the
+        session has no stored state).
+    """
+    messages = await get_messages(db_session, session_id)
+    snapshots: list[StateSnapshot] = []
+    for index, message in enumerate(messages):
+        if message.state is None:
+            continue
+        snapshots.append(
+            StateSnapshot(
+                step=index,
+                created_at=message.timestamp,
+                field_count=count_state_fields(message.state),
+            )
+        )
+    return snapshots
