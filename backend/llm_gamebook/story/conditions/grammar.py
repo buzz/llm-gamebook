@@ -7,6 +7,7 @@ import pyparsing as pp
 pp.ParserElement.enable_packrat()
 
 type ComparisonOperatorValue = typing.Literal["==", "!=", "<", "<=", ">", ">=", "in"]
+type ArithOperatorValue = typing.Literal["+", "-", "*", "/"]
 
 
 # Literals
@@ -86,37 +87,95 @@ class ComparisonOperator:
 
 @dataclass(frozen=True)
 class Comparison:
-    left: DotPath | Literal
+    left: "Expr"
     op: ComparisonOperator
-    right: DotPath | Literal
+    right: "Expr"
 
 
 comp_op = pp.one_of("== != < <= > >= in").set_parse_action(lambda t: ComparisonOperator(t[0]))
 comp_operand = dot_path | literal
+
+
+def create_comparison(t: pp.ParseResults) -> object:
+    """Infix-level parse action producing a Comparison node.
+
+    The infix level wraps the [left, op, right] tokens in a Group, so they
+    arrive as a single inner token list (t[0]).
+
+    Comparisons are non-associative: a chained comparison (e.g. `a < b < c`)
+    fails the parse. pyparsing' infix levels are left-associative, so chains
+    reach this parse action with more than 3 tokens and are rejected there.
+    """
+    tokens = t[0]
+    if len(tokens) > 3:
+        msg = "Chained comparisons are not allowed"
+        raise pp.ParseException(msg)
+    return Comparison(tokens[0], tokens[1], tokens[2])
+
+
+# Standalone comparison non-terminal (a comparison of two plain operands).
 comparison = (comp_operand + comp_op + comp_operand).set_parse_action(
     lambda t: Comparison(t[0], t[1], t[2])
 )
 
 
-# Boolean expression grammar
+# Arithmetic
+@dataclass(frozen=True)
+class ArithOperator:
+    value: ArithOperatorValue
+
+
+@dataclass(frozen=True)
+class ArithExpr:
+    """A binary arithmetic operation (left operator right)."""
+
+    left: "Expr"
+    operator: ArithOperator
+    right: "Expr"
+
+
+def create_arith_expr(t: pp.ParseResults) -> object:
+    """Parse action building a left-associative chain of ArithExpr nodes.
+
+    Args:
+        t: Parse results; t[0] is the token list [term, op, term, op, term...]
+        with operands first and operator strings in between. An operand that
+        came from a higher-precedence level is already a single node object.
+
+    Returns:
+        The nested ArithExpr AST (or the single operand for a lone term).
+    """
+    tokens = t[0]
+    expr = tokens[0]
+    # Operators sit at odd indices; each one combines the running result with
+    # the following operand (left-associative).
+    for i in range(1, len(tokens), 2):
+        expr = ArithExpr(left=expr, operator=ArithOperator(tokens[i]), right=tokens[i + 1])
+    return expr
+
+
+# Value expression grammar (unified; conditions are the boolean specialization)
 @dataclass(frozen=True)
 class NotExpr:
-    expr: "BoolExpr"
+    expr: "Expr"
 
 
 @dataclass(frozen=True)
 class AndExpr:
-    left: "BoolExpr"
-    right: "BoolExpr"
+    left: "Expr"
+    right: "Expr"
 
 
 @dataclass(frozen=True)
 class OrExpr:
-    left: "BoolExpr"
-    right: "BoolExpr"
+    left: "Expr"
+    right: "Expr"
 
 
-BoolExpr = Literal | DotPath | Comparison | NotExpr | AndExpr | OrExpr
+Expr = Literal | DotPath | ArithExpr | Comparison | NotExpr | AndExpr | OrExpr
+
+# Boolean conditions share the value expression grammar.
+BoolExpr = Expr
 
 
 def create_binary_expr(op_class: type[AndExpr | OrExpr]) -> pp.ParseAction:
@@ -151,14 +210,31 @@ def create_unary_expr(op_class: type[NotExpr]) -> pp.ParseAction:
     return parse_action
 
 
-bool_expr = pp.infix_notation(
-    comparison | dot_path | literal,
+expr = pp.Forward()
+# `bool_expr` is an alias of `expr`: conditions and field values share one grammar.
+bool_expr = expr
+
+expr <<= pp.infix_notation(
+    dot_path | literal | (pp.Suppress(pp.Literal("(")) + expr + pp.Suppress(pp.Literal(")"))),
     [
+        (pp.one_of("* /"), 2, pp.opAssoc.LEFT, create_arith_expr),
+        (pp.one_of("+ -"), 2, pp.opAssoc.LEFT, create_arith_expr),
+        (comp_op, 2, pp.opAssoc.LEFT, create_comparison),
         (pp.Keyword("not"), 1, pp.opAssoc.RIGHT, create_unary_expr(NotExpr)),
         (pp.Keyword("and"), 2, pp.opAssoc.LEFT, create_binary_expr(AndExpr)),
         (pp.Keyword("or"), 2, pp.opAssoc.LEFT, create_binary_expr(OrExpr)),
     ],
 )
+
+_full_expr_parser = pp.StringStart() + expr + pp.StringEnd()
+
+
+def _parse_full_match(expression: str) -> Expr:
+    """Parse a full-match expression and wrap parse failures in ValueError."""
+    try:
+        return cast("Expr", _full_expr_parser.parse_string(expression)[0])
+    except pp.ParseException as err:
+        raise ValueError(err.explain()) from err
 
 
 def parse_bool_expr(expression: str) -> BoolExpr:
@@ -176,12 +252,22 @@ def parse_bool_expr(expression: str) -> BoolExpr:
     Raises:
         ValueError: If the expression cannot be parsed.
     """
-    try:
-        return cast(
-            "BoolExpr",
-            (pp.StringStart() + bool_expr + pp.StringEnd()).parse_string(
-                expression.removeprefix("=")
-            )[0],
-        )
-    except pp.ParseException as err:
-        raise ValueError(err.explain()) from err
+    return _parse_full_match(expression.removeprefix("="))
+
+
+def parse_value_expr(expression: str) -> Expr:
+    """Parse a value expression string into an Expr AST.
+
+    An optional leading "=" (dynamic expression marker) is stripped before
+    parsing, e.g. "=foo.bar + 1" parses like "foo.bar + 1".
+
+    Args:
+        expression: The expression string to parse.
+
+    Returns:
+        The parsed value expression AST.
+
+    Raises:
+        ValueError: If the expression cannot be parsed.
+    """
+    return _parse_full_match(expression.removeprefix("="))

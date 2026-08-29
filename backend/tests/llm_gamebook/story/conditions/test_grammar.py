@@ -600,3 +600,253 @@ def test_bool_expr_edge_cases_good(string: str) -> None:
 )
 def test_bool_expr_edge_cases_bad(string: str) -> None:
     assert_parse_exception(make_parser(g.bool_expr), string)
+
+
+# Value expression grammar (arithmetic)
+def _dot(entity: str, *props: str) -> g.DotPath:
+    return g.DotPath(g.SnakeCase(entity), tuple(g.SnakeCase(p) for p in props))
+
+
+@pytest.mark.parametrize(
+    ("string", "exp"),
+    [
+        # `*` binds tighter than `+`
+        (
+            "a.x + b.y * c.z",
+            g.ArithExpr(
+                left=_dot("a", "x"),
+                operator=g.ArithOperator("+"),
+                right=g.ArithExpr(
+                    left=_dot("b", "y"),
+                    operator=g.ArithOperator("*"),
+                    right=_dot("c", "z"),
+                ),
+            ),
+        ),
+        # Left associativity: (a - b) - c and (a * b) / c
+        (
+            "a.x - b.y - c.z",
+            g.ArithExpr(
+                left=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("-"),
+                    right=_dot("b", "y"),
+                ),
+                operator=g.ArithOperator("-"),
+                right=_dot("c", "z"),
+            ),
+        ),
+        (
+            "a.x * b.y / c.z",
+            g.ArithExpr(
+                left=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("*"),
+                    right=_dot("b", "y"),
+                ),
+                operator=g.ArithOperator("/"),
+                right=_dot("c", "z"),
+            ),
+        ),
+        # Comparisons bind looser than arithmetic
+        (
+            "a.x + b.y < c.z",
+            g.Comparison(
+                left=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("+"),
+                    right=_dot("b", "y"),
+                ),
+                op=g.ComparisonOperator("<"),
+                right=_dot("c", "z"),
+            ),
+        ),
+        # Parentheses override precedence
+        (
+            "(a.x + b.y) * c.z",
+            g.ArithExpr(
+                left=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("+"),
+                    right=_dot("b", "y"),
+                ),
+                operator=g.ArithOperator("*"),
+                right=_dot("c", "z"),
+            ),
+        ),
+        # Arithmetic with literals and mixed operand types
+        (
+            "2 + a.x * 3.5",
+            g.ArithExpr(
+                left=g.IntLiteral(2),
+                operator=g.ArithOperator("+"),
+                right=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("*"),
+                    right=g.FloatLiteral(3.5),
+                ),
+            ),
+        ),
+        # `in` is a comparison: a + b in coll
+        (
+            "a.x + 1 in b.y",
+            g.Comparison(
+                left=g.ArithExpr(
+                    left=_dot("a", "x"),
+                    operator=g.ArithOperator("+"),
+                    right=g.IntLiteral(1),
+                ),
+                op=g.ComparisonOperator("in"),
+                right=_dot("b", "y"),
+            ),
+        ),
+        # Boolean combinators over value expressions
+        (
+            "not a.x < 2 and b.y == 3 or c.z",
+            g.OrExpr(
+                left=g.AndExpr(
+                    left=g.NotExpr(
+                        expr=g.Comparison(
+                            left=_dot("a", "x"),
+                            op=g.ComparisonOperator("<"),
+                            right=g.IntLiteral(2),
+                        )
+                    ),
+                    right=g.Comparison(
+                        left=_dot("b", "y"),
+                        op=g.ComparisonOperator("=="),
+                        right=g.IntLiteral(3),
+                    ),
+                ),
+                right=_dot("c", "z"),
+            ),
+        ),
+    ],
+)
+def test_value_expr_good(string: str, exp: g.Expr) -> None:
+    assert g.parse_value_expr(string) == exp
+
+
+@pytest.mark.parametrize(
+    "string",
+    [
+        # Chained comparisons are not allowed (non-associative)
+        "a.x < b.y < c.z",
+        "a.x == b.y == c.z",
+        # Arithmetic operators are dangling or doubled
+        "a.x +",
+        "+ a.x",
+        "a.x + + b.y",
+        "a.x * * b.y",
+        "-a.x",
+        "a.x ** b.y",
+        # Comparison with only one operand
+        "a.x <",
+        "< b.y",
+        # Mismatched parentheses
+        "(a.x + b.y",
+        "a.x + b.y)",
+    ],
+)
+def test_value_expr_bad(string: str) -> None:
+    assert_parse_exception(make_parser(g.expr), string)
+
+
+def test_parse_bool_expr_and_parse_value_expr_share_parser() -> None:
+    # The same string parses to the same AST through both entry points
+    assert g.parse_bool_expr("a.x + 1 == b.y") == g.parse_value_expr("a.x + 1 == b.y")
+    # The leading dynamic marker is stripped by both
+    assert g.parse_bool_expr("=a.x == 1") == g.parse_bool_expr("a.x == 1")
+    assert g.parse_value_expr("=a.x + 1") == g.parse_value_expr("a.x + 1")
+
+
+def test_parse_value_expr_failure_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="Expected end of text"):
+        g.parse_value_expr("a.x + b.y c.z")
+
+
+def test_parse_bool_expr_failure_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="Expected end of text"):
+        g.parse_bool_expr("a.x + b.y c.z")
+
+
+# Regression: legacy condition strings parse to the same ASTs as before the
+# grammar unification (arithmetic levels added, boolean levels unchanged).
+@pytest.mark.parametrize(
+    ("string", "exp"),
+    [
+        (
+            "foo.bar <= 0.99 and not foo.status == 'ok'",
+            g.AndExpr(
+                left=g.Comparison(
+                    _dot("foo", "bar"), g.ComparisonOperator("<="), g.FloatLiteral(0.99)
+                ),
+                right=g.NotExpr(
+                    expr=g.Comparison(
+                        _dot("foo", "status"), g.ComparisonOperator("=="), g.StrLiteral("ok")
+                    )
+                ),
+            ),
+        ),
+        (
+            "true or false and foo.bar == 10",
+            g.OrExpr(
+                left=g.BoolLiteral(value=True),
+                right=g.AndExpr(
+                    left=g.BoolLiteral(value=False),
+                    right=g.Comparison(
+                        _dot("foo", "bar"), g.ComparisonOperator("=="), g.IntLiteral(10)
+                    ),
+                ),
+            ),
+        ),
+        (
+            "'node_a' in nodes.edge_ids and nodes.enabled",
+            g.AndExpr(
+                left=g.Comparison(
+                    g.StrLiteral("node_a"), g.ComparisonOperator("in"), _dot("nodes", "edge_ids")
+                ),
+                right=_dot("nodes", "enabled"),
+            ),
+        ),
+        (
+            "not not node.active or flag.b",
+            g.OrExpr(
+                left=g.NotExpr(expr=g.NotExpr(expr=_dot("node", "active"))),
+                right=_dot("flag", "b"),
+            ),
+        ),
+        (
+            "user.age > 18 or (user.vip == true and not user.banned)",
+            g.OrExpr(
+                left=g.Comparison(_dot("user", "age"), g.ComparisonOperator(">"), g.IntLiteral(18)),
+                right=g.AndExpr(
+                    left=g.Comparison(
+                        _dot("user", "vip"), g.ComparisonOperator("=="), g.BoolLiteral(value=True)
+                    ),
+                    right=g.NotExpr(expr=_dot("user", "banned")),
+                ),
+            ),
+        ),
+    ],
+)
+def test_legacy_condition_strings_parse_unchanged(string: str, exp: g.Expr) -> None:
+    assert g.parse_bool_expr(string) == exp
+    # The `=`-prefixed form parses identically
+    assert g.parse_bool_expr("=" + string) == exp
+
+
+# Regression: legacy condition strings that must keep failing
+@pytest.mark.parametrize(
+    "string",
+    [
+        "a.b === 1",
+        "6 = 6",
+        "foo.bar.baz.quz.count > 6 7",
+        "a.b == 1 and",
+        "and.b == 1",
+    ],
+)
+def test_legacy_bad_condition_strings_still_fail(string: str) -> None:
+    with pytest.raises(ValueError, match="ParseException"):
+        g.parse_bool_expr(string)
