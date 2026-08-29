@@ -21,6 +21,7 @@ async def create_default_user_settings(db_session: AsyncDbSession) -> UserSettin
 class UserSettingsUpdate(TypedDict):
     chat_view: ChatView
     enter_submits_message: bool
+    max_state_history: int
 
 
 async def update_user_settings(
@@ -33,6 +34,7 @@ async def update_user_settings(
 
     settings.chat_view = ChatView(kwargs["chat_view"])
     settings.enter_submits_message = kwargs["enter_submits_message"]
+    settings.max_state_history = kwargs["max_state_history"]
 
     await db_session.commit()
     await db_session.refresh(settings)

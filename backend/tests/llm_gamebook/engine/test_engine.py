@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -18,9 +19,13 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.test import TestModel
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
+from llm_gamebook.db.crud.message import create_messages, get_messages
+from llm_gamebook.db.crud.session import get_session as get_session_crud
+from llm_gamebook.db.crud.session import mark_session_ended
 from llm_gamebook.db.models import Session
-from llm_gamebook.db.models.message import MessageKind
+from llm_gamebook.db.models.message import Message, MessageKind
 from llm_gamebook.db.models.part import PartKind
+from llm_gamebook.db.models.user_settings import UserSettings
 from llm_gamebook.engine.engine import StoryEngine
 from llm_gamebook.engine.message import (
     ContentDelta,
@@ -32,6 +37,8 @@ from llm_gamebook.engine.message import (
 )
 from llm_gamebook.engine.session_adapter import SessionAdapter
 from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.errors import SessionEndedError
+from llm_gamebook.story.state import SessionStateData
 from llm_gamebook.story.traits.graph import GraphTransitionAction
 
 from .conftest import EngineErrorMessages, EngineMessages, StreamMessages
@@ -385,3 +392,97 @@ async def test_generate_response_does_not_persist_input_request_messages(
     response_messages = [m for m in messages if m.kind == "response"]
     assert len(request_messages) == 1
     assert len(response_messages) == 1
+
+
+async def test_generate_response_blocked_on_ended_session(
+    story_engine: StoryEngine,
+    db_session: AsyncDbSession,
+    session: Session,
+    engine_messages: EngineMessages,
+    engine_error_messages: EngineErrorMessages,
+) -> None:
+    await mark_session_ended(db_session, session.id)
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+
+    # No messages are created for an ended session
+    assert await story_engine.session_adapter.get_message_count(db_session) == 0
+
+    # Started + stopped are still published, plus an error message
+    assert len(engine_messages) == 2
+    assert isinstance(engine_messages[0], ResponseStartedMessage)
+    assert isinstance(engine_messages[1], ResponseStoppedMessage)
+    assert len(engine_error_messages) == 1
+    assert isinstance(engine_error_messages[0].error, SessionEndedError)
+
+
+async def test_current_state_persisted_to_session_row(
+    story_engine: StoryEngine, db_session: AsyncDbSession, session: Session
+) -> None:
+    action = GraphTransitionAction(entity_id="main", to="spark_of_hope")
+    story_engine._context.store.dispatch(action)
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+
+    loaded = await get_session_crud(db_session, session.id)
+    assert loaded is not None
+    assert loaded.state is not None
+    data = SessionStateData.model_validate(loaded.state)
+    assert data.entities["main"]["current_node_id"] == "spark_of_hope"
+
+
+async def test_response_state_save_triggers_history_cleanup(
+    story_engine: StoryEngine, db_session: AsyncDbSession, session: Session
+) -> None:
+    settings = UserSettings(id="settings", max_state_history=2)
+    db_session.add(settings)
+    await db_session.commit()
+
+    base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+    seeded_states: list[dict[str, object]] = [
+        {"entities": {"main": {"current_node_id": f"node_{i}"}}} for i in range(3)
+    ]
+    seeded = [
+        Message(
+            kind=MessageKind.RESPONSE,
+            session_id=session.id,
+            timestamp=base + timedelta(minutes=i),
+            state=state,
+        )
+        for i, state in enumerate(seeded_states)
+    ]
+    await create_messages(db_session, seeded)
+
+    story_engine._context.store.dispatch(
+        GraphTransitionAction(entity_id="main", to="spark_of_hope")
+    )
+
+    async def stream_fn(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
+        yield "Response"
+
+    func_model = FunctionModel(stream_function=stream_fn)
+    story_engine.set_model(func_model)
+
+    await story_engine.generate_response(db_session)
+
+    messages = await get_messages(db_session, session.id)
+    # 3 seeded + 1 new response = 4 snapshots; limit 2 removes the 2 oldest
+    assert [m.state for m in messages] == [None, None, seeded_states[2], messages[3].state]
+    assert messages[3].state is not None
+
+    loaded = await get_session_crud(db_session, session.id)
+    assert loaded is not None
+    data = SessionStateData.model_validate(loaded.state or {})
+    assert data.entities["main"]["current_node_id"] == "spark_of_hope"

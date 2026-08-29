@@ -28,3 +28,19 @@ class EntityNotFoundError(StateAccessError):
 
 class EntityFieldNotFoundError(StateAccessError):
     """Raised when an unknown entity field was accessed."""
+
+
+class CoreActionError(Exception):
+    """Raised when a core action cannot be executed."""
+
+
+class InvalidStepError(CoreActionError):
+    """Raised when a core action targets an invalid history step."""
+
+
+class NoStateError(CoreActionError):
+    """Raised when a core action requires a state snapshot but none exists."""
+
+
+class SessionEndedError(Exception):
+    """Raised when an operation is attempted on an ended session."""

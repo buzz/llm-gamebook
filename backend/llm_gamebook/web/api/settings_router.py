@@ -29,5 +29,6 @@ async def update_settings(db_session: DbSessionDep, settings_update: UserSetting
         db_session,
         chat_view=ChatView(settings_update.chat_view),
         enter_submits_message=settings_update.enter_submits_message,
+        max_state_history=settings_update.max_state_history,
     )
     return ServerMessage(message="Settings updated successfully.")

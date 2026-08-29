@@ -6,6 +6,7 @@ from uuid import UUID
 
 import httpx
 from openai import OpenAIError
+from pydantic import BaseModel
 from pydantic_ai import (
     Agent,
     AgentRunError,
@@ -23,8 +24,11 @@ from llm_gamebook.db.crud.message import create_messages
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
+from llm_gamebook.story.errors import SessionEndedError
+from llm_gamebook.story.state import Action
 
 from ._runner import StreamRunner
+from .core_actions import CoreActionExecutor, CoreActionResult
 from .message import ResponseErrorMessage, ResponseStartedMessage, ResponseStoppedMessage
 from .session_adapter import SessionAdapter
 
@@ -40,6 +44,7 @@ class StoryEngine:
     ) -> None:
         self._context = context
         self._session_adapter = SessionAdapter(session_id, context, bus)
+        self._core_action_executor = CoreActionExecutor(session_id, context)
         self._bus = bus
         self._log = logger.getChild(f"engine({session_id})")
         self._stream_debounce = stream_debounce
@@ -52,6 +57,14 @@ class StoryEngine:
         self._bus.publish(ResponseStartedMessage(self._session_adapter.session_id))
 
         try:
+            session = await self._session_adapter.get_session(db_session)
+            if session and session.ended_at is not None:
+                msg = "Session has ended - no further responses can be generated"
+                self._log.warning(msg)
+                ended_err = SessionEndedError(msg)
+                self._bus.publish(ResponseErrorMessage(self._session_adapter.session_id, ended_err))
+                return
+
             if not self._agent:
                 msg = "Response cancelled: No agent"
                 self._log.warning(msg)
@@ -72,6 +85,7 @@ class StoryEngine:
 
             new_messages = await runner.run(msg_history, self._context)
             await create_messages(db_session, new_messages)
+            await self._session_adapter.save_current_state(db_session)
 
         except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
             self._log.exception("Request failed. The exception was:")
@@ -83,6 +97,12 @@ class StoryEngine:
             self._bus.publish(ResponseErrorMessage(self._session_adapter.session_id, err))
         finally:
             self._bus.publish(ResponseStoppedMessage(self._session_adapter.session_id))
+
+    async def execute_core_action[T: BaseModel](
+        self, db_session: AsyncDbSession, action: Action[T]
+    ) -> CoreActionResult:
+        """Execute a core game action (end-game, reset-game, restore, fork)."""
+        return await self._core_action_executor.execute(db_session, action)
 
     async def _prepare_tools(
         self,

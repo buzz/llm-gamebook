@@ -1,5 +1,5 @@
+import logging
 from collections.abc import AsyncIterable
-from logging import getLogger
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -11,22 +11,26 @@ from pydantic_ai import (
     TextPart,
     UserPromptPart,
 )
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession as AsyncDbSession
 
+from llm_gamebook.constants import DEFAULT_MAX_STATE_HISTORY
 from llm_gamebook.db.crud.message import (
+    cleanup_state_history,
     create_message,
     get_latest_message_with_state,
     get_message_count,
     get_messages,
 )
-from llm_gamebook.db.crud.session import delete_session, get_session
+from llm_gamebook.db.crud.session import delete_session, get_session, update_session_state
+from llm_gamebook.db.crud.user_settings import get_user_settings
 from llm_gamebook.db.models import Message, Session
 from llm_gamebook.db.models.message import MessageKind
 from llm_gamebook.db.models.part import Part, PartKind
 from llm_gamebook.engine.message import ResponseUserRequestMessage, SessionDeleted
 from llm_gamebook.story.state import SessionStateData
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from llm_gamebook.message_bus import MessageBus
@@ -98,6 +102,26 @@ class SessionAdapter:
         message = await create_message(db_session, message)
         self._bus.publish(ResponseUserRequestMessage(self._session_id))
         return message
+
+    async def save_current_state(self, db_session: AsyncDbSession) -> None:
+        """Persist the current session state and prune old state snapshots."""
+        data = self._context.session_state.data
+        state = data.model_dump() if data.entities else None
+        await update_session_state(db_session, self._session_id, state)
+
+        settings = await get_user_settings(db_session)
+        max_snapshots = settings.max_state_history if settings else DEFAULT_MAX_STATE_HISTORY
+        try:
+            removed = await cleanup_state_history(db_session, self._session_id, max_snapshots)
+        except SQLAlchemyError as err:
+            logger.warning("State history cleanup failed for session %s: %s", self._session_id, err)
+        else:
+            if removed:
+                logger.info(
+                    "Removed %d old state snapshots from session %s",
+                    removed,
+                    self._session_id,
+                )
 
     @property
     def session_id(self) -> UUID:

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import ClassVar
 from uuid import UUID, uuid4
 
+from sqlalchemy import JSON, Column
 from sqlalchemy.orm import Mapped, MappedSQLExpression, query_expression
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -17,6 +18,8 @@ class Session(SessionBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str | None
     project_id: str
+    ended_at: datetime | None = Field(default=None)
+    state: dict[str, object] | None = Field(default=None, sa_column=Column(JSON(none_as_null=True)))
     config: Mapped[ModelConfig | None] = Relationship(back_populates="sessions")
     config_id: UUID | None = Field(default=None, foreign_key="modelconfig.id")
     messages: list[Message] = Relationship(

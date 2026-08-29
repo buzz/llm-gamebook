@@ -1,7 +1,16 @@
 import pytest
 from pydantic import ValidationError
 
-from llm_gamebook.story.state import Action, EndGameAction, EndGamePayload
+from llm_gamebook.story.state import (
+    Action,
+    EndGameAction,
+    EndGamePayload,
+    ForkAction,
+    ResetGameAction,
+    ResetGamePayload,
+    RestoreAction,
+    StepPayload,
+)
 
 
 def test_valid_action_name_with_namespace() -> None:
@@ -59,3 +68,56 @@ def test_end_game_roundtrip() -> None:
     restored = Action[EndGamePayload].model_validate_json(json_str)
     assert restored.name == original.name
     assert restored.payload.reason == original.payload.reason
+
+
+def test_create_reset_game_action() -> None:
+    action = ResetGameAction()
+    assert action.name == "core/reset-game"
+    assert action.payload.model_dump() == {}
+
+
+def test_reset_game_roundtrip() -> None:
+    original = ResetGameAction()
+    json_str = original.model_dump_json()
+    restored: Action[ResetGamePayload] = Action[ResetGamePayload].model_validate_json(json_str)
+    assert restored.name == "core/reset-game"
+
+
+def test_create_restore_action_default_step() -> None:
+    action = RestoreAction()
+    assert action.name == "core/restore"
+    assert action.payload.step == -1
+
+
+def test_create_restore_action_with_step() -> None:
+    action = RestoreAction(step=3)
+    assert action.name == "core/restore"
+    assert action.payload.step == 3
+
+
+def test_restore_action_roundtrip() -> None:
+    original = RestoreAction(step=7)
+    json_str = original.model_dump_json()
+    restored = Action[StepPayload].model_validate_json(json_str)
+    assert restored.name == "core/restore"
+    assert restored.payload.step == 7
+
+
+def test_create_fork_action_default_step() -> None:
+    action = ForkAction()
+    assert action.name == "core/fork"
+    assert action.payload.step == -1
+
+
+def test_create_fork_action_with_step() -> None:
+    action = ForkAction(step=2)
+    assert action.name == "core/fork"
+    assert action.payload.step == 2
+
+
+def test_fork_action_roundtrip() -> None:
+    original = ForkAction(step=0)
+    json_str = original.model_dump_json()
+    restored = Action[StepPayload].model_validate_json(json_str)
+    assert restored.name == "core/fork"
+    assert restored.payload.step == 0

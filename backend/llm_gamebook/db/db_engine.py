@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_engine
 from sqlmodel import SQLModel, text
 
 from llm_gamebook.constants import PROJECT_NAME, USER_DATA_PATH
@@ -41,5 +41,20 @@ async def create_async_db_engine() -> AsyncIterator[AsyncEngine]:
 async def _create_db_and_tables(db_engine: AsyncEngine) -> None:
     async with db_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        await _migrate_session_table(conn)
         # Enable foreign key support in SQLite
         await conn.execute(text("PRAGMA foreign_keys=ON"))
+
+
+async def _migrate_session_table(conn: AsyncConnection) -> None:
+    """Add columns to the session table that older databases may lack.
+
+    SQLite's create_all does not alter existing tables, so columns added in
+    later versions are created manually here.
+    """
+    result = await conn.execute(text("PRAGMA table_info(session)"))
+    existing_columns = {row[1] for row in result.all()}
+    for column_name, column_type in (("ended_at", "DATETIME"), ("state", "JSON")):
+        if column_name not in existing_columns:
+            await conn.execute(text(f"ALTER TABLE session ADD COLUMN {column_name} {column_type}"))
+            log.info("Added missing column '%s' to 'session' table", column_name)

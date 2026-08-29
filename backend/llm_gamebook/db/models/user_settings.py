@@ -3,6 +3,8 @@ import enum
 from sqlalchemy import Column, Enum
 from sqlmodel import Field, SQLModel
 
+from llm_gamebook.constants import DEFAULT_MAX_STATE_HISTORY
+
 
 class ChatView(enum.StrEnum):
     STANDARD = "standard"
@@ -20,4 +22,9 @@ class UserSettings(SQLModel, table=True):
     )
     enter_submits_message: bool = Field(
         default=True, description="Whether Enter key submits a message"
+    )
+    max_state_history: int = Field(
+        default=DEFAULT_MAX_STATE_HISTORY,
+        ge=1,
+        description="Maximum number of state snapshots to keep per session",
     )

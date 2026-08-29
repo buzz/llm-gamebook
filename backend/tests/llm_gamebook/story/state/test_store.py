@@ -3,7 +3,16 @@ from typing import cast
 import pytest
 from pydantic import BaseModel
 
-from llm_gamebook.story.state import Action, Next, SessionState, Store
+from llm_gamebook.story.state import (
+    Action,
+    EndGameAction,
+    ForkAction,
+    Next,
+    ResetGameAction,
+    RestoreAction,
+    SessionState,
+    Store,
+)
 
 
 class DictPayload(BaseModel):
@@ -190,3 +199,49 @@ def test_store_reducer_must_return_session_state() -> None:
 
     with pytest.raises(TypeError, match="must return a SessionState instance"):
         store.dispatch(action)
+
+
+def test_store_set_state() -> None:
+    store = Store()
+
+    new_state = SessionState()
+    new_state.set_field("entity1", "restored", value=True)
+    store.set_state(new_state)
+
+    assert store.get_state().get_field("entity1", "restored") is True
+
+
+def test_store_dispatch_reset_game_action_clears_state() -> None:
+    initial_state = SessionState()
+    initial_state.set_field("entity1", "field1", "value1")
+    store = Store(initial_state=initial_state)
+
+    new_state = store.dispatch(ResetGameAction())
+
+    assert new_state.is_empty()
+    assert store.get_state().is_empty()
+
+
+def test_store_dispatch_reset_game_action_is_idempotent() -> None:
+    store = Store()
+
+    new_state = store.dispatch(ResetGameAction())
+
+    assert new_state.is_empty()
+
+
+def test_store_dispatch_unregistered_core_action_preserves_state() -> None:
+    initial_state = SessionState()
+    initial_state.set_field("entity1", "field1", "value1")
+    store = Store(initial_state=initial_state)
+
+    new_state = store.dispatch(EndGameAction(reason="done"))
+    assert new_state.get_field("entity1", "field1") == "value1"
+
+    new_state = store.dispatch(RestoreAction(step=0))
+    assert new_state.get_field("entity1", "field1") == "value1"
+
+    new_state = store.dispatch(ForkAction(step=-1))
+    assert new_state.get_field("entity1", "field1") == "value1"
+
+    assert store.get_state().get_field("entity1", "field1") == "value1"

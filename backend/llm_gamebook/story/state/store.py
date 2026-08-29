@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from llm_gamebook.story.trait_registry import trait_registry
 
 from .actions import Action
+from .core import CORE_RESET_GAME, reset_game_reducer
 from .session_state import SessionState
 
 type Next = Callable[[Action[BaseModel]], SessionState]
@@ -41,6 +42,11 @@ class Store:
         self._active_action_types: set[str] | None = None
 
         self._load_trait_reducers()
+        self._load_core_reducers()
+
+    def _load_core_reducers(self) -> None:
+        """Register reducers for built-in core actions."""
+        self._register_reducer(CORE_RESET_GAME, reset_game_reducer)
 
     def _load_trait_reducers(self) -> None:
         """Load all registered trait reducers into the store."""
@@ -122,6 +128,14 @@ class Store:
     def get_state(self) -> SessionState:
         """Get current state."""
         return self._state
+
+    def set_state(self, state: SessionState) -> None:
+        """Replace the current state with the given state.
+
+        Used for operations that replace the entire state, e.g. restoring a
+        session to a previous snapshot.
+        """
+        self._state = state
 
     def _clone_state(self) -> SessionState:
         """Create a new SessionState with same data."""

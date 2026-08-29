@@ -96,7 +96,14 @@ class EngineManager(BusSubscriber):
 
         message_with_state = await get_latest_message_with_state(db_session, session_id)
         session_state_data = None
-        if message_with_state and message_with_state.state:
+        if session.state is not None:
+            try:
+                session_state_data = SessionStateData.model_validate(session.state)
+            except ValidationError as err:
+                self._log.warning(
+                    "Invalid session state for session %s, ignoring: %s", session_id, err.errors()
+                )
+        if session_state_data is None and message_with_state and message_with_state.state:
             try:
                 session_state_data = SessionStateData.model_validate(message_with_state.state)
             except ValidationError as err:
