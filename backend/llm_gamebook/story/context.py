@@ -6,8 +6,16 @@ from uuid import UUID
 import jinja2
 
 from llm_gamebook.message_bus import MessageBus
-from llm_gamebook.story.errors import EntityFieldNotFoundError, EntityNotFoundError
+from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
+from llm_gamebook.story.errors import (
+    DynamicFieldEvalError,
+    EntityFieldNotFoundError,
+    EntityNotFoundError,
+    ExpressionEvalError,
+)
 from llm_gamebook.story.schemas import Project
+from llm_gamebook.story.schemas.expression import ValueExprDefinition
+from llm_gamebook.story.schemas.project import collect_dynamic_fields
 
 from .state import (
     FieldValue,
@@ -38,7 +46,11 @@ class StoryContext:
     ) -> None:
         super().__init__()
         self._project = project
-        initial_state = SessionState(session_state)
+        self._dynamic_fields: dict[tuple[str, str], ValueExprDefinition] = collect_dynamic_fields(
+            project
+        )
+        self._read_only_fields = frozenset(self._dynamic_fields)
+        initial_state = SessionState(session_state, read_only_fields=self._read_only_fields)
         self._store = Store(
             initial_state,
             middleware=[
@@ -54,6 +66,20 @@ class StoryContext:
         return self._project
 
     @property
+    def read_only_fields(self) -> frozenset[tuple[str, str]]:
+        """Field coordinates session state may not override (dynamic fields)."""
+        return self._read_only_fields
+
+    @property
+    def evaluator(self) -> BoolExprEvaluator:
+        """The expression evaluator bound to this project and context."""
+        return self._evaluator
+
+    @cached_property
+    def _evaluator(self) -> BoolExprEvaluator:
+        return BoolExprEvaluator(self._project, self)
+
+    @property
     def session_state(self) -> SessionState:
         return self._store.get_state()
 
@@ -62,12 +88,26 @@ class StoryContext:
         return self._store
 
     def get_field(self, entity_id: str, field_name: str) -> FieldValue:
-        """Retrieve an entity field value."""
-        # Try state
+        """Retrieve an effective entity field value.
+
+        Resolution order: session override, then dynamic field expression
+        (evaluated against current effective state), then the project
+        default.
+
+        Raises:
+            DynamicFieldEvalError: If a dynamic field's expression fails.
+            EntityFieldNotFoundError: If no tier resolves the field.
+        """
+        # 1) Session override
         with suppress(EntityFieldNotFoundError):
             return self._store.get_state().get_field(entity_id, field_name)
 
-        # Try default from project definition
+        # 2) Dynamic field definition
+        definition = self._dynamic_fields.get((entity_id, field_name))
+        if definition is not None:
+            return self._eval_dynamic_field(entity_id, field_name, definition)
+
+        # 3) Default from project definition
         with suppress(AttributeError, EntityNotFoundError):
             entity = self._project.get_entity(entity_id)
             value = getattr(entity, field_name)
@@ -75,6 +115,20 @@ class StoryContext:
 
         msg = f"Field '{field_name}' not found on entity '{entity_id}'"
         raise EntityFieldNotFoundError(msg)
+
+    def _eval_dynamic_field(
+        self,
+        entity_id: str,
+        field_name: str,
+        definition: ValueExprDefinition,
+    ) -> FieldValue:
+        """Evaluate a dynamic field definition against the current effective state."""
+        try:
+            value = self._evaluator.eval_value(definition.value)
+        except ExpressionEvalError as err:
+            field = f"{entity_id}.{field_name}"
+            raise DynamicFieldEvalError(str(err), field=field, source=definition.source) from err
+        return cast("FieldValue", value)
 
     def validate_entity_exists(self, entity_id: str) -> bool:
         try:

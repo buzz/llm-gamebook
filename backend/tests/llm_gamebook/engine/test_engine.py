@@ -36,8 +36,10 @@ from llm_gamebook.engine.message import (
     StreamPartMessage,
 )
 from llm_gamebook.engine.session_adapter import SessionAdapter
+from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.errors import SessionEndedError
+from llm_gamebook.story.errors import DynamicFieldEvalError, SessionEndedError
+from llm_gamebook.story.schemas import Project, ProjectSource
 from llm_gamebook.story.state import SessionStateData
 from llm_gamebook.story.traits.graph import GraphTransitionAction
 
@@ -147,6 +149,54 @@ async def test_story_engine_generate_response_error(
 
     assert len(engine_error_messages) == 1
     assert isinstance(engine_error_messages[0].error, type(error))
+
+
+def _broken_dynamic_field_project_data() -> dict[str, object]:
+    return {
+        "id": "test/dyn-engine",
+        "source": ProjectSource.LOCAL,
+        "title": "Test Project",
+        "description": "A test project",
+        "entity_types": [
+            {
+                "id": "Player",
+                "name": "Player",
+                "instructions": "Player data.",
+                "traits": ["described"],
+                "entities": [
+                    {
+                        "id": "player",
+                        "name": "Player",
+                        "description": "=player.nonexistent + 1",
+                    }
+                ],
+            }
+        ],
+    }
+
+
+async def test_generate_response_surfaces_dynamic_field_eval_error(
+    db_session: AsyncDbSession,
+    session: Session,
+    message_bus: MessageBus,
+    test_model: TestModel,
+    engine_error_messages: EngineErrorMessages,
+) -> None:
+    """A dynamic field that fails at runtime fails the step, naming field + expression."""
+    project = Project.from_data(_broken_dynamic_field_project_data())
+    context = StoryContext(project)
+    story_engine = StoryEngine(session.id, test_model, context, message_bus, stream_debounce=0.0)
+
+    await story_engine.generate_response(db_session)
+
+    assert len(engine_error_messages) == 1
+    error = engine_error_messages[0].error
+    assert isinstance(error, DynamicFieldEvalError), f"unexpected error: {error!r}"
+    assert error.field == "player.description"
+    assert error.source == "=player.nonexistent + 1"
+    message = str(error)
+    assert "player.description" in message
+    assert "=player.nonexistent + 1" in message
 
 
 async def test_set_model_replaces_agent(story_engine: StoryEngine, test_model: TestModel) -> None:

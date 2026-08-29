@@ -112,10 +112,13 @@ class CoreActionExecutor:
 
         snapshot = await find_previous_state(db_session, self._session_id, payload.step)
         if snapshot is not None:
-            state = SessionState(SessionStateData.model_validate(snapshot))
+            state = SessionState(
+                SessionStateData.model_validate(snapshot),
+                read_only_fields=self._context.read_only_fields,
+            )
         else:
             # No state at or before the target step: restore to the start
-            state = SessionState()
+            state = SessionState(read_only_fields=self._context.read_only_fields)
         self._context.store.set_state(state)
         await update_session_state(db_session, self._session_id, snapshot)
         logger.info("Session %s restored to step %s", self._session_id, payload.step)

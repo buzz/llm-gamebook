@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 
 from llm_gamebook.story.conditions import bool_expr_grammar as g
-from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
 from llm_gamebook.story.schemas import BaseEntity, BoolExprDefinition
 from llm_gamebook.story.trait_registry import session_field, trait_registry
 
@@ -29,5 +28,4 @@ class DescribedTrait(BaseEntity):
     @session_field("enabled")
     def _resolve_enabled(self, story_context: "StoryContext") -> bool:
         """Resolve enabled field with session-aware evaluation."""
-        evaluator = BoolExprEvaluator(story_context.project, story_context)
-        return self.enabled.evaluate(story_context.project, evaluator)
+        return self.enabled.evaluate(story_context.evaluator)

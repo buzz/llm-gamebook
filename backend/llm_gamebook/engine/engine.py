@@ -24,7 +24,7 @@ from llm_gamebook.db.crud.message import create_messages
 from llm_gamebook.logger import logger
 from llm_gamebook.message_bus import MessageBus
 from llm_gamebook.story.context import StoryContext
-from llm_gamebook.story.errors import SessionEndedError
+from llm_gamebook.story.errors import ExpressionEvalError, SessionEndedError
 from llm_gamebook.story.state import Action
 
 from ._runner import StreamRunner
@@ -87,8 +87,14 @@ class StoryEngine:
             await create_messages(db_session, new_messages)
             await self._session_adapter.save_current_state(db_session)
 
-        except (httpx.RequestError, OpenAIError, AgentRunError, ModelAPIError) as err:
-            self._log.exception("Request failed. The exception was:")
+        except (
+            httpx.RequestError,
+            OpenAIError,
+            AgentRunError,
+            ModelAPIError,
+            ExpressionEvalError,
+        ) as err:
+            self._log.exception("Response generation failed. The exception was:")
             if isinstance(err, ModelHTTPError):
                 if isinstance(err.body, dict):
                     with suppress(KeyError):

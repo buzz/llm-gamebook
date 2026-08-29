@@ -2,6 +2,7 @@ import pytest
 
 from llm_gamebook.story import Project
 from llm_gamebook.story.conditions import bool_expr_grammar as g
+from llm_gamebook.story.conditions.evaluator import BoolExprEvaluator
 from llm_gamebook.story.schemas import BoolExprDefinition
 from llm_gamebook.story.schemas.project import ProjectSource
 
@@ -71,7 +72,7 @@ def test_bool_expr_definition_evaluate_with_project(
     simple_project: Project, value: str, *, expected: bool
 ) -> None:
     expr_def = BoolExprDefinition.model_validate(value)
-    result = expr_def.evaluate(simple_project)
+    result = expr_def.evaluate(BoolExprEvaluator(simple_project))
     assert result is expected
 
 
@@ -155,4 +156,4 @@ def test_bool_expr_circular_reference() -> None:
 
     expr_def = BoolExprDefinition.model_validate("some_node.enabled")
     with pytest.raises(RecursionError, match="maximum recursion depth exceeded"):
-        expr_def.evaluate(project)
+        expr_def.evaluate(BoolExprEvaluator(project))

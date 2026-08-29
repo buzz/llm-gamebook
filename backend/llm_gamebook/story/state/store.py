@@ -140,4 +140,4 @@ class Store:
     def _clone_state(self) -> SessionState:
         """Create a new SessionState with same data."""
         json_str = self._state.to_json()
-        return SessionState.from_json(json_str)
+        return SessionState.from_json(json_str, read_only_fields=self._state.read_only_fields)

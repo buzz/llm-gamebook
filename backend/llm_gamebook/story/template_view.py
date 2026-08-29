@@ -1,5 +1,4 @@
 from collections.abc import Iterator
-from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from .errors import EntityFieldNotFoundError, TraitNotFoundError
@@ -15,8 +14,8 @@ class EntityView:
 
     Resolution order for attribute access:
     1. Session field resolver (via @session_field decorator)
-    2. Session state direct field override
-    3. Entity default attribute value
+    2. Effective field value via StoryContext.get_field: session override,
+       then dynamic field expression, then the entity default
     """
 
     __slots__ = ("_entity", "_story_context")
@@ -57,19 +56,13 @@ class EntityView:
                     result = method(ctx)
                     return self._wrap_if_needed(result)
 
-        # 2. Session state
-
-        with suppress(EntityFieldNotFoundError):
-            return ctx.session_state.get_field(entity.id, name)
-
-        # 3. Entity default
-
+        # 2. Effective value (session override > dynamic expression > entity default)
         try:
-            result = getattr(entity, name)
-            return self._wrap_if_needed(result)
-        except AttributeError:
+            result = ctx.get_field(entity.id, name)
+        except EntityFieldNotFoundError:
             msg = f"{type(entity).__name__}.{name}"
             raise AttributeError(msg) from None
+        return self._wrap_if_needed(result)
 
     def __getitem__(self, name: str) -> object:
         return getattr(self, name)
