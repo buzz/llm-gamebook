@@ -17,16 +17,18 @@ llm-gamebook/
 ## Commands
 
 ### Python
-- Lint: `ruff check backend/`
-- Type check: `mypy backend/`
-- Format: `ruff format backend/`
-- Format (only check): `ruff format --check backend/`
-- Test single: `pytest backend/tests/path/to/test_file.py::test_name -v`
-- Test single file: `pytest backend/tests/foo/test_bar.py -v`
-- All tests: `pytest backend/`
-- Test with coverage: `pytest --cov --cov-report markdown backend/`
+Run from `backend/` with `uv run` — tools are version-pinned there, and mypy/ruff/pytest config is discovered relative to the working directory:
+- Lint: `uv run ruff check .`
+- Type check: `uv run mypy llm_gamebook tests`
+- Format: `uv run ruff format .`
+- Format (only check): `uv run ruff format --check .`
+- Test single: `uv run pytest tests/path/to/test_file.py::test_name -v`
+- Test single file: `uv run pytest tests/foo/test_bar.py -v`
+- All tests: `uv run pytest`
+- Test with coverage: `uv run --with pytest-cov pytest --cov --cov-report markdown`
 
 ### Node.js
+Run from `frontend/`:
 - Build: `pnpm build`
 - Lint: `pnpm lint`
 - Lint with fix: `pnpm lint:fix`
@@ -95,7 +97,7 @@ Recipe: pick a risky area → narrow to one unit/use case → name its users (ca
 ## Code Style
 
 ### Python
-- **Imports**: Use absolute imports, group in sections (stdlib, third-party, local), use explicit imports (`import *` forbidden), follow isort configuration in ruff_defaults.toml, imports must only appear at the top of a file.
+- **Imports**: Use absolute imports, group in sections (stdlib, third-party, local), use explicit imports (`import *` forbidden), follow the isort configuration in `backend/pyproject.toml`, imports must only appear at the top of a file.
 - **Formatting**: 100-char line limit, use ruff formatter, follow PEP 8 standards.
 - **Types**: Use type hints consistently, use modern Python 3.14+ type hints, prefer `T | None` over `Union[T, None]`, prefer `list` over `List`, avoid adding `from __future__ import annotations`.
 - **Naming**: snake_case for functions/variables, PascalCase for classes.
@@ -118,7 +120,7 @@ Recipe: pick a risky area → narrow to one unit/use case → name its users (ca
 
 ## Important Configuration Details
 
-### Python (pyproject.toml)
+### Python (backend/pyproject.toml)
 - Requires Python 3.13+
 - Uses strict mypy (`disallow_any_explicit = true`)
 - Pydantic mypy plugin enabled with strict settings
