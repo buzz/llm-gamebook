@@ -141,6 +141,9 @@ importers:
       postcss-simple-vars:
         specifier: ^7.0.1
         version: 7.0.1(postcss@8.5.6)
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       type-fest:
         specifier: ^5.4.4
         version: 5.4.4
