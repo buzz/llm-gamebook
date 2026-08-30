@@ -117,5 +117,9 @@ class MessageBus:
     async def wait_all(self) -> None:
         """Wait for all currently running handler tasks."""
         async with self._lock:
+            # Yield to the loop once so that handlers scheduled from worker
+            # threads (call_soon_threadsafe in _schedule_off_loop) get a
+            # chance to register their tasks before we inspect _tasks.
+            await asyncio.sleep(0)
             if self._tasks:
                 await asyncio.gather(*self._tasks, return_exceptions=True)
