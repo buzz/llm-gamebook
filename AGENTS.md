@@ -78,9 +78,12 @@ Recipe: pick a risky area → narrow to one unit/use case → name its users (ca
    ln -sfn <main-worktree>/backend/.venv <worktree>/backend/.venv
    ```
    Otherwise create a fresh environment with `uv`.
-3. **Merge back into the main worktree only after explicit user confirmation.** Present the diff/summary of the work and wait for the user to review and explicitly confirm. Then, in the main worktree:
+3. **Merge back into the main worktree only after explicit user confirmation.** Present the diff/summary of the work and wait for the user to review and explicitly confirm. Then rebase the branch onto `main` and fast-forward, so no merge commit is created:
    ```bash
-   git merge --no-ff feat/<topic>
+   # In the feature worktree, rebase onto main (resolve any conflicts here):
+   git rebase main
+   # In the main worktree:
+   git merge --ff-only feat/<topic>
    ```
    Verify the merge with lint, typecheck, and tests in the main worktree. Never merge without the user's explicit go-ahead.
 4. **Remove the worktree and branch.** Once the merge is done (and after the user confirms cleanup if in doubt):
