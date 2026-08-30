@@ -49,6 +49,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: pnpm/action-setup@v6.0.10
+        with:
+          working-directory: frontend
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: 24
@@ -79,6 +81,8 @@ jobs:
         with:
           python-version: "3.14"
       - uses: pnpm/action-setup@v6.0.10
+        with:
+          working-directory: frontend
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: 24
@@ -123,6 +127,8 @@ jobs:
         with:
           python-version: "3.14"
       - uses: pnpm/action-setup@v6.0.10
+        with:
+          working-directory: frontend
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: 24
