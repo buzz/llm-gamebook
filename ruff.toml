@@ -1,0 +1,62 @@
+# Shared Ruff configuration for the monorepo.
+
+line-length = 100
+output-format = "concise"
+preview = true
+exclude = ["**/.venv/**"]
+
+[lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+  "F",  # pyflakes
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "PL", # pylint
+
+  # flake8
+  "A",     #   -builtins
+  "ASYNC", #   -async
+  "B",     #   -bugbear
+  "BLE",   #   -blind-except
+  "C4",    #   -comprehensions
+  "COM",   #   -commas
+  "DTZ",   #   -datetimez
+  "EM",    #   -errmsg
+  "EXE",   #   -executable
+  "FA",    #   -future-annotations
+  "FBT",   #   -boolean-trap
+  "G",     #   -logging-format
+  "ICN",   #   -import-conventions
+  "INP",   #   -no-pep420
+  "INT",   #   -gettext
+  "ISC",   #   -implicit-str-concat
+  "LOG",   #   -logging
+  "PIE",   #   -pie
+  "PT",    #   -pytest-style
+  "PYI",   #   -pyi
+  "Q",     #   --quotes
+  "RET",   #   -return
+  "RSE",   #   -raise
+  "SIM",   #   -simplify
+  "SLOT",  #   -slots
+  "T201",  #   -print
+  "T10",   #   -debugger
+  "TCH",   #   -type-checking
+  "TD004", #   -todos
+  "TD005",
+  "TD006",
+  "TD007",
+  "TID",   #   -tidy-imports
+  "YTT",   #   -2020
+
+  "FLY",  # flynt
+  "FURB", # refurb
+  "I",    # isort
+  "N",    # pep8-naming
+  "PERF", # Perflint
+  "PGH",  # pygrep-hooks
+  "RUF",  # Ruff-specific rules
+  "TRY",  # tryceratops
+  "UP",   # pyupgrade
+]
+ignore = ["B010", "COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
