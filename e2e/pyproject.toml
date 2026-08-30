@@ -1,0 +1,95 @@
+[project]
+name = "e2e"
+version = "0.1.0"
+description = "End-to-end tests for LLM Gamebook (Playwright + pytest)"
+requires-python = ">=3.13"
+dependencies = [
+  "playwright>=1.62.0",
+  "pytest>=9.1.1",
+  "pytest-asyncio>=1.3.0",
+  "pytest-playwright>=0.9.0",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.19.1",
+  # Keep in sync with the ruff version in the backend lockfile so both
+  # projects lint identically
+  "ruff==0.15.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+output-format = "concise"
+preview = true
+exclude = [".venv/**"]
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+  "F",  # pyflakes
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "PL", # pylint
+
+  # flake8
+  "A",     #   -builtins
+  "ASYNC", #   -async
+  "B",     #   -bugbear
+  "BLE",   #   -blind-except
+  "C4",    #   -comprehensions
+  "COM",   #   -commas
+  "DTZ",   #   -datetimez
+  "EM",    #   -errmsg
+  "EXE",   #   -executable
+  "FA",    #   -future-annotations
+  "FBT",   #   -boolean-trap
+  "G",     #   -logging-format
+  "ICN",   #   -import-conventions
+  "INP",   #   -no-pep420
+  "INT",   #   -gettext
+  "ISC",   #   -implicit-str-concat
+  "LOG",   #   -logging
+  "PIE",   #   -pie
+  "PT",    #   -pytest-style
+  "PYI",   #   -pyi
+  "Q",     #   --quotes
+  "RET",   #   -return
+  "RSE",   #   -raise
+  "SIM",   #   -simplify
+  "SLOT",  #   -slots
+  "T201",  #   -print
+  "T10",   #   -debugger
+  "TCH",   #   -type-checking
+  "TD004", #   -todos
+  "TD005",
+  "TD006",
+  "TD007",
+  "TID",   #   -tidy-imports
+  "YTT",   #   -2020
+
+  "FLY",  # flynt
+  "FURB", # refurb
+  "I",    # isort
+  "N",    # pep8-naming
+  "PERF", # Perflint
+  "PGH",  # pygrep-hooks
+  "RUF",  # Ruff-specific rules
+  "TRY",  # tryceratops
+  "UP",   # pyupgrade
+]
+ignore = ["B010", "COM812", "PLR1702", "PLR2004", "PLR6301", "RUF029"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+# Fixtures report server lifecycle to the console
+"conftest.py" = ["T201"]
+
+[tool.mypy]
+strict = true
+disallow_any_explicit = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"

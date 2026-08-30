@@ -8,5 +8,11 @@ wheels/
 
 # Virtual environments
 backend/.venv
+e2e/.venv
+
+# E2E test artifacts
+e2e/.logs
+e2e/test-results
+e2e/playwright-report
 
 backend/*.log

@@ -9,8 +9,9 @@ llm-gamebook/
 ├── backend/           # Python FastAPI backend
 │   ├── llm_gamebook/  # Main package
 │   └── tests/         # Python tests (mirrors package structure)
-└── frontend/          # React + TypeScript frontend
-    └── src/           # Frontend source code
+├── frontend/          # React + TypeScript frontend
+│   └── src/           # Frontend source code
+└── e2e/               # Playwright (Python) end-to-end tests (own uv project)
 ```
 
 ## Commands
@@ -34,6 +35,10 @@ llm-gamebook/
 - Type check: `pnpm typecheck`
 - Tests: `pnpm test`
 - Generate API types: `pnpm generate-api-types` (requires backend running at localhost:8000)
+
+### E2E (Playwright, Python)
+- Setup (one-time): `cd e2e && uv sync && uv run playwright install chromium`
+- Run: `cd e2e && uv run pytest` (servers auto-start on free ports; headed: `--headed`)
 
 ## Testing (Testing Trophy)
 

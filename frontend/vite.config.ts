@@ -8,7 +8,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // Overridable for e2e tests, which run the backend on a free port
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,
       },
     },
