@@ -35,6 +35,30 @@ llm-gamebook/
 - Tests: `pnpm test`
 - Generate API types: `pnpm generate-api-types` (requires backend running at localhost:8000)
 
+## Testing (Testing Trophy)
+
+Goal: maximum confidence that the app works for its users per unit of time. **Write tests. Not too many. Mostly integration.**
+
+Trophy, bottom → top: **static → unit → integration → e2e**. Going up, tests get slower and more expensive but give more confidence ("the more your tests resemble the way your software is used, the more confidence they can give you"). Spend most effort at the integration level.
+
+| Level | Verifies | Mocking | Use for |
+| --- | --- | --- | --- |
+| Static (mypy, tsc, ruff, eslint) | Typos, type errors | — | Let it do this job; never write tests for what types/lint already catch |
+| Unit | Single function/class | Max (deps mocked) | Pure business-logic edge cases (pricing, parsing, state transitions) |
+| Integration | Several units working together | Minimal | **Default choice**; flows across component→state→API or service→db |
+| E2E | Full app, driven like a user | ~none | One happy path per top-priority feature |
+
+Rules:
+
+- **Cheapest level that proves the use case.** Type error → static; logic edge case → unit; units cooperating → integration; full user journey → e2e. If a level can't prove it (e.g., unit tests can't prove a dependency is called correctly), go up.
+- **Test use cases, not code.** Test title = user-observable behavior ("returns an empty array for a falsy value"), never a branch/line. Code coverage ≠ use case coverage; don't chase 100%, don't test logic-free code.
+- **No implementation details.** Exercise only what the code's users can see: inputs in, observable outputs/side effects out (React: props in, rendered DOM + user interactions; API: request in, response out). Never assert on internal state, private helpers, or internal components. Such tests fail on behavior-preserving refactors (false negatives) and pass while behavior is broken (false positives).
+- **Mock less.** Every mock deletes confidence in the integration between the tested unit and the mock. Mock only outer boundaries (HTTP via MSW, email, payments) or nondeterminism (time, random). Backend: use a real test DB with fixtures; don't mock repository/DB layers.
+- **Refactor-proof:** you should almost never need to change a test during a behavior-preserving refactor.
+- **What to test first:** "What would be the worst thing to break in this app?" → E2E happy path for that feature, then integration tests for its edge cases, then unit tests for the complex logic behind them.
+
+Recipe: pick a risky area → narrow to one unit/use case → name its users (caller, API client, end user) → write the manual steps a user would take to verify it → automate exactly those steps.
+
 ## Git & Worktree Workflow
 
 **This is the default workflow for any change to the codebase, unless the user explicitly states otherwise.** Parallel sessions may be active in the main source tree at the same time, so never work directly in the main worktree.
