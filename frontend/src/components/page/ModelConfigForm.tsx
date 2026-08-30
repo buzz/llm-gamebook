@@ -267,7 +267,7 @@ function ModelConfigForm() {
             disabled={isLoading}
             label="Model ID"
             required
-            {...form.getInputProps('modelId')}
+            {...form.getInputProps('modelName')}
           />
 
           <TextInput
