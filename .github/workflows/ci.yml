@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (lint, format, types, tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.14"
+      - name: Check uv lockfile is up to date
+        run: uv lock --check
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format check
+        run: uv run ruff format --check .
+      - name: Type check
+        run: uv run mypy llm_gamebook tests
+      - name: Tests
+        run: uv run pytest
+
+  frontend:
+    name: Frontend (lint, format, types, tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Format check
+        run: pnpm format:check
+      - name: Type check
+        run: pnpm typecheck
+      - name: Tests
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  e2e:
+    name: E2E (Playwright against real backend + frontend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.14"
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Check uv lockfile is up to date
+        run: uv lock --check
+      - name: Install e2e dependencies
+        run: uv sync --frozen
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format check
+        run: uv run ruff format --check .
+      - name: Type check
+        run: uv run mypy .
+      - name: Install Chromium
+        run: uv run playwright install --with-deps chromium
+      - name: Install backend dependencies (spawned by test fixtures)
+        working-directory: backend
+        run: uv sync --frozen
+      - name: Install frontend dependencies (spawned by test fixtures)
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Run e2e tests
+        run: uv run pytest
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-failure-logs
+          path: |
+            e2e/.logs
+            e2e/test-results
+          if-no-files-found: ignore
+
+  api-types:
+    name: OpenAPI types in sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.14"
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --frozen
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+      - name: Regenerate OpenAPI types and verify no drift
+        run: |
+          set -euo pipefail
+          cd backend
+          uv run python -m llm_gamebook.main web --port 8000 > /tmp/backend.log 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            pkill -f "llm_gamebook.main web" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          ready=0
+          for _ in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/openapi.json > /dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              echo "::error::Backend exited during startup. Log:"
+              cat /tmp/backend.log
+              exit 1
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "::error::Backend did not become ready within 60s. Log:"
+            cat /tmp/backend.log
+            exit 1
+          fi
+          cd ../frontend
+          pnpm generate-api-types
+          cd ..
+          if ! git diff --exit-code -- frontend/src/types/openapi.d.ts; then
+            echo "::error::OpenAPI types are out of date."
+            echo "Fix: with the backend running on :8000, run 'pnpm generate-api-types' in frontend/ and commit the regenerated file."
+            git diff -- frontend/src/types/openapi.d.ts | head -100
+            exit 1
+          fi

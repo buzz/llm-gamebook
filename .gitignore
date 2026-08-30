@@ -7,8 +7,7 @@ wheels/
 *.egg-info
 
 # Virtual environments
-backend/.venv
-e2e/.venv
+.venv/
 
 # E2E test artifacts
 e2e/.logs
