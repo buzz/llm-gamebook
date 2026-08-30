@@ -65,7 +65,7 @@ See `examples/llm-gamebook/broken-bulb/llm-gamebook.yaml` for a complete example
 Start backend:
 ```bash
 cd backend
-uv run llm-gamebook web --dev
+uv run python -m llm_gamebook.main web --dev
 ```
 
 Start frontend:

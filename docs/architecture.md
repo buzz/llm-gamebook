@@ -240,7 +240,7 @@ The full design — dynamic `=expression` fields, triggers, history/undo, state 
 Backend (requires Python 3.13+, uv):
 
 1. `cd backend && uv sync`
-2. `uv run llm-gamebook web --dev` (FastAPI on `127.0.0.1:8000`, auto-reload; `--dev` is resource-intensive)
+2. `uv run python -m llm_gamebook.main web --dev` (FastAPI on `127.0.0.1:8000`, auto-reload; `--dev` is resource-intensive)
 3. Configure model providers via the web UI (model configs) or environment variables.
 
 Frontend (requires Node.js, pnpm):
@@ -252,7 +252,7 @@ The user database and project storage live in the platform user-data directory (
 
 ### Build and Deployment Process
 
-* **Backend**: Python package (`uv build`); run via the `llm-gamebook` CLI (`web` command). No formal deployment process; designed to run locally.
+* **Backend**: Python package; run via `uv run python -m llm_gamebook.main web`. No formal deployment process; designed to run locally.
 * **Frontend**: `pnpm build` produces a static Vite build (`frontend/dist`).
 * **OpenAPI types**: After backend API changes, regenerate frontend types with `pnpm generate-api-types` (requires the backend running at `localhost:8000`).
 
