@@ -126,21 +126,29 @@ def _start(
 
 
 @pytest.fixture(scope="session")
-def base_url(unused_tcp_port_factory: Callable[[], int]) -> Generator[str]:
+def base_url(
+    unused_tcp_port_factory: Callable[[], int], tmp_path_factory: pytest.TempPathFactory
+) -> Generator[str]:
     """Base URL of the frontend, with backend and frontend guaranteed up.
 
     Starts the backend (``uv run python -m llm_gamebook.main web``) and the
     frontend (``pnpm dev``, proxying ``/api`` to the backend) on free
     localhost ports, and stops both when the session ends.
+
+    The backend's user data directory (SQLite DB and settings) is redirected
+    to a fresh temporary directory via ``XDG_DATA_HOME``, so tests never read
+    or write the real user data.
     """
     backend_port = unused_tcp_port_factory()
     frontend_port = unused_tcp_port_factory()
+    backend_data_dir = tmp_path_factory.mktemp("backend-data")
     servers = [
         _start(
             "backend",
             ["uv", "run", "python", "-m", "llm_gamebook.main", "web", "--port", str(backend_port)],
             BACKEND_DIR,
             f"http://{HOST}:{backend_port}/openapi.json",
+            {"XDG_DATA_HOME": str(backend_data_dir)},
         ),
         _start(
             "frontend",
