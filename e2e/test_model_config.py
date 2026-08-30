@@ -1,4 +1,4 @@
-"""E2E tests for model configuration: creation and editing.
+"""E2E tests for model configuration: creation, editing, deletion, and reset.
 
 These exercise the real user flows in ``ModelConfigForm`` (``/model-config/new``
 and ``/model-config/<id>``) against the real backend, including the ``/api``
@@ -130,3 +130,63 @@ def test_edit_model_prefills_values_and_saves_changes(page: Page) -> None:
     saved = response.json()
     assert saved["name"] == updated_name
     assert saved["modelName"] == updated_model_id
+
+
+def test_delete_model(page: Page) -> None:
+    """A user can delete a model from its edit page.
+
+    Clicking Delete must remove the model (a success toast appears, the user
+    is sent back home, the model disappears from the sidebar list, and the
+    server no longer knows about it).
+    """
+    name = _unique("E2E-delete model")
+    model_id = _unique("e2e-model")
+    config = _create_model_config_via_api(page.request, name=name, model_name=model_id)
+    config_id = str(config["id"])
+
+    page.goto(f"/model-config/{config_id}")
+    expect(page.get_by_role("heading", name="Edit Model")).to_be_visible()
+
+    # Scope to the main area: the sidebar has a "Delete" action icon too.
+    page.locator("main").get_by_role("button", name="Delete", exact=True).click()
+
+    expect(page.get_by_text("Model config was deleted.", exact=True)).to_be_visible()
+
+    # The user is redirected to the home page.
+    expect(page).to_have_url(re.compile(r"^https?://[^/]+/$"))
+    expect(page.get_by_role("heading", name="Gamebooks")).to_be_visible()
+
+    # The model is gone from the sidebar list and from the server.
+    expect(page.get_by_role("link", name=name)).to_have_count(0)
+    response = page.request.get(f"{MODEL_CONFIGS_API}{config_id}")
+    assert response.status == 404, f"Expected 404, got {response.status}"
+
+
+def test_reset_advanced_values(page: Page) -> None:
+    """'Reset values' restores the advanced settings sliders to their defaults."""
+    page.goto("/model-config/new")
+    expect(page.get_by_role("heading", name="Create Model")).to_be_visible()
+
+    # Open the advanced settings and change every slider.
+    page.get_by_role("switch", name="Advanced settings").click()
+
+    page.get_by_label("Max. tokens").fill("3000")
+    page.get_by_label("Temperature").fill("0.5")
+    page.get_by_label("Top-p").fill("0.7")
+    page.get_by_label("Presence penalty").fill("1")
+    page.get_by_label("Frequency penalty").fill("2")
+
+    expect(page.get_by_label("Max. tokens")).to_have_value("3000")
+    expect(page.get_by_label("Temperature")).to_have_value("0.5")
+    expect(page.get_by_label("Top-p")).to_have_value("0.7")
+    expect(page.get_by_label("Presence penalty")).to_have_value("1")
+    expect(page.get_by_label("Frequency penalty")).to_have_value("2")
+
+    page.get_by_role("button", name="Reset values", exact=True).click()
+
+    # The defaults are restored.
+    expect(page.get_by_label("Max. tokens")).to_have_value("2000")
+    expect(page.get_by_label("Temperature")).to_have_value("1")
+    expect(page.get_by_label("Top-p")).to_have_value("0.95")
+    expect(page.get_by_label("Presence penalty")).to_have_value("0")
+    expect(page.get_by_label("Frequency penalty")).to_have_value("0")
